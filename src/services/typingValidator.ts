@@ -28,11 +28,12 @@ function expandContractions(text: string): string {
   return result;
 }
 
-function stripGenderMarkers(text: string): string {
+function stripBracketedContent(text: string): string {
+  // Remove any content in parentheses (M/F, feminine, notes, etc.)
+  // This handles all cases: (M), (F), (M/F), (masculine), (plural), etc.
   return text
-    .replace(/\s*\([FfMm]\)\s*/g, '')
-    .replace(/\s*\(feminine\)\s*/gi, '')
-    .replace(/\s*\(masculine\)\s*/gi, '')
+    .replace(/\s*\([^)]*\)\s*/g, ' ')  // Replace bracketed content with space
+    .replace(/\s+/g, ' ')              // Normalize multiple spaces
     .trim();
 }
 
@@ -50,7 +51,7 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
   const trimmedUser = userAnswer.trim();
   const trimmedCorrect = correctAnswer.trim();
   // Strip gender markers like "(F)" or "(M)" from correct answer
-  const cleanedCorrect = stripGenderMarkers(trimmedCorrect);
+  const cleanedCorrect = stripBracketedContent(trimmedCorrect);
 
   // Tier 1: Exact match
   if (trimmedUser === cleanedCorrect) {

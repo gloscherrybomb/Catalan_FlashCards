@@ -7,12 +7,14 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
+  Lightbulb,
 } from 'lucide-react';
 import { useCardStore } from '../stores/cardStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { CategoryIcon, Badge } from '../components/cards/CategoryIcon';
+import { MnemonicEditor } from '../components/cards/MnemonicEditor';
 import { getMasteryLevel } from '../services/sm2Algorithm';
 import type { Flashcard } from '../types/flashcard';
 
@@ -21,10 +23,12 @@ export function BrowsePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [cardToDelete, setCardToDelete] = useState<Flashcard | null>(null);
+  const [editingMnemonic, setEditingMnemonic] = useState<Flashcard | null>(null);
 
   const flashcards = useCardStore((state) => state.flashcards);
   const getProgress = useCardStore((state) => state.getProgress);
   const deleteCard = useCardStore((state) => state.deleteCard);
+  const updateCardMnemonic = useCardStore((state) => state.updateCardMnemonic);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -206,7 +210,30 @@ export function BrowsePage() {
                               </div>
                             </div>
 
-                            <div className="flex justify-end">
+                            {/* User mnemonic display */}
+                            {card.userMnemonic && (
+                              <div className="mb-4 p-3 bg-miro-yellow/10 dark:bg-miro-yellow/5 rounded-lg border border-miro-yellow/30">
+                                <div className="flex items-start gap-2">
+                                  <Lightbulb className="w-4 h-4 text-miro-yellow mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Your Memory Hook</p>
+                                    <p className="text-sm text-gray-700 dark:text-gray-300">{card.userMnemonic}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex justify-between gap-2">
+                              <button
+                                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-miro-yellow hover:bg-miro-yellow/10 rounded-lg transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingMnemonic(card);
+                                }}
+                              >
+                                <Lightbulb size={16} />
+                                {card.userMnemonic ? 'Edit Mnemonic' : 'Add Mnemonic'}
+                              </button>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -278,6 +305,19 @@ export function BrowsePage() {
           </div>
         )}
       </Modal>
+
+      {/* Mnemonic editor modal */}
+      <AnimatePresence>
+        {editingMnemonic && (
+          <MnemonicEditor
+            catalanWord={editingMnemonic.back}
+            englishWord={editingMnemonic.front}
+            currentMnemonic={editingMnemonic.userMnemonic}
+            onSave={(mnemonic) => updateCardMnemonic(editingMnemonic.id, mnemonic)}
+            onClose={() => setEditingMnemonic(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

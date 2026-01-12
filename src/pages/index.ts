@@ -9,3 +9,4 @@ export { AnalyticsPage } from './AnalyticsPage';
 export { GrammarPage } from './GrammarPage';
 export { LearningPathPage } from './LearningPathPage';
 export { StoriesPage } from './StoriesPage';
+export { ConversationPage } from './ConversationPage';

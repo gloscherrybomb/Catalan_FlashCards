@@ -41,6 +41,8 @@ interface CardState {
   getMistakeHistory: () => MistakeRecord[];
   getWeaknessDeck: (limit?: number) => StudyCard[];
   clearMistakeHistory: () => void;
+  // Mnemonic editing
+  updateCardMnemonic: (cardId: string, mnemonic: string) => Promise<void>;
 }
 
 function getProgressKey(cardId: string, direction: StudyDirection): string {
@@ -303,6 +305,18 @@ export const useCardStore = create<CardState>()(
 
       clearMistakeHistory: () => {
         set({ mistakeHistory: [] });
+      },
+
+      // Mnemonic editing
+      updateCardMnemonic: async (cardId: string, mnemonic: string) => {
+        const { flashcards } = get();
+        const newCards = flashcards.map(card =>
+          card.id === cardId ? { ...card, userMnemonic: mnemonic || undefined } : card
+        );
+        set({ flashcards: newCards });
+
+        // Note: Firebase sync would be done here in production
+        // For now, this is persisted via localStorage
       },
     }),
     {

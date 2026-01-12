@@ -5,6 +5,7 @@ import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge, CardDecoration } from './CategoryIcon';
 import { audioService } from '../../services/audioService';
 import { imageService, type CachedImage } from '../../services/imageService';
+import { MnemonicHint } from './MnemonicHint';
 
 interface FlashCardProps {
   studyCard: StudyCard;
@@ -316,6 +317,14 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                   )}
                 </AnimatePresence>
               )}
+
+              {/* Mnemonic hints */}
+              <MnemonicHint
+                catalanWord={flashcard.back}
+                englishWord={flashcard.front}
+                userMnemonic={flashcard.userMnemonic}
+                className="mb-2"
+              />
             </div>
           </div>
         </motion.div>

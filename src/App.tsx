@@ -13,6 +13,7 @@ import {
   GrammarPage,
   LearningPathPage,
   StoriesPage,
+  ConversationPage,
 } from './pages';
 import { useUserStore } from './stores/userStore';
 import { useCardStore } from './stores/cardStore';
@@ -84,6 +85,7 @@ function AppContent() {
         <Route path="/grammar/:lessonId" element={<GrammarPage />} />
         <Route path="/learn" element={<LearningPathPage />} />
         <Route path="/stories" element={<StoriesPage />} />
+        <Route path="/conversation" element={<ConversationPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>

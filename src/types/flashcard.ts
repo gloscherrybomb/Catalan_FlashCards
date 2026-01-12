@@ -14,6 +14,9 @@ export interface Flashcard {
   imageUrl?: string;
   imageThumbUrl?: string;
   imageAttribution?: string;
+  // Mnemonic fields for memory aids
+  userMnemonic?: string;   // User's custom mnemonic
+  etymology?: string;      // Word origin/root info
 }
 
 export interface CardProgress {
