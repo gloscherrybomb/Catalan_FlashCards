@@ -179,16 +179,28 @@ export async function updateUserProgress(userId: string, progress: Partial<UserP
   await setDoc(ref, updateData, { merge: true });
 }
 
+// Helper function to remove undefined values from an object
+function removeUndefinedFields<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned as Partial<T>;
+}
+
 // Flashcard functions
 export async function saveFlashcards(userId: string, flashcards: Flashcard[]): Promise<void> {
   const batch = writeBatch(db);
 
   for (const card of flashcards) {
     const ref = doc(db, 'users', userId, 'cards', card.id);
-    batch.set(ref, {
+    const cardData = removeUndefinedFields({
       ...card,
       createdAt: Timestamp.fromDate(card.createdAt),
     });
+    batch.set(ref, cardData);
   }
 
   await batch.commit();
