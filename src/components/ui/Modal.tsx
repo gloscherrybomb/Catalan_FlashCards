@@ -1,3 +1,4 @@
+import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -20,6 +21,25 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
     full: 'max-w-4xl',
   };
 
+  // Handle escape key
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, handleKeyDown]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,6 +51,7 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
+            aria-hidden="true"
           />
 
           {/* Modal content */}
@@ -39,20 +60,24 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? 'modal-title' : undefined}
             className={clsx(
-              'relative w-full bg-white rounded-2xl shadow-2xl overflow-hidden',
+              'relative w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-miro-blue/20 dark:border-ink-light/20',
               sizes[size]
             )}
           >
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h2 id="modal-title" className="text-xl font-bold text-miro-blue dark:text-ink-light">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  aria-label="Close modal"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>
               </div>
             )}

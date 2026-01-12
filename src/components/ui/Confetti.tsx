@@ -18,15 +18,14 @@ interface ConfettiProps {
   onComplete?: () => void;
 }
 
+// Miro-inspired color palette for consistency
 const COLORS = [
-  '#FF6B6B', // Primary red
-  '#4ECDC4', // Secondary teal
-  '#FFE66D', // Accent yellow
-  '#95D5B2', // Success green
-  '#F9844A', // Warning orange
-  '#8B5CF6', // Purple
-  '#EC4899', // Pink
-  '#3B82F6', // Blue
+  '#E63946', // miro-red
+  '#2A9D8F', // miro-green
+  '#FFB800', // miro-yellow
+  '#1D3557', // miro-blue
+  '#F77F00', // miro-orange
+  '#A8DADC', // ink-light
 ];
 
 const SHAPES = ['square', 'circle', 'triangle'] as const;

@@ -10,6 +10,10 @@ export interface Flashcard {
   gender?: 'masculine' | 'feminine';
   iconKey: string;         // For icon generation
   createdAt: Date;
+  // Image fields (optional, populated by imageService)
+  imageUrl?: string;
+  imageThumbUrl?: string;
+  imageAttribution?: string;
 }
 
 export interface CardProgress {
@@ -36,7 +40,7 @@ export interface StudyCard {
   requiresTyping: boolean; // True for new cards or struggling cards
 }
 
-export type StudyMode = 'flip' | 'multiple-choice' | 'type-answer';
+export type StudyMode = 'flip' | 'multiple-choice' | 'type-answer' | 'mixed' | 'listening';
 
 export interface StudySession {
   id: string;

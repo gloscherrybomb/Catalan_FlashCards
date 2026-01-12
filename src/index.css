@@ -443,3 +443,44 @@ a:focus-visible {
   background: var(--miro-yellow);
   color: var(--miro-blue);
 }
+
+/* ========================================
+   REDUCED MOTION SUPPORT (Accessibility)
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .floating-blob,
+  .floating-blob-1,
+  .floating-blob-2,
+  .floating-blob-3 {
+    animation: none !important;
+  }
+
+  .animate-float,
+  .animate-wiggle,
+  .animate-bounce-in,
+  .animate-shake,
+  .animate-celebrate,
+  .animate-pop,
+  .animate-slide-up {
+    animation: none !important;
+  }
+
+  .miro-star::after {
+    animation: none !important;
+  }
+
+  /* Disable card flip animation in reduced motion */
+  .preserve-3d {
+    transition: none !important;
+  }
+}

@@ -50,12 +50,32 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (!isFlipped) {
+        handleFlip();
+      }
+    }
+    // Number keys for rating when card is flipped
+    if (isFlipped) {
+      if (e.key === '1') handleRate(1);
+      if (e.key === '2' || e.key === '3') handleRate(3);
+      if (e.key === '4') handleRate(4);
+      if (e.key === '5') handleRate(5);
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Card container with perspective */}
       <div
         className="perspective-1000 cursor-pointer"
         onClick={handleFlip}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={`Flashcard: ${front}. Press Enter or Space to flip${isFlipped ? ', or use number keys 1-5 to rate' : ''}`}
       >
         <motion.div
           className="relative w-full h-80 preserve-3d"
@@ -225,8 +245,9 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 onClick={() => handleRate(1)}
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                aria-label="I didn't remember this card - show it again soon (press 1)"
               >
-                <span className="text-2xl mb-1">😵</span>
+                <span className="text-2xl mb-1" aria-hidden="true">😵</span>
                 <span className="text-xs font-semibold">Again</span>
               </motion.button>
 
@@ -235,8 +256,9 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 onClick={() => handleRate(3)}
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                aria-label="This was hard - I struggled to remember (press 2 or 3)"
               >
-                <span className="text-2xl mb-1">😅</span>
+                <span className="text-2xl mb-1" aria-hidden="true">😅</span>
                 <span className="text-xs font-semibold">Hard</span>
               </motion.button>
 
@@ -245,8 +267,9 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 onClick={() => handleRate(4)}
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                aria-label="Good - I remembered it with some effort (press 4)"
               >
-                <span className="text-2xl mb-1">🙂</span>
+                <span className="text-2xl mb-1" aria-hidden="true">🙂</span>
                 <span className="text-xs font-semibold">Good</span>
               </motion.button>
 
@@ -255,8 +278,9 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 onClick={() => handleRate(5)}
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                aria-label="Easy - I knew it instantly (press 5)"
               >
-                <span className="text-2xl mb-1">🤩</span>
+                <span className="text-2xl mb-1" aria-hidden="true">🤩</span>
                 <span className="text-xs font-semibold">Easy</span>
               </motion.button>
             </div>

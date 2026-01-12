@@ -34,6 +34,7 @@ interface UserState {
   useStreakFreeze: () => Promise<boolean>;
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   recordStudySession: (cardsReviewed: number, correctAnswers: number, timeSpentMs: number) => Promise<void>;
+  addAchievements: (newAchievements: UnlockedAchievement[]) => void;
 }
 
 const DEFAULT_PROGRESS: UserProgress = {
@@ -347,6 +348,16 @@ export const useUserStore = create<UserState>()(
 
         if (user && !isDemoMode) {
           await updateUserProgress(user.uid, newProgress);
+        }
+      },
+
+      addAchievements: (newAchievements: UnlockedAchievement[]) => {
+        const { achievements } = get();
+        const existingIds = new Set(achievements.map(a => a.achievementId));
+        const uniqueNew = newAchievements.filter(a => !existingIds.has(a.achievementId));
+
+        if (uniqueNew.length > 0) {
+          set({ achievements: [...achievements, ...uniqueNew] });
         }
       },
     }),

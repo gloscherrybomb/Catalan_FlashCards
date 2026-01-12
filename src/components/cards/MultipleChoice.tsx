@@ -86,22 +86,22 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Question card */}
-      <div className="bg-white rounded-3xl shadow-playful p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-playful p-6 mb-6 border-3 border-miro-blue dark:border-ink-light/50">
         <div className="flex items-start justify-between mb-4">
           <CategoryIcon category={flashcard.category} word={questionDisplay} size="md" />
           <div className="flex flex-col items-end gap-1">
-            <span className="text-xs font-medium text-gray-400 uppercase">{questionLabel}</span>
+            <span className="text-xs font-medium text-miro-blue/50 dark:text-ink-light/50 uppercase">{questionLabel}</span>
             {flashcard.gender && (
               <Badge text={flashcard.gender === 'masculine' ? 'Masc' : 'Fem'} variant={flashcard.gender} />
             )}
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-800 text-center my-8">
+        <h2 className="text-2xl font-bold text-miro-blue dark:text-ink-light text-center my-8">
           {questionDisplay}
         </h2>
 
-        <p className="text-center text-gray-500 text-sm">
+        <p className="text-center text-miro-blue/60 dark:text-ink-light/60 text-sm">
           Choose the correct {answerLabel.toLowerCase()} translation
         </p>
       </div>
@@ -113,26 +113,26 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
           const showResult = hasAnswered;
           const isCorrect = option.isCorrect;
 
-          let bgColor = 'bg-white hover:bg-gray-50';
-          let borderColor = 'border-gray-200';
-          let textColor = 'text-gray-800';
+          let bgColor = 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700';
+          let borderColor = 'border-gray-200 dark:border-gray-700';
+          let textColor = 'text-miro-blue dark:text-ink-light';
 
           if (showResult) {
             if (isCorrect) {
-              bgColor = 'bg-green-50';
-              borderColor = 'border-green-400';
-              textColor = 'text-green-700';
+              bgColor = 'bg-miro-green/10 dark:bg-miro-green/20';
+              borderColor = 'border-miro-green';
+              textColor = 'text-miro-green';
             } else if (isSelected && !isCorrect) {
-              bgColor = 'bg-red-50';
-              borderColor = 'border-red-400';
-              textColor = 'text-red-700';
+              bgColor = 'bg-miro-red/10 dark:bg-miro-red/20';
+              borderColor = 'border-miro-red';
+              textColor = 'text-miro-red';
             } else {
-              bgColor = 'bg-gray-50';
-              textColor = 'text-gray-400';
+              bgColor = 'bg-gray-50 dark:bg-gray-800';
+              textColor = 'text-gray-400 dark:text-gray-500';
             }
           } else if (isSelected) {
-            borderColor = 'border-primary';
-            bgColor = 'bg-primary-50';
+            borderColor = 'border-miro-blue dark:border-ink-light';
+            bgColor = 'bg-miro-blue/5 dark:bg-ink-light/10';
           }
 
           return (
@@ -154,9 +154,9 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
                     exit={{ scale: 0 }}
                   >
                     {isCorrect ? (
-                      <Check className="w-5 h-5 text-green-500" />
+                      <Check className="w-5 h-5 text-miro-green" />
                     ) : (
-                      <X className="w-5 h-5 text-red-500" />
+                      <X className="w-5 h-5 text-miro-red" />
                     )}
                   </motion.span>
                 )}
@@ -175,8 +175,8 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
             exit={{ opacity: 0 }}
             className={`mt-4 p-4 rounded-xl text-center font-medium ${
               options[selectedIndex!]?.isCorrect
-                ? 'bg-green-100 text-green-700'
-                : 'bg-red-100 text-red-700'
+                ? 'bg-miro-green/20 text-miro-green dark:bg-miro-green/30'
+                : 'bg-miro-red/20 text-miro-red dark:bg-miro-red/30'
             }`}
           >
             {options[selectedIndex!]?.isCorrect ? (

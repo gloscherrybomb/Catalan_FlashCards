@@ -9,6 +9,7 @@ import {
   StatsPage,
   AchievementsPage,
   SettingsPage,
+  AnalyticsPage,
 } from './pages';
 import { useUserStore } from './stores/userStore';
 import { useCardStore } from './stores/cardStore';
@@ -74,6 +75,7 @@ function AppContent() {
         <Route path="/browse" element={<BrowsePage />} />
         <Route path="/import" element={<ImportPage />} />
         <Route path="/stats" element={<StatsPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

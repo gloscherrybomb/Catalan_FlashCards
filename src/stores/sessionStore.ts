@@ -1,8 +1,10 @@
 import { create } from 'zustand';
-import type { StudyCard, StudyMode, StudyResult } from '../types/flashcard';
+import { persist } from 'zustand/middleware';
+import type { StudyCard, StudyMode, StudyResult, StudyDirection } from '../types/flashcard';
 import { XP_VALUES } from '../types/gamification';
 import { useUserStore } from './userStore';
 import { useCardStore } from './cardStore';
+import { checkAchievements } from '../services/achievementService';
 
 interface SessionState {
   isActive: boolean;
@@ -13,6 +15,8 @@ interface SessionState {
   sessionStartTime: number;
   cardStartTime: number;
   perfectStreak: number;
+  sessionId: string | null;
+  cardFormats: Record<string, StudyMode>; // For mixed mode: cardId_direction -> format
 
   // Computed
   currentCard: StudyCard | null;
@@ -25,6 +29,9 @@ interface SessionState {
   nextCard: () => void;
   endSession: () => Promise<SessionSummary>;
   resetSession: () => void;
+  hasRecoverableSession: () => boolean;
+  clearSavedSession: () => void;
+  getCardFormat: (cardId: string, direction: StudyDirection) => StudyMode;
 }
 
 export interface SessionSummary {
@@ -37,7 +44,9 @@ export interface SessionSummary {
   newAchievements: string[];
 }
 
-export const useSessionStore = create<SessionState>((set, get) => ({
+export const useSessionStore = create<SessionState>()(
+  persist(
+    (set, get) => ({
   isActive: false,
   mode: 'flip',
   cards: [],
@@ -46,6 +55,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   sessionStartTime: 0,
   cardStartTime: 0,
   perfectStreak: 0,
+  sessionId: null,
+  cardFormats: {},
 
   get currentCard() {
     const { cards, currentIndex } = get();
@@ -74,6 +85,21 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     // Update streak at session start
     useUserStore.getState().updateStreak();
 
+    // Assign formats for mixed mode
+    const cardFormats: Record<string, StudyMode> = {};
+    if (mode === 'mixed') {
+      const modes: StudyMode[] = ['flip', 'multiple-choice', 'type-answer'];
+      for (const card of studyDeck) {
+        const key = `${card.flashcard.id}_${card.direction}`;
+        // Weight typing heavier for struggling cards
+        if (card.progress.easeFactor < 2.0 || card.requiresTyping) {
+          cardFormats[key] = 'type-answer';
+        } else {
+          cardFormats[key] = modes[Math.floor(Math.random() * modes.length)];
+        }
+      }
+    }
+
     set({
       isActive: true,
       mode,
@@ -83,6 +109,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       sessionStartTime: Date.now(),
       cardStartTime: Date.now(),
       perfectStreak: 0,
+      sessionId: `session_${Date.now()}`,
+      cardFormats,
     });
   },
 
@@ -169,10 +197,30 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const userStore = useUserStore.getState();
     await userStore.recordStudySession(totalCards, correctAnswers, timeSpentMs);
 
-    // Check for daily goal bonus
-    const progress = userStore.progress;
-    if (progress.totalCardsReviewed % progress.totalCardsReviewed === 0) {
-      // Would check daily goal here
+    // Check for achievements
+    const cardStore = useCardStore.getState();
+    const newAchievements = await checkAchievements({
+      progress: userStore.progress,
+      cardProgress: cardStore.cardProgress,
+      flashcards: cardStore.flashcards,
+      perfectStreak,
+      unlockedAchievements: userStore.achievements,
+      userId: userStore.user?.uid,
+      hasImported: cardStore.flashcards.length > 0,
+    });
+
+    // Award XP for new achievements and update local state
+    for (const achievement of newAchievements) {
+      await userStore.addXP(achievement.xpReward);
+    }
+
+    // Update local achievements list
+    if (newAchievements.length > 0) {
+      const newUnlocked = newAchievements.map(a => ({
+        achievementId: a.id,
+        unlockedAt: new Date(),
+      }));
+      userStore.addAchievements(newUnlocked);
     }
 
     const summary: SessionSummary = {
@@ -182,7 +230,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       xpEarned,
       timeSpentMs,
       perfectStreak,
-      newAchievements: [], // TODO: Check and return new achievements
+      newAchievements: newAchievements.map(a => a.id),
     };
 
     set({ isActive: false });
@@ -200,6 +248,46 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       sessionStartTime: 0,
       cardStartTime: 0,
       perfectStreak: 0,
+      sessionId: null,
+      cardFormats: {},
     });
   },
-}));
+
+  hasRecoverableSession: () => {
+    const { isActive, cards, currentIndex, sessionId } = get();
+    return isActive && cards.length > 0 && currentIndex < cards.length && !!sessionId;
+  },
+
+  clearSavedSession: () => {
+    set({
+      isActive: false,
+      cards: [],
+      currentIndex: 0,
+      results: [],
+      sessionId: null,
+      cardFormats: {},
+    });
+  },
+
+  getCardFormat: (cardId: string, direction: StudyDirection): StudyMode => {
+    const { mode, cardFormats } = get();
+    if (mode !== 'mixed') return mode === 'listening' ? 'flip' : mode;
+    return cardFormats[`${cardId}_${direction}`] || 'flip';
+  },
+}),
+    {
+      name: 'catalan-session-storage',
+      partialize: (state) => ({
+        isActive: state.isActive,
+        mode: state.mode,
+        cards: state.cards,
+        currentIndex: state.currentIndex,
+        results: state.results,
+        sessionStartTime: state.sessionStartTime,
+        perfectStreak: state.perfectStreak,
+        sessionId: state.sessionId,
+        cardFormats: state.cardFormats,
+      }),
+    }
+  )
+);

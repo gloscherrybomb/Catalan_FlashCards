@@ -5,3 +5,4 @@ export { ImportPage } from './ImportPage';
 export { StatsPage } from './StatsPage';
 export { AchievementsPage } from './AchievementsPage';
 export { SettingsPage } from './SettingsPage';
+export { AnalyticsPage } from './AnalyticsPage';
