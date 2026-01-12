@@ -20,8 +20,8 @@ export function MobileNav() {
   const location = useLocation();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40 pb-safe">
-      <div className="flex items-center justify-around h-16">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-t-3 border-miro-blue dark:border-ink-light/30 z-40 pb-safe">
+      <div className="flex items-center justify-around h-18">
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
@@ -30,21 +30,30 @@ export function MobileNav() {
             <Link
               key={item.path}
               to={item.path}
-              className="relative flex flex-col items-center justify-center w-16 h-full"
+              className="relative flex flex-col items-center justify-center w-16 h-full py-2"
             >
               {isActive && (
                 <motion.div
                   layoutId="mobile-nav-indicator"
-                  className="absolute top-0 w-12 h-1 bg-primary rounded-b-full"
+                  className="absolute -top-0.5 w-10 h-1.5 bg-miro-red rounded-b-full"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 />
               )}
-              <Icon
-                size={22}
-                className={isActive ? 'text-primary' : 'text-gray-400'}
-              />
+              <motion.div
+                whileTap={{ scale: 0.9 }}
+                className={`p-2 rounded-xl transition-colors ${
+                  isActive
+                    ? 'bg-miro-yellow text-miro-blue'
+                    : 'text-miro-blue/50 dark:text-ink-light/50'
+                }`}
+              >
+                <Icon size={22} />
+              </motion.div>
               <span
-                className={`text-xs mt-1 ${
-                  isActive ? 'text-primary font-medium' : 'text-gray-400'
+                className={`text-xs mt-0.5 font-medium ${
+                  isActive
+                    ? 'text-miro-blue dark:text-ink-light'
+                    : 'text-miro-blue/50 dark:text-ink-light/50'
                 }`}
               >
                 {item.label}

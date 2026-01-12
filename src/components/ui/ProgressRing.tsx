@@ -12,9 +12,9 @@ interface ProgressRingProps {
 export function ProgressRing({
   progress,
   size = 120,
-  strokeWidth = 8,
-  color = '#FF6B6B',
-  backgroundColor = '#E5E7EB',
+  strokeWidth = 10,
+  color = '#E63946', // miro-red default
+  backgroundColor = 'rgba(29, 53, 87, 0.1)', // miro-blue with opacity
   children,
 }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
@@ -32,6 +32,7 @@ export function ProgressRing({
           fill="none"
           stroke={backgroundColor}
           strokeWidth={strokeWidth}
+          className="dark:opacity-30"
         />
         {/* Progress circle */}
         <motion.circle
@@ -70,16 +71,16 @@ interface ProgressBarProps {
 
 export function ProgressBar({
   progress,
-  height = 8,
-  color = '#FF6B6B',
-  backgroundColor = '#E5E7EB',
+  height = 10,
+  color = '#E63946',
+  backgroundColor = 'rgba(29, 53, 87, 0.1)',
   showLabel = false,
   animated = true,
 }: ProgressBarProps) {
   return (
     <div className="w-full">
       <div
-        className="w-full rounded-full overflow-hidden"
+        className="w-full rounded-full overflow-hidden border-2 border-miro-blue/20 dark:border-ink-light/20"
         style={{ height, backgroundColor }}
       >
         <motion.div
@@ -91,7 +92,7 @@ export function ProgressBar({
         />
       </div>
       {showLabel && (
-        <div className="mt-1 text-sm text-gray-600 text-right">
+        <div className="mt-1 text-sm text-miro-blue/60 dark:text-ink-light/60 text-right font-medium">
           {Math.round(progress)}%
         </div>
       )}

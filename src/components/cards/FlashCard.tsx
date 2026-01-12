@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, Volume2 } from 'lucide-react';
+import { AlertTriangle, Lightbulb, Volume2 } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge, CardDecoration } from './CategoryIcon';
-import { Button } from '../ui/Button';
 import { audioService } from '../../services/audioService';
 
 interface FlashCardProps {
@@ -21,8 +20,8 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
 
   const front = direction === 'english-to-catalan' ? flashcard.front : flashcard.back;
   const back = direction === 'english-to-catalan' ? flashcard.back : flashcard.front;
-  const frontLabel = direction === 'english-to-catalan' ? 'English' : 'Català';
-  const backLabel = direction === 'english-to-catalan' ? 'Català' : 'English';
+  const frontLabel = direction === 'english-to-catalan' ? 'English' : 'Catala';
+  const backLabel = direction === 'english-to-catalan' ? 'Catala' : 'English';
 
   const handleFlip = () => {
     if (!isFlipped) {
@@ -59,35 +58,55 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
         onClick={handleFlip}
       >
         <motion.div
-          className="relative w-full h-72 preserve-3d"
+          className="relative w-full h-80 preserve-3d"
           animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
+          transition={{ duration: 0.6, type: 'spring', stiffness: 80, damping: 15 }}
         >
           {/* Front of card */}
           <div className="absolute inset-0 backface-hidden">
-            <div className="w-full h-full bg-white rounded-3xl shadow-playful p-6 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="w-full h-full bg-white dark:bg-gray-800 rounded-3xl border-3 border-miro-blue dark:border-ink-light/50 shadow-playful p-6 flex flex-col items-center justify-center relative overflow-hidden">
+              {/* Decorative elements */}
               <CardDecoration category={flashcard.category} />
+
+              {/* Corner blobs */}
+              <div className="absolute -top-4 -right-4 w-16 h-16 bg-miro-yellow/30 blob" />
+              <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-miro-red/20 blob-2" />
 
               <div className="absolute top-4 left-4">
                 <CategoryIcon category={flashcard.category} word={front} size="md" />
               </div>
 
-              <span className="absolute top-4 right-4 text-xs font-medium text-gray-400 uppercase">
+              <span className="absolute top-4 right-4 text-xs font-bold text-miro-blue/50 dark:text-ink-light/50 uppercase tracking-wider">
                 {frontLabel}
               </span>
 
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <h2 className="text-3xl font-bold text-gray-800 text-center px-4">
-                    {front}
-                  </h2>
-                  <button
-                    onClick={(e) => handlePlayAudio(e, front, direction === 'catalan-to-english')}
-                    className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-500 hover:text-primary hover:bg-primary/5 rounded-full transition-colors"
+                  <motion.h2
+                    className="text-3xl md:text-4xl font-display font-bold text-miro-blue dark:text-ink-light text-center px-4"
+                    initial={{ scale: 0.95 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse text-primary' : ''}`} />
-                    Listen
-                  </button>
+                    {front}
+                  </motion.h2>
+                  <div className="flex flex-col items-center gap-1">
+                    <motion.button
+                      onClick={(e) => handlePlayAudio(e, front, direction === 'catalan-to-english')}
+                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-miro-blue/70 dark:text-ink-light/70 hover:text-miro-red hover:bg-miro-red/10 rounded-xl transition-colors font-medium"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse text-miro-red' : ''}`} />
+                      Listen
+                    </motion.button>
+                    {direction === 'catalan-to-english' && audioService.isUsingFallbackVoice && (
+                      <span className="inline-flex items-center gap-1 text-xs text-miro-orange" title="Using Spanish voice - Catalan voice not available">
+                        <AlertTriangle className="w-3 h-3" />
+                        Spanish voice
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -101,29 +120,57 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 <Badge text={flashcard.category} />
               </div>
 
-              <p className="mt-4 text-sm text-gray-400">Tap to reveal</p>
+              <p className="mt-4 text-sm text-miro-blue/40 dark:text-ink-light/40 font-medium">
+                Tap to reveal ✦
+              </p>
             </div>
           </div>
 
           {/* Back of card */}
           <div className="absolute inset-0 backface-hidden rotate-y-180">
-            <div className="w-full h-full bg-gradient-to-br from-secondary to-secondary-600 rounded-3xl shadow-playful p-6 flex flex-col items-center justify-center">
-              <span className="absolute top-4 right-4 text-xs font-medium text-white/70 uppercase">
+            <div className="w-full h-full bg-miro-green rounded-3xl border-3 border-miro-blue dark:border-ink-light/50 shadow-playful p-6 flex flex-col items-center justify-center relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute -top-6 -left-6 w-20 h-20 bg-miro-yellow/30 blob" />
+              <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-miro-blue/20 blob-2" />
+              <motion.span
+                className="absolute top-6 left-6 text-2xl text-white/30"
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              >
+                ✦
+              </motion.span>
+
+              <span className="absolute top-4 right-4 text-xs font-bold text-white/60 uppercase tracking-wider">
                 {backLabel}
               </span>
 
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <h2 className="text-3xl font-bold text-white text-center px-4">
-                    {back}
-                  </h2>
-                  <button
-                    onClick={(e) => handlePlayAudio(e, back, direction === 'english-to-catalan')}
-                    className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                  <motion.h2
+                    className="text-3xl md:text-4xl font-display font-bold text-white text-center px-4"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.3 }}
                   >
-                    <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse' : ''}`} />
-                    Listen
-                  </button>
+                    {back}
+                  </motion.h2>
+                  <div className="flex flex-col items-center gap-1">
+                    <motion.button
+                      onClick={(e) => handlePlayAudio(e, back, direction === 'english-to-catalan')}
+                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors font-medium"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse' : ''}`} />
+                      Listen
+                    </motion.button>
+                    {direction === 'english-to-catalan' && audioService.isUsingFallbackVoice && (
+                      <span className="inline-flex items-center gap-1 text-xs text-miro-yellow" title="Using Spanish voice - Catalan voice not available">
+                        <AlertTriangle className="w-3 h-3" />
+                        Spanish voice
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -134,21 +181,22 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="text-sm text-white/80 text-center mb-4"
+                      className="text-sm text-white/90 text-center mb-4 bg-white/10 px-4 py-2 rounded-xl"
                     >
                       {flashcard.notes}
                     </motion.p>
                   ) : (
-                    <button
+                    <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowHint(true);
                       }}
-                      className="flex items-center gap-1 text-white/70 hover:text-white text-sm mb-4"
+                      className="flex items-center gap-2 text-white/70 hover:text-white text-sm mb-4 font-medium"
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <Lightbulb size={14} />
+                      <Lightbulb size={16} />
                       Show hint
-                    </button>
+                    </motion.button>
                   )}
                 </AnimatePresence>
               )}
@@ -161,49 +209,56 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
       <AnimatePresence>
         {isFlipped && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="mt-6 space-y-4"
+            exit={{ opacity: 0, y: 30 }}
+            transition={{ type: 'spring', stiffness: 100 }}
+            className="mt-8 space-y-4"
           >
-            <p className="text-center text-gray-600 text-sm">How well did you know this?</p>
+            <p className="text-center text-miro-blue/70 dark:text-ink-light/70 text-sm font-medium">
+              How well did you know this?
+            </p>
 
-            <div className="grid grid-cols-4 gap-2">
-              <Button
-                variant="ghost"
-                className="flex-col py-3 bg-red-50 hover:bg-red-100 text-red-600"
+            <div className="grid grid-cols-4 gap-3">
+              <motion.button
+                className="flex flex-col items-center py-3 px-2 bg-miro-red/10 hover:bg-miro-red/20 text-miro-red rounded-xl border-2 border-miro-red/30 transition-colors"
                 onClick={() => handleRate(1)}
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="text-lg">😵</span>
-                <span className="text-xs">Again</span>
-              </Button>
+                <span className="text-2xl mb-1">😵</span>
+                <span className="text-xs font-semibold">Again</span>
+              </motion.button>
 
-              <Button
-                variant="ghost"
-                className="flex-col py-3 bg-orange-50 hover:bg-orange-100 text-orange-600"
+              <motion.button
+                className="flex flex-col items-center py-3 px-2 bg-miro-orange/10 hover:bg-miro-orange/20 text-miro-orange rounded-xl border-2 border-miro-orange/30 transition-colors"
                 onClick={() => handleRate(3)}
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="text-lg">😅</span>
-                <span className="text-xs">Hard</span>
-              </Button>
+                <span className="text-2xl mb-1">😅</span>
+                <span className="text-xs font-semibold">Hard</span>
+              </motion.button>
 
-              <Button
-                variant="ghost"
-                className="flex-col py-3 bg-blue-50 hover:bg-blue-100 text-blue-600"
+              <motion.button
+                className="flex flex-col items-center py-3 px-2 bg-miro-blue/10 hover:bg-miro-blue/20 text-miro-blue dark:text-ink-light rounded-xl border-2 border-miro-blue/30 dark:border-ink-light/30 transition-colors"
                 onClick={() => handleRate(4)}
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="text-lg">🙂</span>
-                <span className="text-xs">Good</span>
-              </Button>
+                <span className="text-2xl mb-1">🙂</span>
+                <span className="text-xs font-semibold">Good</span>
+              </motion.button>
 
-              <Button
-                variant="ghost"
-                className="flex-col py-3 bg-green-50 hover:bg-green-100 text-green-600"
+              <motion.button
+                className="flex flex-col items-center py-3 px-2 bg-miro-green/10 hover:bg-miro-green/20 text-miro-green rounded-xl border-2 border-miro-green/30 transition-colors"
                 onClick={() => handleRate(5)}
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="text-lg">🤩</span>
-                <span className="text-xs">Easy</span>
-              </Button>
+                <span className="text-2xl mb-1">🤩</span>
+                <span className="text-xs font-semibold">Easy</span>
+              </motion.button>
             </div>
           </motion.div>
         )}

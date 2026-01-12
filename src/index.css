@@ -2,47 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   MIRÓ-INSPIRED CATALAN FLASHCARDS
+   Bold • Playful • Distinctly Catalan
+   ======================================== */
+
 :root {
-  --primary: #FF6B6B;
-  --secondary: #4ECDC4;
-  --accent: #FFE66D;
-  --success: #95D5B2;
-  --warning: #F9844A;
+  /* Miró Primary Palette */
+  --miro-red: #E63946;
+  --miro-yellow: #FFB800;
+  --miro-blue: #1D3557;
+  --miro-black: #0D0D0D;
+  --miro-cream: #FFF8E7;
+  --miro-green: #2A9D8F;
+  --miro-orange: #F77F00;
+
+  /* Semantic mappings */
+  --color-primary: var(--miro-red);
+  --color-secondary: var(--miro-green);
+  --color-accent: var(--miro-yellow);
+  --color-success: var(--miro-green);
+  --color-warning: var(--miro-orange);
+  --color-error: var(--miro-red);
+  --color-surface: var(--miro-cream);
+  --color-ink: var(--miro-blue);
 }
 
 .dark {
   color-scheme: dark;
+  --miro-cream: #0D0D0D;
+  --color-surface: #1A1A1A;
+  --color-ink: #A8DADC;
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
 body {
-  @apply bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 antialiased;
-  font-family: 'Inter', system-ui, sans-serif;
+  @apply bg-canvas dark:bg-canvas-dark text-ink dark:text-ink-light antialiased;
+  font-family: 'DM Sans', system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* Custom scrollbar */
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Display typography */
+h1, h2, h3, .font-display {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'opsz' 72;
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+  @apply bg-miro-cream dark:bg-miro-black;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+  @apply bg-miro-blue/30 dark:bg-ink-light/30 rounded-full;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
+  @apply bg-miro-blue/50 dark:bg-ink-light/50;
 }
 
-/* Card flip perspective */
+/* ========================================
+   CARD FLIP PERSPECTIVE
+   ======================================== */
+
 .perspective-1000 {
   perspective: 1000px;
 }
@@ -59,28 +115,147 @@ body {
   transform: rotateY(180deg);
 }
 
-/* Glassmorphism effect */
-.glass {
-  @apply bg-white/80 backdrop-blur-lg;
+/* ========================================
+   MIRÓ VISUAL ELEMENTS
+   ======================================== */
+
+/* Organic blob shapes */
+.blob {
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+}
+
+.blob-2 {
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+}
+
+.blob-3 {
+  border-radius: 40% 60% 60% 40% / 50% 50% 50% 50%;
+}
+
+/* Miró-style decorative star */
+.miro-star {
+  position: relative;
+}
+
+.miro-star::after {
+  content: '✦';
+  position: absolute;
+  font-size: 1.5em;
+  color: var(--miro-yellow);
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Hand-drawn border effect */
+.hand-drawn {
+  border: 3px solid var(--miro-blue);
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+
+.hand-drawn-sm {
+  border: 2px solid var(--miro-blue);
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+
+/* Playful shadows */
+.shadow-miro {
+  box-shadow:
+    8px 8px 0px 0px var(--miro-blue),
+    16px 16px 0px 0px var(--miro-yellow);
+}
+
+.shadow-miro-sm {
+  box-shadow:
+    4px 4px 0px 0px var(--miro-blue),
+    8px 8px 0px 0px var(--miro-yellow);
+}
+
+.shadow-miro-red {
+  box-shadow:
+    6px 6px 0px 0px var(--miro-red);
+}
+
+/* Gradient backgrounds */
+.gradient-miro {
+  background: linear-gradient(135deg, var(--miro-red) 0%, var(--miro-orange) 50%, var(--miro-yellow) 100%);
+}
+
+.gradient-miro-cool {
+  background: linear-gradient(135deg, var(--miro-blue) 0%, var(--miro-green) 100%);
 }
 
 /* Gradient text */
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-miro-red via-miro-orange to-miro-yellow;
 }
 
-/* Playful shadow */
-.shadow-playful {
-  box-shadow: 0 10px 40px -10px rgba(255, 107, 107, 0.3),
-              0 4px 20px -4px rgba(78, 205, 196, 0.2);
+.gradient-text-cool {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-miro-blue to-miro-green;
 }
 
-/* Success glow */
-.glow-success {
-  box-shadow: 0 0 30px rgba(149, 213, 178, 0.5);
+/* ========================================
+   DECORATIVE FLOATING ELEMENTS
+   ======================================== */
+
+.floating-shapes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
 }
 
-/* Error shake animation */
+.floating-blob {
+  position: absolute;
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  opacity: 0.1;
+  animation: float 8s ease-in-out infinite;
+}
+
+.floating-blob-1 {
+  width: 300px;
+  height: 300px;
+  background: var(--miro-red);
+  top: -100px;
+  right: -50px;
+  animation-delay: 0s;
+}
+
+.floating-blob-2 {
+  width: 200px;
+  height: 200px;
+  background: var(--miro-yellow);
+  bottom: 20%;
+  left: -50px;
+  animation-delay: 2s;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+}
+
+.floating-blob-3 {
+  width: 150px;
+  height: 150px;
+  background: var(--miro-blue);
+  top: 40%;
+  right: 10%;
+  animation-delay: 4s;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(5deg); }
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
@@ -91,7 +266,6 @@ body {
   animation: shake 0.5s ease-in-out;
 }
 
-/* Level up celebration */
 @keyframes celebrate {
   0% { transform: scale(0); opacity: 0; }
   50% { transform: scale(1.2); opacity: 1; }
@@ -102,12 +276,170 @@ body {
   animation: celebrate 0.6s ease-out;
 }
 
-/* Floating animation */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-pop {
+  animation: pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.5s ease-out forwards;
+}
+
+/* Staggered animation delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* ========================================
+   BUTTON STYLES
+   ======================================== */
+
+.btn-miro {
+  @apply relative overflow-hidden font-semibold transition-all duration-200;
+  box-shadow: 4px 4px 0px 0px var(--miro-blue);
+}
+
+.btn-miro:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--miro-blue);
+}
+
+.btn-miro:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--miro-blue);
+}
+
+/* ========================================
+   CARD STYLES
+   ======================================== */
+
+.card-miro {
+  @apply bg-white dark:bg-gray-900 rounded-3xl p-6;
+  box-shadow:
+    0 4px 6px -1px rgba(29, 53, 87, 0.1),
+    0 2px 4px -2px rgba(29, 53, 87, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-miro:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 20px 25px -5px rgba(29, 53, 87, 0.1),
+    0 8px 10px -6px rgba(29, 53, 87, 0.1);
+}
+
+.card-playful {
+  @apply bg-white dark:bg-gray-900 rounded-2xl p-6;
+  border: 3px solid var(--miro-blue);
+  box-shadow: 6px 6px 0px 0px var(--miro-blue);
+  transition: all 0.2s ease;
+}
+
+.card-playful:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0px 0px var(--miro-blue);
+}
+
+/* ========================================
+   SPECIAL EFFECTS
+   ======================================== */
+
+/* Success glow */
+.glow-success {
+  box-shadow: 0 0 30px rgba(42, 157, 143, 0.5);
+}
+
+/* Error glow */
+.glow-error {
+  box-shadow: 0 0 30px rgba(230, 57, 70, 0.5);
+}
+
+/* XP glow */
+.glow-xp {
+  box-shadow: 0 0 30px rgba(255, 184, 0, 0.5);
+}
+
+/* Decorative corner elements */
+.corner-decoration::before,
+.corner-decoration::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.corner-decoration::before {
+  top: -5px;
+  left: -5px;
+  background: var(--miro-red);
+}
+
+.corner-decoration::after {
+  bottom: -5px;
+  right: -5px;
+  background: var(--miro-yellow);
+}
+
+/* ========================================
+   RESPONSIVE UTILITIES
+   ======================================== */
+
+@media (max-width: 640px) {
+  .shadow-miro {
+    box-shadow:
+      4px 4px 0px 0px var(--miro-blue),
+      8px 8px 0px 0px var(--miro-yellow);
+  }
+
+  .floating-blob {
+    opacity: 0.05;
+  }
+}
+
+/* ========================================
+   FOCUS STATES (Accessibility)
+   ======================================== */
+
+:focus-visible {
+  outline: 3px solid var(--miro-yellow);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--miro-yellow);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   SELECTION COLORS
+   ======================================== */
+
+::selection {
+  background: var(--miro-yellow);
+  color: var(--miro-blue);
+}
+
+::-moz-selection {
+  background: var(--miro-yellow);
+  color: var(--miro-blue);
 }

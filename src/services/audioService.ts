@@ -1,6 +1,16 @@
 // Audio Service for Text-to-Speech Pronunciation
 // Uses Web Speech API with Catalan voice support
 
+/**
+ * Cleans text for speech by removing auxiliary notation.
+ * Strips gender markers like (M), (F), (M Pl), (F Singular), etc.
+ */
+function cleanTextForSpeech(text: string): string {
+  return text
+    .replace(/\s*\([MF]\s*(?:Pl|Singular|Plural)?\)/gi, '')
+    .trim();
+}
+
 interface AudioOptions {
   rate?: number;
   pitch?: number;
@@ -12,6 +22,7 @@ class AudioService {
   private catalanVoice: SpeechSynthesisVoice | null = null;
   private englishVoice: SpeechSynthesisVoice | null = null;
   private isInitialized = false;
+  private _isUsingFallbackVoice = false;
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -27,11 +38,15 @@ class AudioService {
       const voices = this.synthesis!.getVoices();
 
       // Find Catalan voice (ca-ES or ca)
-      this.catalanVoice = voices.find(
+      const nativeCatalanVoice = voices.find(
         v => v.lang.startsWith('ca') || v.lang === 'ca-ES'
-      ) || voices.find(
-        v => v.lang.startsWith('es') // Fallback to Spanish
-      ) || null;
+      );
+      const spanishFallback = voices.find(
+        v => v.lang.startsWith('es')
+      );
+
+      this.catalanVoice = nativeCatalanVoice || spanishFallback || null;
+      this._isUsingFallbackVoice = !nativeCatalanVoice && !!spanishFallback;
 
       // Find English voice
       this.englishVoice = voices.find(
@@ -77,7 +92,7 @@ class AudioService {
     // Cancel any ongoing speech
     this.synthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(cleanTextForSpeech(text));
 
     // Set voice based on language
     if (language === 'catalan' && this.catalanVoice) {
@@ -123,6 +138,14 @@ class AudioService {
 
   get hasCatalanVoice(): boolean {
     return this.catalanVoice !== null;
+  }
+
+  get isUsingFallbackVoice(): boolean {
+    return this._isUsingFallbackVoice;
+  }
+
+  get catalanVoiceName(): string | null {
+    return this.catalanVoice?.name || null;
   }
 }
 
