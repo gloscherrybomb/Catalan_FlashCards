@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -13,6 +13,9 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalProps) {
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
   const sizes = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -30,13 +33,24 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
 
   useEffect(() => {
     if (isOpen) {
+      // Store the currently focused element to restore later
+      previousActiveElement.current = document.activeElement as HTMLElement;
+
       document.addEventListener('keydown', handleKeyDown);
       // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
+
+      // Focus the modal for accessibility
+      setTimeout(() => modalRef.current?.focus(), 0);
     }
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
+
+      // Restore focus to the previously focused element
+      if (previousActiveElement.current) {
+        previousActiveElement.current.focus();
+      }
     };
   }, [isOpen, handleKeyDown]);
 
@@ -56,6 +70,8 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
 
           {/* Modal content */}
           <motion.div
+            ref={modalRef}
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -64,7 +80,7 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
             aria-modal="true"
             aria-labelledby={title ? 'modal-title' : undefined}
             className={clsx(
-              'relative w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-miro-blue/20 dark:border-ink-light/20',
+              'relative w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-miro-blue/20 dark:border-ink-light/20 outline-none',
               sizes[size]
             )}
           >

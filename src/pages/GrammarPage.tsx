@@ -29,6 +29,35 @@ import { audioService } from '../services/audioService';
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 type CategoryFilter = string | 'all';
 
+// Helper to safely highlight words in example sentences without XSS risk
+function HighlightedText({ text, highlight }: { text: string; highlight?: string }) {
+  if (!highlight) {
+    return <>{text}</>;
+  }
+
+  // Escape special regex characters to prevent injection
+  const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedHighlight})`, 'gi');
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        regex.test(part) ? (
+          <mark
+            key={index}
+            className="bg-miro-yellow/40 px-1 rounded text-miro-blue dark:text-ink-light"
+          >
+            {part}
+          </mark>
+        ) : (
+          <span key={index}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
 // Helper to highlight words in example sentences
 function HighlightedExample({ example }: { example: GrammarExample }) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -41,13 +70,6 @@ function HighlightedExample({ example }: { example: GrammarExample }) {
       setIsPlaying(false);
     }
   };
-
-  const highlightedCatalan = example.highlight
-    ? example.catalan.replace(
-        new RegExp(`(${example.highlight})`, 'gi'),
-        '<mark>$1</mark>'
-      )
-    : example.catalan;
 
   return (
     <motion.div
@@ -67,10 +89,9 @@ function HighlightedExample({ example }: { example: GrammarExample }) {
         <Volume2 className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`} />
       </button>
       <div className="flex-1 min-w-0">
-        <p
-          className="font-medium text-miro-blue dark:text-ink-light [&_mark]:bg-miro-yellow/40 [&_mark]:px-1 [&_mark]:rounded [&_mark]:text-miro-blue dark:[&_mark]:text-ink-light"
-          dangerouslySetInnerHTML={{ __html: highlightedCatalan }}
-        />
+        <p className="font-medium text-miro-blue dark:text-ink-light">
+          <HighlightedText text={example.catalan} highlight={example.highlight} />
+        </p>
         <p className="text-sm text-miro-blue/60 dark:text-ink-light/60 mt-0.5">
           {example.english}
         </p>

@@ -41,9 +41,9 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-4 group flex-shrink-0">
             <motion.div
-              className="relative"
+              className="relative flex-shrink-0"
               whileHover={{ rotate: [0, -5, 5, 0] }}
               transition={{ duration: 0.5 }}
             >
@@ -55,7 +55,7 @@ export function Header() {
               {/* Decorative dot */}
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-miro-blue rounded-full" />
             </motion.div>
-            <div className="hidden sm:block">
+            <div className="hidden sm:block flex-shrink-0">
               <span className="font-display font-bold text-2xl text-miro-blue dark:text-ink-light">
                 Catalan
               </span>

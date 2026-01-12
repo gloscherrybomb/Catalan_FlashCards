@@ -226,25 +226,31 @@ export const useCardStore = create<CardState>()(
           }
           stats[card.category].total++;
 
-          // Check both directions
-          for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
+          // Check both directions and classify the card based on overall progress
+          const directions: StudyDirection[] = ['english-to-catalan', 'catalan-to-english'];
+          let masteredCount = 0;
+          let learningCount = 0;
+
+          for (const direction of directions) {
             const key = getProgressKey(card.id, direction);
             const progress = cardProgress.get(key);
 
             if (progress) {
               if (progress.interval >= 21) {
-                stats[card.category].mastered += 0.5; // Half point per direction
+                masteredCount++;
               } else if (progress.repetitions > 0) {
-                stats[card.category].learning += 0.5;
+                learningCount++;
               }
             }
           }
-        }
 
-        // Round values
-        for (const cat of Object.keys(stats)) {
-          stats[cat].mastered = Math.round(stats[cat].mastered);
-          stats[cat].learning = Math.round(stats[cat].learning);
+          // Card is mastered if both directions are mastered
+          // Card is learning if at least one direction has progress but not both mastered
+          if (masteredCount === 2) {
+            stats[card.category].mastered++;
+          } else if (masteredCount > 0 || learningCount > 0) {
+            stats[card.category].learning++;
+          }
         }
 
         return stats;
@@ -326,12 +332,39 @@ export const useCardStore = create<CardState>()(
         cardProgress: Array.from(state.cardProgress.entries()),
         mistakeHistory: state.mistakeHistory,
       }),
-      merge: (persisted: any, current) => ({
-        ...current,
-        ...persisted,
-        cardProgress: new Map(persisted?.cardProgress || []),
-        mistakeHistory: persisted?.mistakeHistory || [],
-      }),
+      merge: (persisted: any, current) => {
+        // Restore cardProgress Map with proper date deserialization
+        const cardProgressEntries: [string, CardProgress][] = (persisted?.cardProgress || []).map(
+          ([key, value]: [string, any]) => [
+            key,
+            {
+              ...value,
+              nextReviewDate: new Date(value.nextReviewDate),
+              lastReviewDate: value.lastReviewDate ? new Date(value.lastReviewDate) : undefined,
+            } as CardProgress,
+          ]
+        );
+
+        // Restore flashcards with proper date deserialization
+        const flashcards = (persisted?.flashcards || []).map((card: any) => ({
+          ...card,
+          createdAt: new Date(card.createdAt),
+        }));
+
+        // Restore mistake history with proper date deserialization
+        const mistakeHistory = (persisted?.mistakeHistory || []).map((mistake: any) => ({
+          ...mistake,
+          timestamp: new Date(mistake.timestamp),
+        }));
+
+        return {
+          ...current,
+          ...persisted,
+          flashcards,
+          cardProgress: new Map(cardProgressEntries),
+          mistakeHistory,
+        };
+      },
     }
   )
 );

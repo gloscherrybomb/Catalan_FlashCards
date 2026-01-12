@@ -18,6 +18,7 @@ import {
 import { useUserStore } from './stores/userStore';
 import { useCardStore } from './stores/cardStore';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 function AppContent() {
   const initializeUser = useUserStore((state) => state.initialize);
@@ -60,12 +61,30 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center animate-pulse">
-            <span className="text-white font-bold text-2xl">C</span>
+      <div className="min-h-screen bg-canvas dark:bg-canvas-dark flex items-center justify-center">
+        <div className="text-center relative">
+          {/* Decorative blobs */}
+          <div className="absolute -top-8 -left-8 w-16 h-16 bg-miro-yellow/30 blob animate-pulse" />
+          <div className="absolute -bottom-8 -right-8 w-12 h-12 bg-miro-red/20 blob-2 animate-pulse" />
+
+          {/* Logo */}
+          <div className="relative w-20 h-20 mx-auto mb-4">
+            <div className="absolute inset-0 bg-miro-yellow blob opacity-60 animate-pulse" />
+            <div className="relative w-full h-full bg-miro-red blob flex items-center justify-center shadow-playful-sm">
+              <span className="text-white font-display font-bold text-3xl">C</span>
+            </div>
           </div>
-          <p className="text-gray-500 dark:text-gray-400">Loading...</p>
+
+          <p className="text-miro-blue/60 dark:text-ink-light/60 font-medium">
+            Loading your cards...
+          </p>
+
+          {/* Loading dots */}
+          <div className="flex justify-center gap-1 mt-3">
+            <span className="w-2 h-2 bg-miro-red rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-2 h-2 bg-miro-yellow rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-2 h-2 bg-miro-green rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
         </div>
       </div>
     );
@@ -94,9 +113,11 @@ function AppContent() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

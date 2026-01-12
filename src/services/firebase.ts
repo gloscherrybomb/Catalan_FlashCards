@@ -229,7 +229,7 @@ export async function deleteFlashcard(userId: string, cardId: string): Promise<v
 
 // Card progress functions
 export async function getCardProgress(userId: string): Promise<CardProgress[]> {
-  const snapshot = await getDocs(collection(db, 'users', userId, 'progress'));
+  const snapshot = await getDocs(collection(db, 'users', userId, 'cardProgress'));
   return snapshot.docs.map(doc => {
     const data = doc.data();
     return {

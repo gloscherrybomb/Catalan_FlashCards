@@ -367,7 +367,40 @@ export const useUserStore = create<UserState>()(
         progress: state.progress,
         achievements: state.achievements,
         profile: state.profile,
+        isAuthenticated: state.isAuthenticated,
       }),
+      merge: (persisted: any, current) => {
+        // Restore progress with proper date deserialization
+        const progress = persisted?.progress ? {
+          ...persisted.progress,
+          lastStudyDate: persisted.progress.lastStudyDate
+            ? new Date(persisted.progress.lastStudyDate)
+            : null,
+          lastStreakFreezeUsed: persisted.progress.lastStreakFreezeUsed
+            ? new Date(persisted.progress.lastStreakFreezeUsed)
+            : undefined,
+        } : current.progress;
+
+        // Restore profile with proper date deserialization
+        const profile = persisted?.profile ? {
+          ...persisted.profile,
+          createdAt: new Date(persisted.profile.createdAt),
+        } : current.profile;
+
+        // Restore achievements with proper date deserialization
+        const achievements = (persisted?.achievements || []).map((a: any) => ({
+          ...a,
+          unlockedAt: new Date(a.unlockedAt),
+        }));
+
+        return {
+          ...current,
+          progress,
+          achievements,
+          profile,
+          isAuthenticated: persisted?.isAuthenticated ?? false,
+        };
+      },
     }
   )
 );

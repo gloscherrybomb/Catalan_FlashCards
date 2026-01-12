@@ -30,8 +30,10 @@ export function calculateSM2(
   progress: CardProgress,
   quality: number
 ): CardProgress {
-  // Clamp quality to valid range
-  const q = Math.max(0, Math.min(5, Math.round(quality)));
+  // Validate quality is a valid number, fallback to 3 (correct with difficulty) if invalid
+  const validatedQuality = (typeof quality === 'number' && !isNaN(quality)) ? quality : 3;
+  // Clamp quality to valid range (0-5)
+  const q = Math.max(0, Math.min(5, Math.round(validatedQuality)));
 
   const now = new Date();
   let newEF = progress.easeFactor;

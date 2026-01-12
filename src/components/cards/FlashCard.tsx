@@ -225,8 +225,9 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                       className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-miro-blue/70 dark:text-ink-light/70 hover:text-miro-red hover:bg-miro-red/10 rounded-xl transition-colors font-medium"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      aria-label={`Listen to pronunciation of "${front}"`}
                     >
-                      <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse text-miro-red' : ''}`} />
+                      <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse text-miro-red' : ''}`} aria-hidden="true" />
                       Listen
                     </motion.button>
                   </div>
@@ -283,8 +284,9 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                       className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors font-medium"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      aria-label={`Listen to pronunciation of "${back}"`}
                     >
-                      <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse' : ''}`} />
+                      <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse' : ''}`} aria-hidden="true" />
                       Listen
                     </motion.button>
                   </div>
