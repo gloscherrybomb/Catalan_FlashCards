@@ -119,7 +119,13 @@ export const useUserStore = create<UserState>()(
 
       login: async () => {
         if (isDemoMode) {
-          // Demo mode - simulate login
+          // Demo mode - simulate login with clear notification
+          console.warn('⚠️  DEMO MODE ACTIVE - No Firebase credentials configured');
+          console.warn('To enable real Google sign-in:');
+          console.warn('1. Create a .env file in the project root');
+          console.warn('2. Add your Firebase credentials (see .env.example)');
+          console.warn('3. Restart the development server');
+
           set({
             isAuthenticated: true,
             profile: {
@@ -136,12 +142,18 @@ export const useUserStore = create<UserState>()(
               },
             },
           });
+
+          // Alert user about demo mode
+          alert('⚠️ Demo Mode: No Firebase configured\n\nYou are logged in as a demo user.\n\nTo enable real Google sign-in, add Firebase credentials to a .env file.\n\nSee console for details.');
           return;
         }
 
+        set({ isLoading: true });
+
         try {
+          console.log('Starting Google sign-in...');
           const user = await signInWithGoogle();
-          console.log('Google sign-in successful:', user.email);
+          console.log('✓ Google sign-in successful:', user.email);
 
           // Manually update state after successful login
           console.log('Fetching user profile for:', user.uid);
@@ -171,7 +183,7 @@ export const useUserStore = create<UserState>()(
             isAuthenticated: true,
             isLoading: false,
           });
-          console.log('User authenticated with basic profile');
+          console.log('✓ User authenticated with basic profile');
 
           // Try to fetch Firestore data in background (non-blocking)
           try {
@@ -199,12 +211,18 @@ export const useUserStore = create<UserState>()(
               progress: progress || DEFAULT_PROGRESS,
               achievements,
             });
-            console.log('Updated with Firestore data');
+            console.log('✓ Updated with Firestore data');
           } catch (firestoreError) {
-            console.error('Firestore fetch failed (using basic profile):', firestoreError);
+            console.error('⚠️  Firestore fetch failed (using basic profile):', firestoreError);
           }
-        } catch (error) {
-          console.error('Login failed:', error);
+        } catch (error: any) {
+          console.error('❌ Login failed:', error);
+          set({ isLoading: false });
+
+          // Show user-friendly error message
+          const errorMessage = error.message || 'An unexpected error occurred during sign-in';
+          alert(`Sign-In Failed\n\n${errorMessage}\n\nCheck the console for more details.`);
+
           throw error;
         }
       },
