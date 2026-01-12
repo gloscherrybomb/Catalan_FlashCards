@@ -43,11 +43,35 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('profile');
+googleProvider.addScope('email');
 
 // Auth functions
 export async function signInWithGoogle(): Promise<User> {
-  const result = await signInWithPopup(auth, googleProvider);
-  return result.user;
+  try {
+    console.log('Attempting Google sign-in...');
+    const result = await signInWithPopup(auth, googleProvider);
+
+    if (!result.user) {
+      throw new Error('Sign-in successful but no user data returned');
+    }
+
+    console.log('Sign-in successful, user:', result.user.email);
+    return result.user;
+  } catch (error: any) {
+    console.error('Sign-in error:', error);
+
+    // Provide more helpful error messages
+    if (error.code === 'auth/popup-closed-by-user') {
+      throw new Error('Sign-in cancelled - popup was closed');
+    } else if (error.code === 'auth/popup-blocked') {
+      throw new Error('Sign-in popup was blocked by your browser. Please allow popups for this site.');
+    } else if (error.code === 'auth/unauthorized-domain') {
+      throw new Error('This domain is not authorized for OAuth operations. Please add it to the Firebase Console.');
+    }
+
+    throw error;
+  }
 }
 
 export async function signOut(): Promise<void> {
