@@ -112,13 +112,18 @@ class ImageService {
   async fetchImageForWord(word: string, fallbackSearchTerm?: string): Promise<CachedImage | null> {
     // Check cache first
     const cached = await this.getCachedImage(word);
-    if (cached) return cached;
+    if (cached) {
+      console.log(`[ImageService] Cache hit for "${word}"`);
+      return cached;
+    }
 
     // Skip if no API key configured
     if (!UNSPLASH_ACCESS_KEY) {
-      console.warn('Unsplash API key not configured. Set VITE_UNSPLASH_ACCESS_KEY in your .env file.');
+      console.warn('[ImageService] Unsplash API key not configured. Set VITE_UNSPLASH_ACCESS_KEY in your .env file.');
       return null;
     }
+
+    console.log(`[ImageService] Fetching image for "${word}"...`);
 
     try {
       // Clean the search term
@@ -135,15 +140,16 @@ class ImageService {
 
       if (!response.ok) {
         if (response.status === 403) {
-          console.error('Unsplash API rate limit exceeded');
+          console.error('[ImageService] Unsplash API rate limit exceeded');
         } else {
-          console.error(`Unsplash API error: ${response.status}`);
+          console.error(`[ImageService] Unsplash API error: ${response.status}`);
         }
         return null;
       }
 
       const data = await response.json();
       const results = data.results as UnsplashImage[];
+      console.log(`[ImageService] Found ${results.length} results for "${word}"`);
 
       if (results.length === 0) {
         // Try with fallback if available

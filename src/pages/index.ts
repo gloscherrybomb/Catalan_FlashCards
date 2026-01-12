@@ -7,3 +7,5 @@ export { AchievementsPage } from './AchievementsPage';
 export { SettingsPage } from './SettingsPage';
 export { AnalyticsPage } from './AnalyticsPage';
 export { GrammarPage } from './GrammarPage';
+export { LearningPathPage } from './LearningPathPage';
+export { StoriesPage } from './StoriesPage';

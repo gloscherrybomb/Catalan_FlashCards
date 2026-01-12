@@ -5,13 +5,13 @@ import {
   BookOpen,
   BarChart3,
   Trophy,
-  BookText,
+  GraduationCap,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/study', icon: BookOpen, label: 'Study' },
-  { path: '/grammar', icon: BookText, label: 'Grammar' },
+  { path: '/learn', icon: GraduationCap, label: 'Learn' },
   { path: '/stats', icon: BarChart3, label: 'Stats' },
   { path: '/achievements', icon: Trophy, label: 'Badges' },
 ];

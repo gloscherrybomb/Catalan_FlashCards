@@ -27,6 +27,11 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
     let mounted = true;
 
     const fetchImage = async () => {
+      // Reset state for new card
+      setCardImage(null);
+      setImageFailed(false);
+      setImageLoading(false);
+
       // Use existing image data from flashcard if available
       if (flashcard.imageUrl) {
         setCardImage({
@@ -41,6 +46,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
 
       // Only fetch if service is configured
       if (!imageService.isConfigured()) {
+        // No API key - skip images silently
         return;
       }
 
@@ -48,8 +54,13 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
       try {
         // Use the English word (front) for searching
         const image = await imageService.fetchImageForWord(flashcard.front);
-        if (mounted && image) {
-          setCardImage(image);
+        if (mounted) {
+          if (image) {
+            setCardImage(image);
+          } else {
+            // No image found for this word
+            setImageFailed(true);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch image:', error);
@@ -154,8 +165,8 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
 
               <div className="flex-1 flex items-center justify-center w-full">
                 <div className="text-center w-full">
-                  {/* Card Image */}
-                  {cardImage && (
+                  {/* Card Image - only show when English is on front (don't give away Catalan answer) */}
+                  {direction === 'english-to-catalan' && cardImage && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -181,8 +192,8 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                     </motion.div>
                   )}
 
-                  {/* Loading state */}
-                  {imageLoading && !cardImage && (
+                  {/* Loading state - only show when English is on front */}
+                  {direction === 'english-to-catalan' && imageLoading && !cardImage && (
                     <div className="mb-4 mx-auto">
                       <div className="w-32 h-32 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-700 animate-pulse flex items-center justify-center">
                         <div className="w-8 h-8 border-2 border-miro-yellow border-t-transparent rounded-full animate-spin" />
@@ -190,8 +201,8 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                     </div>
                   )}
 
-                  {/* Failed image state - show icon instead */}
-                  {imageFailed && !cardImage && (
+                  {/* Failed image state - only show when English is on front */}
+                  {direction === 'english-to-catalan' && imageFailed && !cardImage && (
                     <div className="mb-4 mx-auto">
                       <div className="w-24 h-24 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                         <ImageOff className="w-8 h-8 text-gray-300 dark:text-gray-600" />

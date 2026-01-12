@@ -240,7 +240,15 @@ export const useSessionStore = create<SessionState>()(
       newAchievements: newAchievements.map(a => a.id),
     };
 
-    set({ isActive: false });
+    // Clear all session data, not just isActive
+    set({
+      isActive: false,
+      cards: [],
+      currentIndex: 0,
+      results: [],
+      sessionId: null,
+      cardFormats: {},
+    });
 
     return summary;
   },
@@ -261,8 +269,16 @@ export const useSessionStore = create<SessionState>()(
   },
 
   hasRecoverableSession: () => {
-    const { isActive, cards, currentIndex, sessionId } = get();
-    return isActive && cards.length > 0 && currentIndex < cards.length && !!sessionId;
+    const { isActive, cards, currentIndex, sessionId, sessionStartTime } = get();
+    // Session is only recoverable if:
+    // 1. isActive is true
+    // 2. There are cards to review
+    // 3. We haven't gone through all cards
+    // 4. Session has an ID
+    // 5. Session is less than 1 hour old (prevents stale session prompts)
+    const ONE_HOUR = 60 * 60 * 1000;
+    const isRecentSession = sessionStartTime > 0 && (Date.now() - sessionStartTime) < ONE_HOUR;
+    return isActive && cards.length > 0 && currentIndex < cards.length && !!sessionId && isRecentSession;
   },
 
   clearSavedSession: () => {
