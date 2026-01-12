@@ -12,6 +12,8 @@ import {
   Target,
   Clock,
   Headphones,
+  MessageSquare,
+  Ear,
 } from 'lucide-react';
 import { useSessionStore, type SessionSummary } from '../stores/sessionStore';
 import { useCardStore } from '../stores/cardStore';
@@ -24,6 +26,8 @@ import { MultipleChoice } from '../components/cards/MultipleChoice';
 import { TypeAnswer } from '../components/cards/TypeAnswer';
 import { ListeningMode } from '../components/cards/ListeningMode';
 import { SprintMode } from '../components/cards/SprintMode';
+import { SentenceMode } from '../components/cards/SentenceMode';
+import { DictationMode } from '../components/cards/DictationMode';
 import { Confetti } from '../components/ui/Confetti';
 import type { StudyMode } from '../types/flashcard';
 
@@ -33,6 +37,8 @@ export function StudyPage() {
   const [showModeSelect, setShowModeSelect] = useState(true);
   const [selectedMode, setSelectedMode] = useState<StudyMode>('flip');
   const [isSprintMode, setIsSprintMode] = useState(false);
+  const [isSentenceMode, setIsSentenceMode] = useState(false);
+  const [includeDictationInMixed, setIncludeDictationInMixed] = useState(true);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
@@ -86,13 +92,18 @@ export function StudyPage() {
   const handleStartSession = (mode: StudyMode) => {
     setSelectedMode(mode);
     setIsSprintMode(false);
-    startSession(mode, 20);
+    startSession(mode, 20, mode === 'mixed' ? includeDictationInMixed : true);
     setShowModeSelect(false);
   };
 
   const handleStartSprint = () => {
     setIsSprintMode(true);
     startSession('flip', 15);
+    setShowModeSelect(false);
+  };
+
+  const handleStartSentences = () => {
+    setIsSentenceMode(true);
     setShowModeSelect(false);
   };
 
@@ -105,9 +116,24 @@ export function StudyPage() {
     resetSession();
     setSummary(null);
     setIsSprintMode(false);
+    setIsSentenceMode(false);
     setShowModeSelect(true);
     setShowConfetti(false);
   };
+
+  // Sentence mode
+  if (isSentenceMode) {
+    return (
+      <SentenceMode
+        onExit={() => {
+          setIsSentenceMode(false);
+          setShowModeSelect(true);
+        }}
+        difficulty="mixed"
+        count={10}
+      />
+    );
+  }
 
   // Sprint mode
   if (isSprintMode && cards.length > 0) {
@@ -289,6 +315,21 @@ export function StudyPage() {
                     <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
                       Random format per card - keeps you on your toes!
                     </p>
+                    {/* Dictation toggle */}
+                    <label
+                      className="flex items-center gap-2 mt-2 text-xs"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={includeDictationInMixed}
+                        onChange={(e) => setIncludeDictationInMixed(e.target.checked)}
+                        className="w-4 h-4 rounded border-violet-300 text-violet-600 focus:ring-violet-500"
+                      />
+                      <span className="text-miro-blue/60 dark:text-ink-light/60">
+                        Include dictation (requires audio)
+                      </span>
+                    </label>
                   </div>
                 </div>
               </Card>
@@ -307,6 +348,54 @@ export function StudyPage() {
                     <h3 className="font-bold text-miro-blue dark:text-ink-light">Listening Mode</h3>
                     <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
                       Hear the word first, then identify its meaning
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Sentence Builder Mode */}
+              <Card
+                hover
+                className="cursor-pointer bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 border-rose-200 dark:border-rose-800"
+                onClick={handleStartSentences}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <MessageSquare size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-miro-blue dark:text-ink-light flex items-center gap-2">
+                      Sentence Builder
+                      <span className="text-xs px-2 py-0.5 bg-rose-200 dark:bg-rose-800 text-rose-700 dark:text-rose-300 rounded-full">
+                        New!
+                      </span>
+                    </h3>
+                    <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
+                      Build sentences and fill in the blanks
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Dictation Mode */}
+              <Card
+                hover
+                className="cursor-pointer bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/20 dark:to-emerald-950/20 border-teal-200 dark:border-teal-800"
+                onClick={() => handleStartSession('dictation')}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <Ear size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-miro-blue dark:text-ink-light flex items-center gap-2">
+                      Dictation
+                      <span className="text-xs px-2 py-0.5 bg-teal-200 dark:bg-teal-800 text-teal-700 dark:text-teal-300 rounded-full">
+                        New!
+                      </span>
+                    </h3>
+                    <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
+                      Listen and type what you hear
                     </p>
                   </div>
                 </div>
@@ -542,6 +631,13 @@ export function StudyPage() {
                   return <TypeAnswer studyCard={currentCard} onAnswer={handleAnswer} />;
                 case 'listening':
                   return <ListeningMode studyCard={currentCard} onAnswer={handleAnswer} />;
+                case 'dictation':
+                  return (
+                    <DictationMode
+                      studyCard={currentCard}
+                      onComplete={(score, correct) => handleAnswer(correct ? (score >= 80 ? 5 : 4) : 2)}
+                    />
+                  );
                 default:
                   return <FlashCard studyCard={currentCard} onRate={handleAnswer} />;
               }

@@ -19,6 +19,7 @@ interface AudioOptions {
   pitch?: number;
   volume?: number;
   forceWebSpeech?: boolean; // Set true to skip Cloud TTS
+  playbackRate?: number; // Playback speed for audio element (0.5 to 2.0)
 }
 
 type Language = 'catalan' | 'english';
@@ -86,7 +87,7 @@ class AudioService {
 
     if (useCloud) {
       try {
-        await this.speakWithCloudTTS(cleanText, language);
+        await this.speakWithCloudTTS(cleanText, language, options.playbackRate);
         return;
       } catch (error) {
         console.warn('Cloud TTS failed, falling back to Web Speech API:', error);
@@ -100,7 +101,7 @@ class AudioService {
   /**
    * Speak using Google Cloud TTS via Firebase Functions
    */
-  private async speakWithCloudTTS(text: string, language: Language): Promise<void> {
+  private async speakWithCloudTTS(text: string, language: Language, playbackRate?: number): Promise<void> {
     const langCode = language === 'catalan' ? 'ca-ES' : 'en-US';
     const cacheKey = `${langCode}:${text.toLowerCase()}`;
 
@@ -117,13 +118,13 @@ class AudioService {
     }
 
     // Play the audio
-    await this.playAudioUrl(audioUrl);
+    await this.playAudioUrl(audioUrl, playbackRate);
   }
 
   /**
    * Play audio from a URL using HTML Audio element
    */
-  private playAudioUrl(url: string): Promise<void> {
+  private playAudioUrl(url: string, playbackRate?: number): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!this.audioElement) {
         reject(new Error('Audio element not available'));
@@ -135,6 +136,8 @@ class AudioService {
       this.audioElement.onerror = null;
 
       this.audioElement.src = url;
+      // Set playback rate (0.5 to 2.0, default 1.0)
+      this.audioElement.playbackRate = Math.max(0.5, Math.min(2.0, playbackRate ?? 1.0));
       this.audioElement.onended = () => resolve();
       this.audioElement.onerror = (e) => reject(e);
       this.audioElement.play().catch(reject);
@@ -202,6 +205,22 @@ class AudioService {
 
   speakEnglish(text: string, options?: AudioOptions): Promise<void> {
     return this.speak(text, 'english', options);
+  }
+
+  /**
+   * Speak Catalan at a specific speed (for dictation mode)
+   * @param speed - 'slow' (0.6x), 'normal' (1.0x), or 'fast' (1.25x)
+   */
+  speakCatalanAtSpeed(text: string, speed: 'slow' | 'normal' | 'fast'): Promise<void> {
+    const playbackRate = speed === 'slow' ? 0.6 : speed === 'fast' ? 1.25 : 1.0;
+    return this.speakCatalan(text, { playbackRate });
+  }
+
+  /**
+   * Get current playback rate setting
+   */
+  getPlaybackRate(): number {
+    return this.audioElement?.playbackRate ?? 1.0;
   }
 
   stop(): void {

@@ -18,14 +18,15 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
   const [hasAnswered, setHasAnswered] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
 
-  const { flashcard, direction } = studyCard;
+  const { flashcard } = studyCard;
   const flashcards = useCardStore((state) => state.flashcards);
 
-  // The audio plays the Catalan word, user must identify English meaning (or vice versa)
-  const audioText = direction === 'english-to-catalan' ? flashcard.back : flashcard.front;
-  const correctAnswer = direction === 'english-to-catalan' ? flashcard.front : flashcard.back;
+  // Listening mode ALWAYS plays Catalan audio, user identifies the English meaning
+  // This is the core purpose - train your ear to recognize Catalan words
+  const audioText = flashcard.back; // Always Catalan
+  const correctAnswer = flashcard.front; // Always English
 
-  // Generate options
+  // Generate options - always English answers since we always play Catalan audio
   const options = useMemo(() => {
     const otherCards = flashcards.filter(c => c.id !== flashcard.id);
     const wrongAnswers: string[] = [];
@@ -36,7 +37,8 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
     const shuffled = [...sameCategory.sort(() => Math.random() - 0.5), ...differentCategory.sort(() => Math.random() - 0.5)];
 
     for (const card of shuffled) {
-      const answer = direction === 'english-to-catalan' ? card.front : card.back;
+      // Always use English (front) as the answer options
+      const answer = card.front;
       if (answer !== correctAnswer && !wrongAnswers.includes(answer)) {
         wrongAnswers.push(answer);
         if (wrongAnswers.length >= 3) break;
@@ -49,7 +51,7 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
     ].sort(() => Math.random() - 0.5);
 
     return allOptions;
-  }, [flashcard, direction, flashcards, correctAnswer]);
+  }, [flashcard, flashcards, correctAnswer]);
 
   // Reset state when card changes
   useEffect(() => {
@@ -58,18 +60,14 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
     setSelectedIndex(null);
     setHasAnswered(false);
     setStartTime(Date.now());
-  }, [flashcard.id, direction]);
+  }, [flashcard.id]);
 
   const playAudio = async () => {
     if (isPlaying) return;
     setIsPlaying(true);
     try {
       // Always play Catalan audio for listening comprehension
-      if (direction === 'english-to-catalan') {
-        await audioService.speakCatalan(audioText);
-      } else {
-        await audioService.speakEnglish(audioText);
-      }
+      await audioService.speakCatalan(audioText);
       setHasPlayed(true);
       // Show options after first play
       setTimeout(() => {

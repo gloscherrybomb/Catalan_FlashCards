@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Flashcard, CardProgress, StudyDirection, StudyCard } from '../types/flashcard';
+import type { Flashcard, CardProgress, StudyDirection, StudyCard, MistakeRecord } from '../types/flashcard';
 import {
   createInitialProgress,
   calculateSM2,
@@ -17,10 +17,12 @@ import {
   isDemoMode,
 } from '../services/firebase';
 import { useUserStore } from './userStore';
+import { generateWeaknessDeck } from '../services/mistakeAnalysisService';
 
 interface CardState {
   flashcards: Flashcard[];
   cardProgress: Map<string, CardProgress>;
+  mistakeHistory: MistakeRecord[];
   isLoading: boolean;
   error: string | null;
 
@@ -34,6 +36,11 @@ interface CardState {
   getCategoryStats: () => Record<string, { total: number; mastered: number; learning: number }>;
   getDueCount: () => number;
   getNewCount: () => number;
+  // Mistake tracking
+  recordMistake: (mistake: MistakeRecord) => void;
+  getMistakeHistory: () => MistakeRecord[];
+  getWeaknessDeck: (limit?: number) => StudyCard[];
+  clearMistakeHistory: () => void;
 }
 
 function getProgressKey(cardId: string, direction: StudyDirection): string {
@@ -45,6 +52,7 @@ export const useCardStore = create<CardState>()(
     (set, get) => ({
       flashcards: [],
       cardProgress: new Map(),
+      mistakeHistory: [],
       isLoading: false,
       error: null,
 
@@ -275,17 +283,40 @@ export const useCardStore = create<CardState>()(
 
         return count;
       },
+
+      // Mistake tracking methods
+      recordMistake: (mistake: MistakeRecord) => {
+        const { mistakeHistory } = get();
+        // Keep only last 500 mistakes to prevent unbounded growth
+        const newHistory = [...mistakeHistory, mistake].slice(-500);
+        set({ mistakeHistory: newHistory });
+      },
+
+      getMistakeHistory: () => {
+        return get().mistakeHistory;
+      },
+
+      getWeaknessDeck: (limit = 20) => {
+        const { cardProgress, flashcards, mistakeHistory } = get();
+        return generateWeaknessDeck(cardProgress, flashcards, mistakeHistory, limit);
+      },
+
+      clearMistakeHistory: () => {
+        set({ mistakeHistory: [] });
+      },
     }),
     {
       name: 'catalan-cards-storage',
       partialize: (state) => ({
         flashcards: state.flashcards,
         cardProgress: Array.from(state.cardProgress.entries()),
+        mistakeHistory: state.mistakeHistory,
       }),
       merge: (persisted: any, current) => ({
         ...current,
         ...persisted,
         cardProgress: new Map(persisted?.cardProgress || []),
+        mistakeHistory: persisted?.mistakeHistory || [],
       }),
     }
   )

@@ -40,7 +40,7 @@ export interface StudyCard {
   requiresTyping: boolean; // True for new cards or struggling cards
 }
 
-export type StudyMode = 'flip' | 'multiple-choice' | 'type-answer' | 'mixed' | 'listening';
+export type StudyMode = 'flip' | 'multiple-choice' | 'type-answer' | 'mixed' | 'listening' | 'sentences' | 'dictation';
 
 export interface StudySession {
   id: string;
@@ -76,4 +76,40 @@ export interface Correction {
   expected: string;
   received: string;
   type: 'accent' | 'spelling' | 'missing' | 'extra';
+}
+
+// Mistake tracking for analytics
+export type MistakeType = 'accent' | 'spelling' | 'gender' | 'wrong';
+
+export interface MistakeRecord {
+  cardId: string;
+  direction: StudyDirection;
+  timestamp: Date;
+  errorType: MistakeType;
+  userAnswer: string;
+  correctAnswer: string;
+}
+
+export interface ConfusionPair {
+  word1: string;
+  word2: string;
+  confusionCount: number;
+  lastConfused: Date;
+}
+
+export interface ErrorPatternAnalysis {
+  accentErrors: number;
+  spellingErrors: number;
+  genderErrors: number;
+  wrongAnswers: number;
+  total: number;
+  mostCommonType: MistakeType;
+  confusionPairs: ConfusionPair[];
+}
+
+// Example sentences for contextual learning
+export interface ExampleSentence {
+  catalan: string;
+  english: string;
+  wordPositions: number[]; // Indices of target vocabulary words
 }

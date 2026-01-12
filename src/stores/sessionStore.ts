@@ -24,7 +24,7 @@ interface SessionState {
   isComplete: boolean;
 
   // Actions
-  startSession: (mode: StudyMode, cardLimit?: number) => void;
+  startSession: (mode: StudyMode, cardLimit?: number, includeDictation?: boolean) => void;
   submitAnswer: (quality: number, userAnswer?: string) => Promise<void>;
   nextCard: () => void;
   endSession: () => Promise<SessionSummary>;
@@ -74,7 +74,7 @@ export const useSessionStore = create<SessionState>()(
     return currentIndex >= cards.length;
   },
 
-  startSession: (mode: StudyMode, cardLimit = 20) => {
+  startSession: (mode: StudyMode, cardLimit = 20, includeDictation = true) => {
     const cardStore = useCardStore.getState();
     const studyDeck = cardStore.getStudyDeck(cardLimit);
 
@@ -88,13 +88,20 @@ export const useSessionStore = create<SessionState>()(
     // Assign formats for mixed mode
     const cardFormats: Record<string, StudyMode> = {};
     if (mode === 'mixed') {
+      // Build available modes based on settings
       const modes: StudyMode[] = ['flip', 'multiple-choice', 'type-answer'];
+      if (includeDictation) {
+        modes.push('dictation');
+      }
+
       for (const card of studyDeck) {
         const key = `${card.flashcard.id}_${card.direction}`;
-        // Weight typing heavier for struggling cards
-        if (card.progress.easeFactor < 2.0 || card.requiresTyping) {
+        // Only force type-answer for truly struggling cards (low ease factor)
+        // New cards should still get random formats for variety
+        if (card.progress.easeFactor < 2.0) {
           cardFormats[key] = 'type-answer';
         } else {
+          // Truly random mode selection for mixed experience
           cardFormats[key] = modes[Math.floor(Math.random() * modes.length)];
         }
       }

@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useCardStore } from '../stores/cardStore';
 import { useUserStore } from '../stores/userStore';
 import { Card } from '../components/ui/Card';
+import { MistakePatterns } from '../components/analytics/MistakePatterns';
 
 export function AnalyticsPage() {
   const flashcards = useCardStore((state) => state.flashcards);
@@ -273,6 +274,11 @@ export function AnalyticsPage() {
             </p>
           )}
         </Card>
+
+        {/* Mistake Patterns Analysis */}
+        <div className="mb-8">
+          <MistakePatterns />
+        </div>
 
         {/* Tips */}
         <Card>

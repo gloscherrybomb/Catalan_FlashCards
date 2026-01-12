@@ -10,6 +10,7 @@ import {
   LogOut,
   User,
   Sparkles,
+  BookText,
 } from 'lucide-react';
 import { useUserStore } from '../../stores/userStore';
 import { XPBar } from '../gamification/XPBar';
@@ -19,6 +20,7 @@ import { ThemeToggle } from '../ui/ThemeToggle';
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/study', icon: BookOpen, label: 'Study' },
+  { path: '/grammar', icon: BookText, label: 'Grammar' },
   { path: '/browse', icon: Sparkles, label: 'Cards' },
   { path: '/stats', icon: BarChart3, label: 'Stats' },
   { path: '/achievements', icon: Trophy, label: 'Badges' },

@@ -5,15 +5,15 @@ import {
   BookOpen,
   BarChart3,
   Trophy,
-  Settings,
+  BookText,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/study', icon: BookOpen, label: 'Study' },
+  { path: '/grammar', icon: BookText, label: 'Grammar' },
   { path: '/stats', icon: BarChart3, label: 'Stats' },
   { path: '/achievements', icon: Trophy, label: 'Badges' },
-  { path: '/settings', icon: Settings, label: 'More' },
 ];
 
 export function MobileNav() {

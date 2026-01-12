@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, Volume2 } from 'lucide-react';
+import { Lightbulb, Volume2, ImageOff } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge, CardDecoration } from './CategoryIcon';
 import { audioService } from '../../services/audioService';
+import { imageService, type CachedImage } from '../../services/imageService';
 
 interface FlashCardProps {
   studyCard: StudyCard;
@@ -15,8 +16,59 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [cardImage, setCardImage] = useState<CachedImage | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
 
   const { flashcard, direction } = studyCard;
+
+  // Fetch image for the card on mount
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchImage = async () => {
+      // Use existing image data from flashcard if available
+      if (flashcard.imageUrl) {
+        setCardImage({
+          word: flashcard.front,
+          imageUrl: flashcard.imageUrl,
+          thumbUrl: flashcard.imageThumbUrl || flashcard.imageUrl,
+          attribution: flashcard.imageAttribution || '',
+          cachedAt: Date.now(),
+        });
+        return;
+      }
+
+      // Only fetch if service is configured
+      if (!imageService.isConfigured()) {
+        return;
+      }
+
+      setImageLoading(true);
+      try {
+        // Use the English word (front) for searching
+        const image = await imageService.fetchImageForWord(flashcard.front);
+        if (mounted && image) {
+          setCardImage(image);
+        }
+      } catch (error) {
+        console.error('Failed to fetch image:', error);
+        if (mounted) {
+          setImageFailed(true);
+        }
+      } finally {
+        if (mounted) {
+          setImageLoading(false);
+        }
+      }
+    };
+
+    fetchImage();
+
+    return () => {
+      mounted = false;
+    };
+  }, [flashcard.id, flashcard.front, flashcard.imageUrl, flashcard.imageThumbUrl, flashcard.imageAttribution]);
 
   const front = direction === 'english-to-catalan' ? flashcard.front : flashcard.back;
   const back = direction === 'english-to-catalan' ? flashcard.back : flashcard.front;
@@ -100,8 +152,53 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 {frontLabel}
               </span>
 
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
+              <div className="flex-1 flex items-center justify-center w-full">
+                <div className="text-center w-full">
+                  {/* Card Image */}
+                  {cardImage && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="mb-4 mx-auto"
+                    >
+                      <div className="relative w-32 h-32 mx-auto rounded-2xl overflow-hidden border-3 border-miro-yellow/50 shadow-playful-sm">
+                        <img
+                          src={cardImage.thumbUrl || cardImage.imageUrl}
+                          alt={front}
+                          className="w-full h-full object-cover"
+                          onError={() => setImageFailed(true)}
+                        />
+                        {/* Loading shimmer overlay */}
+                        {imageLoading && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                        )}
+                      </div>
+                      {cardImage.attribution && (
+                        <p className="text-[10px] text-miro-blue/30 dark:text-ink-light/30 mt-1 truncate max-w-[200px] mx-auto">
+                          {cardImage.attribution}
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* Loading state */}
+                  {imageLoading && !cardImage && (
+                    <div className="mb-4 mx-auto">
+                      <div className="w-32 h-32 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-700 animate-pulse flex items-center justify-center">
+                        <div className="w-8 h-8 border-2 border-miro-yellow border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Failed image state - show icon instead */}
+                  {imageFailed && !cardImage && (
+                    <div className="mb-4 mx-auto">
+                      <div className="w-24 h-24 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <ImageOff className="w-8 h-8 text-gray-300 dark:text-gray-600" />
+                      </div>
+                    </div>
+                  )}
+
                   <motion.h2
                     className="text-3xl md:text-4xl font-display font-bold text-miro-blue dark:text-ink-light text-center px-4"
                     initial={{ scale: 0.95 }}

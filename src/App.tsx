@@ -10,6 +10,7 @@ import {
   AchievementsPage,
   SettingsPage,
   AnalyticsPage,
+  GrammarPage,
 } from './pages';
 import { useUserStore } from './stores/userStore';
 import { useCardStore } from './stores/cardStore';
@@ -77,6 +78,8 @@ function AppContent() {
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/grammar" element={<GrammarPage />} />
+        <Route path="/grammar/:lessonId" element={<GrammarPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
