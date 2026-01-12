@@ -78,6 +78,7 @@ export function parseCSV(csvContent: string): Flashcard[] {
   const frontIndex = headers.findIndex(h => h === 'front');
   const backIndex = headers.findIndex(h => h === 'back');
   const notesIndex = headers.findIndex(h => h === 'notes');
+  const categoryIndex = headers.findIndex(h => h === 'category');
 
   if (frontIndex === -1 || backIndex === -1) {
     throw new Error('CSV must have "Front" and "Back" columns');
@@ -94,10 +95,19 @@ export function parseCSV(csvContent: string): Flashcard[] {
     const front = values[frontIndex]?.trim() || '';
     const back = values[backIndex]?.trim() || '';
     const notes = notesIndex >= 0 ? values[notesIndex]?.trim() || '' : '';
+    const explicitCategory = categoryIndex >= 0 ? values[categoryIndex]?.trim() || '' : '';
 
     if (!front || !back) continue;
 
-    const { category, subcategory, gender } = parseCategory(notes);
+    // Parse category from notes if not explicitly provided
+    const { category: parsedCategory, subcategory, gender: notesGender } = parseCategory(notes);
+
+    // Use explicit category if provided, otherwise use parsed category
+    const category = explicitCategory || parsedCategory;
+
+    // Extract gender from back column if present (e.g., "Pa (M)", "Aigua (F)")
+    const genderFromBack = extractGenderFromBack(back);
+    const gender = genderFromBack || notesGender;
 
     flashcards.push({
       id: generateId(),
@@ -113,6 +123,15 @@ export function parseCSV(csvContent: string): Flashcard[] {
   }
 
   return flashcards;
+}
+
+function extractGenderFromBack(back: string): 'masculine' | 'feminine' | undefined {
+  // Match patterns like (M), (F), (M Pl), (F Pl), (M Singular), (F Singular)
+  const genderMatch = back.match(/\(([MF])\s*(?:Pl|Singular|Plural)?\)/i);
+  if (genderMatch) {
+    return genderMatch[1].toUpperCase() === 'M' ? 'masculine' : 'feminine';
+  }
+  return undefined;
 }
 
 function parseCSVLine(line: string): string[] {
@@ -147,12 +166,13 @@ function generateId(): string {
 }
 
 export function exportToCSV(flashcards: Flashcard[]): string {
-  const header = 'Front,Back,Notes';
+  const header = 'Category,Front,Back,Notes';
   const rows = flashcards.map(card => {
+    const category = escapeCSV(card.category);
     const front = escapeCSV(card.front);
     const back = escapeCSV(card.back);
     const notes = escapeCSV(card.notes);
-    return `${front},${back},${notes}`;
+    return `${category},${front},${back},${notes}`;
   });
 
   return [header, ...rows].join('\n');

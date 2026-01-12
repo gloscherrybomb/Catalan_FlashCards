@@ -189,10 +189,11 @@ export function ImportPage() {
               placeholder="Paste your CSV content here...
 
 Example:
-Front,Back,Notes
-Hello,Hola,Greeting
-Thank you,Gràcies,Common phrase
-House,Casa,Feminine noun"
+Category,Front,Back,Notes
+Basics,Hello,Hola,Greeting
+Basics,Thank you,Gràcies,Courtesy
+Food & Drink,Bread,Pa (M),Noun
+Grammar,I am,Jo sóc,Verb: Ser"
               className="w-full h-64 p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl
                        bg-white dark:bg-gray-800 text-gray-800 dark:text-white
                        placeholder-gray-400 dark:placeholder-gray-500
@@ -322,24 +323,29 @@ House,Casa,Feminine noun"
         </p>
 
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 font-mono text-sm overflow-x-auto">
-          <div className="text-gray-500 dark:text-gray-400">Front,Back,Notes</div>
-          <div className="text-gray-700 dark:text-gray-300">I am (permanent),Jo sóc,Verb: Ser</div>
-          <div className="text-gray-700 dark:text-gray-300">House,Casa,Feminine</div>
-          <div className="text-gray-700 dark:text-gray-300">Big,Gran,Adjective</div>
+          <div className="text-gray-500 dark:text-gray-400">Category,Front,Back,Notes</div>
+          <div className="text-gray-700 dark:text-gray-300">Grammar,I am (identity),Jo sóc,Verb: Ser</div>
+          <div className="text-gray-700 dark:text-gray-300">Food & Drink,Bread,Pa (M),Noun</div>
+          <div className="text-gray-700 dark:text-gray-300">Basics,Thank you,Gràcies,Courtesy</div>
+          <div className="text-gray-700 dark:text-gray-300">Adjectives,Big,Gran,Matches gender</div>
         </div>
 
         <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+          <li className="flex items-start gap-2">
+            <span className="text-primary">•</span>
+            <span><strong className="dark:text-gray-200">Category:</strong> Group like Grammar, Verbs, Food & Drink, Basics, etc.</span>
+          </li>
           <li className="flex items-start gap-2">
             <span className="text-primary">•</span>
             <span><strong className="dark:text-gray-200">Front:</strong> English word or phrase</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-primary">•</span>
-            <span><strong className="dark:text-gray-200">Back:</strong> Catalan translation</span>
+            <span><strong className="dark:text-gray-200">Back:</strong> Catalan translation - include (M) or (F) for gender</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-primary">•</span>
-            <span><strong className="dark:text-gray-200">Notes:</strong> Category, gender, or grammar hints (optional)</span>
+            <span><strong className="dark:text-gray-200">Notes:</strong> Grammar hints or additional context (optional)</span>
           </li>
         </ul>
       </Card>
