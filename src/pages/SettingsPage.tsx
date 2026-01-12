@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   User,
@@ -6,6 +7,7 @@ import {
   Upload,
   Download,
   Bell,
+  Trash2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../stores/userStore';
@@ -23,6 +25,10 @@ export function SettingsPage() {
   const logout = useUserStore((state) => state.logout);
   const updateSettings = useUserStore((state) => state.updateSettings);
   const flashcards = useCardStore((state) => state.flashcards);
+  const deduplicateCards = useCardStore((state) => state.deduplicateCards);
+
+  const [dedupeResult, setDedupeResult] = useState<number | null>(null);
+  const [isDeduping, setIsDeduping] = useState(false);
 
   const handleExport = () => {
     const csv = exportToCSV(flashcards);
@@ -198,6 +204,37 @@ export function SettingsPage() {
                   <span className="font-medium text-gray-700 block">Export Cards</span>
                   <span className="text-sm text-gray-400">
                     {flashcards.length} cards
+                  </span>
+                </div>
+              </div>
+              <ChevronRight size={20} className="text-gray-400" />
+            </button>
+
+            <button
+              onClick={async () => {
+                setIsDeduping(true);
+                try {
+                  const removed = await deduplicateCards();
+                  setDedupeResult(removed);
+                } finally {
+                  setIsDeduping(false);
+                }
+              }}
+              disabled={isDeduping}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              <div className="flex items-center gap-3">
+                <Trash2 size={20} className="text-orange-400" />
+                <div className="text-left">
+                  <span className="font-medium text-gray-700 block">
+                    {isDeduping ? 'Removing...' : 'Remove Duplicates'}
+                  </span>
+                  <span className="text-sm text-gray-400">
+                    {dedupeResult !== null
+                      ? dedupeResult > 0
+                        ? `Removed ${dedupeResult} duplicate${dedupeResult !== 1 ? 's' : ''}`
+                        : 'No duplicates found'
+                      : 'Clean up duplicate cards'}
                   </span>
                 </div>
               </div>

@@ -50,12 +50,12 @@ const itemVariants = {
 export function HomePage() {
   const flashcards = useCardStore((state) => state.flashcards);
   const getDueCount = useCardStore((state) => state.getDueCount);
-  const getNewCount = useCardStore((state) => state.getNewCount);
   const getCategoryStats = useCardStore((state) => state.getCategoryStats);
+  const getUniqueCardsDueCount = useCardStore((state) => state.getUniqueCardsDueCount);
   const progress = useUserStore((state) => state.progress);
 
-  const dueCount = getDueCount();
-  const newCount = getNewCount();
+  const dueCount = getDueCount(); // Total review items (cards × 2 directions)
+  const uniqueCardsDue = getUniqueCardsDueCount(); // Unique cards that have at least one direction due
   const categoryStats = getCategoryStats();
 
   const hasCards = flashcards.length > 0;
@@ -100,7 +100,7 @@ export function HomePage() {
       <StudyReminder
         lastStudyDate={progress.lastStudyDate}
         currentStreak={progress.currentStreak}
-        dueCards={dueCount}
+        dueCards={uniqueCardsDue}
       />
 
       {/* Streak Warning */}
@@ -138,7 +138,7 @@ export function HomePage() {
         </motion.h1>
         <p className="text-xl md:text-2xl text-miro-blue/70 dark:text-ink-light/70 font-medium">
           {hasCards
-            ? `You have ${dueCount} cards waiting for review`
+            ? `You have ${uniqueCardsDue} cards waiting for review`
             : 'Ready to start your Catalan journey?'}
         </p>
 
@@ -167,7 +167,7 @@ export function HomePage() {
                   <div className="flex-1">
                     <CardTitle className="text-2xl">Start Studying</CardTitle>
                     <p className="text-miro-blue/60 dark:text-ink-light/60 mt-1 font-medium">
-                      {dueCount} cards due • {newCount} new
+                      {uniqueCardsDue} cards due ({dueCount} reviews)
                     </p>
                   </div>
                   <ArrowRight className="text-miro-blue/40" />
