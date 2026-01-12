@@ -245,7 +245,9 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
               ) : result.isAcceptable ? (
                 <>
                   <Check className="w-5 h-5 text-yellow-600" />
-                  <span className="font-bold text-yellow-700">Almost! Watch the accents.</span>
+                  <span className="font-bold text-yellow-700">
+                    {result.hasTypo ? 'Correct! Minor typo:' : 'Almost! Watch the accents.'}
+                  </span>
                 </>
               ) : (
                 <>

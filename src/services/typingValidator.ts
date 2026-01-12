@@ -2,6 +2,40 @@ import type { TypingResult, Correction } from '../types/flashcard';
 
 const CATALAN_SPECIAL_CHARS = ['à', 'é', 'è', 'í', 'ï', 'ó', 'ò', 'ú', 'ü', 'ç', 'l·l'];
 
+// Common English contractions mapped to expanded forms
+const CONTRACTIONS: Record<string, string> = {
+  "don't": "do not", "doesn't": "does not", "didn't": "did not",
+  "won't": "will not", "wouldn't": "would not", "couldn't": "could not",
+  "shouldn't": "should not", "can't": "cannot", "isn't": "is not",
+  "aren't": "are not", "wasn't": "was not", "weren't": "were not",
+  "haven't": "have not", "hasn't": "has not", "hadn't": "had not",
+  "i'm": "i am", "you're": "you are", "we're": "we are", "they're": "they are",
+  "he's": "he is", "she's": "she is", "it's": "it is", "that's": "that is",
+  "i've": "i have", "you've": "you have", "we've": "we have", "they've": "they have",
+  "i'll": "i will", "you'll": "you will", "we'll": "we will", "they'll": "they will",
+  "i'd": "i would", "you'd": "you would", "we'd": "we would", "they'd": "they would",
+  "let's": "let us", "who's": "who is", "what's": "what is", "where's": "where is",
+};
+
+// Typo tolerance threshold (85% similarity)
+const TYPO_THRESHOLD = 0.85;
+
+function expandContractions(text: string): string {
+  let result = text.toLowerCase();
+  for (const [contraction, expanded] of Object.entries(CONTRACTIONS)) {
+    result = result.replace(new RegExp(contraction.replace("'", "'"), 'gi'), expanded);
+  }
+  return result;
+}
+
+function stripGenderMarkers(text: string): string {
+  return text
+    .replace(/\s*\([FfMm]\)\s*/g, '')
+    .replace(/\s*\(feminine\)\s*/gi, '')
+    .replace(/\s*\(masculine\)\s*/gi, '')
+    .trim();
+}
+
 export function normalizeForComparison(text: string): string {
   return text
     .toLowerCase()
@@ -15,9 +49,11 @@ export function normalizeForComparison(text: string): string {
 export function validateTyping(userAnswer: string, correctAnswer: string): TypingResult {
   const trimmedUser = userAnswer.trim();
   const trimmedCorrect = correctAnswer.trim();
+  // Strip gender markers like "(F)" or "(M)" from correct answer
+  const cleanedCorrect = stripGenderMarkers(trimmedCorrect);
 
-  // Exact match
-  if (trimmedUser === trimmedCorrect) {
+  // Tier 1: Exact match
+  if (trimmedUser === cleanedCorrect) {
     return {
       isCorrect: true,
       isAcceptable: true,
@@ -27,8 +63,8 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
     };
   }
 
-  // Case-insensitive exact match
-  if (trimmedUser.toLowerCase() === trimmedCorrect.toLowerCase()) {
+  // Tier 2: Case-insensitive exact match
+  if (trimmedUser.toLowerCase() === cleanedCorrect.toLowerCase()) {
     return {
       isCorrect: true,
       isAcceptable: true,
@@ -38,18 +74,55 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
     };
   }
 
-  // Normalize and compare (ignoring accents)
+  // Tier 3: Normalize and compare (ignoring accents)
   const normalizedUser = normalizeForComparison(trimmedUser);
-  const normalizedCorrect = normalizeForComparison(trimmedCorrect);
+  const normalizedCorrect = normalizeForComparison(cleanedCorrect);
 
-  const isAcceptable = normalizedUser === normalizedCorrect;
+  if (normalizedUser === normalizedCorrect) {
+    const corrections = findCorrections(trimmedUser, cleanedCorrect);
+    return {
+      isCorrect: false,
+      isAcceptable: true,
+      userAnswer: trimmedUser,
+      correctAnswer: trimmedCorrect,
+      corrections,
+    };
+  }
 
-  // Find corrections
-  const corrections = findCorrections(trimmedUser, trimmedCorrect);
+  // Tier 4: Contraction-normalized comparison (e.g., "don't" = "do not")
+  const contractedUser = expandContractions(normalizedUser);
+  const contractedCorrect = expandContractions(normalizedCorrect);
 
+  if (contractedUser === contractedCorrect) {
+    return {
+      isCorrect: true,
+      isAcceptable: true,
+      userAnswer: trimmedUser,
+      correctAnswer: trimmedCorrect,
+      corrections: [],
+    };
+  }
+
+  // Tier 5: Typo tolerance via similarity score
+  const similarity = getSimilarityScore(contractedUser, contractedCorrect);
+
+  if (similarity >= TYPO_THRESHOLD) {
+    const corrections = findCorrections(trimmedUser, cleanedCorrect);
+    return {
+      isCorrect: false,
+      isAcceptable: true,
+      hasTypo: true,
+      userAnswer: trimmedUser,
+      correctAnswer: trimmedCorrect,
+      corrections,
+    };
+  }
+
+  // Tier 6: Not acceptable
+  const corrections = findCorrections(trimmedUser, cleanedCorrect);
   return {
     isCorrect: false,
-    isAcceptable,
+    isAcceptable: false,
     userAnswer: trimmedUser,
     correctAnswer: trimmedCorrect,
     corrections,

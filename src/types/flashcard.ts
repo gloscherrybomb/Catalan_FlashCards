@@ -65,6 +65,7 @@ export interface StudyResult {
 export interface TypingResult {
   isCorrect: boolean;      // Exact match
   isAcceptable: boolean;   // Close enough (minor accent issues)
+  hasTypo?: boolean;       // Has minor typo but still acceptable
   userAnswer: string;
   correctAnswer: string;
   corrections: Correction[];

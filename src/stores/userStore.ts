@@ -366,7 +366,6 @@ export const useUserStore = create<UserState>()(
       partialize: (state) => ({
         progress: state.progress,
         achievements: state.achievements,
-        isAuthenticated: state.isAuthenticated,
         profile: state.profile,
       }),
     }
