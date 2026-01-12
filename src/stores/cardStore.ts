@@ -328,7 +328,8 @@ export const useCardStore = create<CardState>()(
     {
       name: 'catalan-cards-storage',
       partialize: (state) => ({
-        flashcards: state.flashcards,
+        // Note: flashcards are NOT persisted locally - they come from Firebase only
+        // This prevents duplication between localStorage and Firebase
         cardProgress: Array.from(state.cardProgress.entries()),
         mistakeHistory: state.mistakeHistory,
       }),
@@ -345,12 +346,6 @@ export const useCardStore = create<CardState>()(
           ]
         );
 
-        // Restore flashcards with proper date deserialization
-        const flashcards = (persisted?.flashcards || []).map((card: any) => ({
-          ...card,
-          createdAt: new Date(card.createdAt),
-        }));
-
         // Restore mistake history with proper date deserialization
         const mistakeHistory = (persisted?.mistakeHistory || []).map((mistake: any) => ({
           ...mistake,
@@ -359,8 +354,8 @@ export const useCardStore = create<CardState>()(
 
         return {
           ...current,
-          ...persisted,
-          flashcards,
+          // Don't restore flashcards from localStorage - they come from Firebase
+          flashcards: current.flashcards,
           cardProgress: new Map(cardProgressEntries),
           mistakeHistory,
         };

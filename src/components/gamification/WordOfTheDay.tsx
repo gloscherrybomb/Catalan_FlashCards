@@ -132,9 +132,9 @@ export function WordOfTheDay() {
         </div>
       </div>
 
-      {/* Decorative elements */}
-      <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-      <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full blur-lg" />
+      {/* Decorative elements - positioned within bounds to avoid overflow */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full blur-lg translate-y-1/2 -translate-x-1/2" />
     </motion.div>
   );
 }
