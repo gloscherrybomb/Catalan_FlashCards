@@ -30,8 +30,11 @@ export function StatsPage() {
   const getCategoryStats = useCardStore((state) => state.getCategoryStats);
   const getDueCount = useCardStore((state) => state.getDueCount);
 
+  const getUniqueCardsDueCount = useCardStore((state) => state.getUniqueCardsDueCount);
+
   const categoryStats = getCategoryStats();
-  const dueCount = getDueCount();
+  const dueCount = getDueCount(); // Total review items (cards × 2 directions)
+  const uniqueCardsDue = getUniqueCardsDueCount(); // Unique cards with at least one direction due
 
   // Calculate stats
   const accuracy = progress.totalCardsReviewed > 0
@@ -258,20 +261,23 @@ export function StatsPage() {
             <CardTitle>Upcoming Reviews</CardTitle>
             <div className="mt-4 flex items-center gap-6">
               <ProgressRing
-                progress={Math.min(100, (dueCount / 20) * 100)}
+                progress={Math.min(100, (uniqueCardsDue / 20) * 100)}
                 size={100}
-                color={dueCount > 30 ? '#F9844A' : dueCount > 10 ? '#FFE66D' : '#95D5B2'}
+                color={uniqueCardsDue > 30 ? '#F9844A' : uniqueCardsDue > 10 ? '#FFE66D' : '#95D5B2'}
               >
-                <span className="text-2xl font-bold text-gray-800">{dueCount}</span>
+                <span className="text-2xl font-bold text-gray-800">{uniqueCardsDue}</span>
               </ProgressRing>
               <div>
                 <p className="font-medium text-gray-800">Cards due today</p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {dueCount === 0
+                  {dueCount} reviews ({uniqueCardsDue} cards × 2 directions)
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {uniqueCardsDue === 0
                     ? "You're all caught up!"
-                    : dueCount <= 10
+                    : uniqueCardsDue <= 10
                     ? 'Light day ahead'
-                    : dueCount <= 30
+                    : uniqueCardsDue <= 30
                     ? 'Good practice session'
                     : 'Time to focus!'}
                 </p>

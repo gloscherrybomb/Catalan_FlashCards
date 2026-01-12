@@ -43,6 +43,9 @@ interface CardState {
   clearMistakeHistory: () => void;
   // Mnemonic editing
   updateCardMnemonic: (cardId: string, mnemonic: string) => Promise<void>;
+  // Deduplication
+  deduplicateCards: () => Promise<number>;
+  getUniqueCardsDueCount: () => number;
 }
 
 function getProgressKey(cardId: string, direction: StudyDirection): string {
@@ -90,11 +93,19 @@ export const useCardStore = create<CardState>()(
         try {
           const newCards = parseCSV(csvContent);
 
-          // Check for duplicates
-          const existingFronts = new Set(flashcards.map(c => c.front.toLowerCase()));
-          const uniqueNewCards = newCards.filter(
-            c => !existingFronts.has(c.front.toLowerCase())
-          );
+          // Enhanced duplicate check: normalize whitespace and case
+          const normalizeText = (text: string) =>
+            text.toLowerCase().trim().replace(/\s+/g, ' ');
+
+          const existingFronts = new Set(flashcards.map(c => normalizeText(c.front)));
+          const existingBacks = new Set(flashcards.map(c => normalizeText(c.back)));
+
+          // Check both front AND back to catch duplicates more reliably
+          const uniqueNewCards = newCards.filter(c => {
+            const normFront = normalizeText(c.front);
+            const normBack = normalizeText(c.back);
+            return !existingFronts.has(normFront) && !existingBacks.has(normBack);
+          });
 
           const allCards = [...flashcards, ...uniqueNewCards];
           set({ flashcards: allCards });
@@ -323,6 +334,79 @@ export const useCardStore = create<CardState>()(
 
         // Note: Firebase sync would be done here in production
         // For now, this is persisted via localStorage
+      },
+
+      // Deduplication: remove duplicate cards by normalized front text
+      deduplicateCards: async () => {
+        const { flashcards, cardProgress } = get();
+
+        // Create a map to track unique cards by normalized front text
+        const normalizeText = (text: string) =>
+          text.toLowerCase().trim().replace(/\s+/g, ' ');
+
+        const seenFronts = new Map<string, Flashcard>();
+        const duplicateIds: string[] = [];
+
+        for (const card of flashcards) {
+          const normalizedFront = normalizeText(card.front);
+
+          if (seenFronts.has(normalizedFront)) {
+            duplicateIds.push(card.id);
+          } else {
+            seenFronts.set(normalizedFront, card);
+          }
+        }
+
+        if (duplicateIds.length === 0) {
+          return 0;
+        }
+
+        // Filter out duplicates
+        const duplicateIdSet = new Set(duplicateIds);
+        const uniqueCards = flashcards.filter(c => !duplicateIdSet.has(c.id));
+
+        // Also clean up progress for deleted cards
+        const newProgress = new Map(cardProgress);
+        for (const id of duplicateIds) {
+          newProgress.delete(getProgressKey(id, 'english-to-catalan'));
+          newProgress.delete(getProgressKey(id, 'catalan-to-english'));
+        }
+
+        set({ flashcards: uniqueCards, cardProgress: newProgress });
+
+        // Delete duplicates from Firebase
+        const userStore = useUserStore.getState();
+        const userId = userStore.user?.uid;
+        if (userId && !isDemoMode) {
+          for (const id of duplicateIds) {
+            await deleteFlashcard(userId, id);
+          }
+        }
+
+        return duplicateIds.length;
+      },
+
+      // Get count of unique cards that are due (not counting both directions)
+      getUniqueCardsDueCount: () => {
+        const { flashcards, cardProgress } = get();
+        let count = 0;
+
+        for (const card of flashcards) {
+          // Card is "due" if EITHER direction is due
+          let cardIsDue = false;
+          for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
+            const key = getProgressKey(card.id, direction);
+            const progress = cardProgress.get(key) || createInitialProgress(card.id, direction);
+
+            if (isDueForReview(progress)) {
+              cardIsDue = true;
+              break;
+            }
+          }
+          if (cardIsDue) count++;
+        }
+
+        return count;
       },
     }),
     {
