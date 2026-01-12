@@ -1,0 +1,292 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { Flashcard, CardProgress, StudyDirection, StudyCard } from '../types/flashcard';
+import {
+  createInitialProgress,
+  calculateSM2,
+  isDueForReview,
+  requiresTyping,
+} from '../services/sm2Algorithm';
+import { parseCSV } from '../services/csvParser';
+import {
+  saveFlashcards,
+  getFlashcards,
+  deleteFlashcard,
+  getCardProgress,
+  updateCardProgress,
+  isDemoMode,
+} from '../services/firebase';
+import { useUserStore } from './userStore';
+
+interface CardState {
+  flashcards: Flashcard[];
+  cardProgress: Map<string, CardProgress>;
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  loadCards: () => Promise<void>;
+  importCSV: (csvContent: string) => Promise<number>;
+  deleteCard: (cardId: string) => Promise<void>;
+  getStudyDeck: (limit?: number) => StudyCard[];
+  reviewCard: (cardId: string, direction: StudyDirection, quality: number) => Promise<void>;
+  getProgress: (cardId: string, direction: StudyDirection) => CardProgress;
+  getCategoryStats: () => Record<string, { total: number; mastered: number; learning: number }>;
+  getDueCount: () => number;
+  getNewCount: () => number;
+}
+
+function getProgressKey(cardId: string, direction: StudyDirection): string {
+  return `${cardId}_${direction}`;
+}
+
+export const useCardStore = create<CardState>()(
+  persist(
+    (set, get) => ({
+      flashcards: [],
+      cardProgress: new Map(),
+      isLoading: false,
+      error: null,
+
+      loadCards: async () => {
+        set({ isLoading: true, error: null });
+
+        try {
+          const userStore = useUserStore.getState();
+          const userId = userStore.user?.uid;
+
+          if (userId && !isDemoMode) {
+            const cards = await getFlashcards(userId);
+            const progressList = await getCardProgress(userId);
+
+            const progressMap = new Map<string, CardProgress>();
+            for (const p of progressList) {
+              progressMap.set(getProgressKey(p.cardId, p.direction), p);
+            }
+
+            set({ flashcards: cards, cardProgress: progressMap, isLoading: false });
+          } else {
+            set({ isLoading: false });
+          }
+        } catch (error) {
+          set({ error: 'Failed to load cards', isLoading: false });
+          console.error('Load cards error:', error);
+        }
+      },
+
+      importCSV: async (csvContent: string) => {
+        const { flashcards } = get();
+
+        try {
+          const newCards = parseCSV(csvContent);
+
+          // Check for duplicates
+          const existingFronts = new Set(flashcards.map(c => c.front.toLowerCase()));
+          const uniqueNewCards = newCards.filter(
+            c => !existingFronts.has(c.front.toLowerCase())
+          );
+
+          const allCards = [...flashcards, ...uniqueNewCards];
+          set({ flashcards: allCards });
+
+          // Save to Firebase
+          const userStore = useUserStore.getState();
+          const userId = userStore.user?.uid;
+          if (userId && !isDemoMode) {
+            await saveFlashcards(userId, uniqueNewCards);
+          }
+
+          return uniqueNewCards.length;
+        } catch (error) {
+          console.error('CSV import error:', error);
+          throw error;
+        }
+      },
+
+      deleteCard: async (cardId: string) => {
+        const { flashcards, cardProgress } = get();
+
+        const newCards = flashcards.filter(c => c.id !== cardId);
+        const newProgress = new Map(cardProgress);
+
+        // Remove progress for both directions
+        newProgress.delete(getProgressKey(cardId, 'english-to-catalan'));
+        newProgress.delete(getProgressKey(cardId, 'catalan-to-english'));
+
+        set({ flashcards: newCards, cardProgress: newProgress });
+
+        const userStore = useUserStore.getState();
+        const userId = userStore.user?.uid;
+        if (userId && !isDemoMode) {
+          await deleteFlashcard(userId, cardId);
+        }
+      },
+
+      getStudyDeck: (limit = 20) => {
+        const { flashcards, cardProgress } = get();
+        const studyCards: StudyCard[] = [];
+
+        // Create study items for both directions
+        for (const card of flashcards) {
+          for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
+            const key = getProgressKey(card.id, direction);
+            let progress = cardProgress.get(key);
+
+            if (!progress) {
+              progress = createInitialProgress(card.id, direction);
+            }
+
+            if (isDueForReview(progress)) {
+              studyCards.push({
+                flashcard: card,
+                progress,
+                direction,
+                requiresTyping: requiresTyping(progress),
+              });
+            }
+          }
+        }
+
+        // Sort: new cards first, then by due date
+        studyCards.sort((a, b) => {
+          const aNew = a.progress.repetitions === 0;
+          const bNew = b.progress.repetitions === 0;
+
+          if (aNew && !bNew) return -1;
+          if (!aNew && bNew) return 1;
+
+          return a.progress.nextReviewDate.getTime() - b.progress.nextReviewDate.getTime();
+        });
+
+        // Ensure good mix: ~30% must be typing
+        const typingRequired = studyCards.filter(c => c.requiresTyping);
+        const typingOptional = studyCards.filter(c => !c.requiresTyping);
+
+        const minTyping = Math.ceil(limit * 0.3);
+        const typingCards = typingRequired.slice(0, Math.max(minTyping, typingRequired.length));
+        const remainingSlots = limit - typingCards.length;
+        const optionalCards = typingOptional.slice(0, remainingSlots);
+
+        // Shuffle to mix typing and non-typing
+        const result = [...typingCards, ...optionalCards];
+        for (let i = result.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+
+        return result.slice(0, limit);
+      },
+
+      reviewCard: async (cardId: string, direction: StudyDirection, quality: number) => {
+        const { cardProgress } = get();
+        const key = getProgressKey(cardId, direction);
+        let progress = cardProgress.get(key);
+
+        if (!progress) {
+          progress = createInitialProgress(cardId, direction);
+        }
+
+        const newProgress = calculateSM2(progress, quality);
+        const newProgressMap = new Map(cardProgress);
+        newProgressMap.set(key, newProgress);
+
+        set({ cardProgress: newProgressMap });
+
+        // Save to Firebase
+        const userStore = useUserStore.getState();
+        const userId = userStore.user?.uid;
+        if (userId && !isDemoMode) {
+          await updateCardProgress(userId, newProgress);
+        }
+      },
+
+      getProgress: (cardId: string, direction: StudyDirection) => {
+        const { cardProgress } = get();
+        const key = getProgressKey(cardId, direction);
+        return cardProgress.get(key) || createInitialProgress(cardId, direction);
+      },
+
+      getCategoryStats: () => {
+        const { flashcards, cardProgress } = get();
+        const stats: Record<string, { total: number; mastered: number; learning: number }> = {};
+
+        for (const card of flashcards) {
+          if (!stats[card.category]) {
+            stats[card.category] = { total: 0, mastered: 0, learning: 0 };
+          }
+          stats[card.category].total++;
+
+          // Check both directions
+          for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
+            const key = getProgressKey(card.id, direction);
+            const progress = cardProgress.get(key);
+
+            if (progress) {
+              if (progress.interval >= 21) {
+                stats[card.category].mastered += 0.5; // Half point per direction
+              } else if (progress.repetitions > 0) {
+                stats[card.category].learning += 0.5;
+              }
+            }
+          }
+        }
+
+        // Round values
+        for (const cat of Object.keys(stats)) {
+          stats[cat].mastered = Math.round(stats[cat].mastered);
+          stats[cat].learning = Math.round(stats[cat].learning);
+        }
+
+        return stats;
+      },
+
+      getDueCount: () => {
+        const { flashcards, cardProgress } = get();
+        let count = 0;
+
+        for (const card of flashcards) {
+          for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
+            const key = getProgressKey(card.id, direction);
+            const progress = cardProgress.get(key) || createInitialProgress(card.id, direction);
+
+            if (isDueForReview(progress)) {
+              count++;
+            }
+          }
+        }
+
+        return count;
+      },
+
+      getNewCount: () => {
+        const { flashcards, cardProgress } = get();
+        let count = 0;
+
+        for (const card of flashcards) {
+          for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
+            const key = getProgressKey(card.id, direction);
+            const progress = cardProgress.get(key);
+
+            if (!progress || progress.repetitions === 0) {
+              count++;
+            }
+          }
+        }
+
+        return count;
+      },
+    }),
+    {
+      name: 'catalan-cards-storage',
+      partialize: (state) => ({
+        flashcards: state.flashcards,
+        cardProgress: Array.from(state.cardProgress.entries()),
+      }),
+      merge: (persisted: any, current) => ({
+        ...current,
+        ...persisted,
+        cardProgress: new Map(persisted?.cardProgress || []),
+      }),
+    }
+  )
+);

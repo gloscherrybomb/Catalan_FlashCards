@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(dir \"C:\\\\Users\\\\james.eastwood\\\\Documents\\\\TPV\\\\TPVCM_Github\\\\Catalan_FlashCards\\\\node_modules\")",
+      "Bash(npm run build:*)",
+      "mcp__plugin_firebase_firebase__firebase_get_environment",
+      "mcp__plugin_firebase_firebase__firebase_login",
+      "mcp__plugin_firebase_firebase__firebase_list_projects",
+      "mcp__plugin_firebase_firebase__firebase_update_environment",
+      "mcp__plugin_firebase_firebase__firebase_list_apps",
+      "mcp__plugin_firebase_firebase__firebase_create_app",
+      "mcp__plugin_firebase_firebase__firebase_get_sdk_config",
+      "mcp__plugin_firebase_firebase__firebase_init",
+      "Bash(dir /s \"C:\\\\Users\\\\james.eastwood\\\\Documents\\\\TPV\\\\TPVCM_Github\\\\Catalan_FlashCards\\\\src\")"
+    ]
+  }
+}
