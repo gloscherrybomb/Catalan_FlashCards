@@ -20,6 +20,8 @@ import {
   orderBy,
   Timestamp,
 } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 import type { Flashcard, CardProgress } from '../types/flashcard';
 import type { UserProfile, UserProgress, DailyStats } from '../types/user';
 import type { UnlockedAchievement } from '../types/gamification';
@@ -41,8 +43,27 @@ export const isDemoMode = !import.meta.env.VITE_FIREBASE_API_KEY;
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const functions = getFunctions(app, 'europe-west2');
 
 const googleProvider = new GoogleAuthProvider();
+
+// TTS Cloud Function types
+interface GenerateAudioRequest {
+  text: string;
+  language: 'ca-ES' | 'en-US';
+}
+
+interface GenerateAudioResponse {
+  url: string;
+  cached: boolean;
+}
+
+// TTS Cloud Function callable
+export const generateAudioFunction = httpsCallable<GenerateAudioRequest, GenerateAudioResponse>(
+  functions,
+  'generateAudio'
+);
 
 // Auth functions
 export async function signInWithGoogle(): Promise<User> {

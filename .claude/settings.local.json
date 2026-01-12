@@ -16,7 +16,9 @@
       "Bash(npx vercel:*)",
       "Skill(frontend-design)",
       "Bash(npm run dev:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

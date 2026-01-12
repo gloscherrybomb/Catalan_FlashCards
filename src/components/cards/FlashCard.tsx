@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, Lightbulb, Volume2 } from 'lucide-react';
+import { Lightbulb, Volume2 } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge, CardDecoration } from './CategoryIcon';
 import { audioService } from '../../services/audioService';
@@ -120,12 +120,6 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                       <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse text-miro-red' : ''}`} />
                       Listen
                     </motion.button>
-                    {direction === 'catalan-to-english' && audioService.isUsingFallbackVoice && (
-                      <span className="inline-flex items-center gap-1 text-xs text-miro-orange" title="Using Spanish voice - Catalan voice not available">
-                        <AlertTriangle className="w-3 h-3" />
-                        Spanish voice
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -184,12 +178,6 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                       <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse' : ''}`} />
                       Listen
                     </motion.button>
-                    {direction === 'english-to-catalan' && audioService.isUsingFallbackVoice && (
-                      <span className="inline-flex items-center gap-1 text-xs text-miro-yellow" title="Using Spanish voice - Catalan voice not available">
-                        <AlertTriangle className="w-3 h-3" />
-                        Spanish voice
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>

@@ -1,5 +1,8 @@
 // Audio Service for Text-to-Speech Pronunciation
-// Uses Web Speech API with Catalan voice support
+// Uses Google Cloud TTS via Firebase Functions with Storage caching
+// Falls back to Web Speech API if cloud fails
+
+import { generateAudioFunction, isDemoMode } from './firebase';
 
 /**
  * Cleans text for speech by removing auxiliary notation.
@@ -15,7 +18,10 @@ interface AudioOptions {
   rate?: number;
   pitch?: number;
   volume?: number;
+  forceWebSpeech?: boolean; // Set true to skip Cloud TTS
 }
+
+type Language = 'catalan' | 'english';
 
 class AudioService {
   private synthesis: SpeechSynthesis | null = null;
@@ -23,11 +29,16 @@ class AudioService {
   private englishVoice: SpeechSynthesisVoice | null = null;
   private isInitialized = false;
   private _isUsingFallbackVoice = false;
+  private audioElement: HTMLAudioElement | null = null;
+  private audioUrlCache = new Map<string, string>(); // In-memory URL cache
 
   constructor() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      this.synthesis = window.speechSynthesis;
-      this.initVoices();
+    if (typeof window !== 'undefined') {
+      if ('speechSynthesis' in window) {
+        this.synthesis = window.speechSynthesis;
+        this.initVoices();
+      }
+      this.audioElement = new Audio();
     }
   }
 
@@ -66,7 +77,74 @@ class AudioService {
     }
   }
 
-  async speak(text: string, language: 'catalan' | 'english', options: AudioOptions = {}): Promise<void> {
+  /**
+   * Main speak method - tries Cloud TTS first, falls back to Web Speech API
+   */
+  async speak(text: string, language: Language, options: AudioOptions = {}): Promise<void> {
+    const cleanText = cleanTextForSpeech(text);
+    const useCloud = !options.forceWebSpeech && !isDemoMode;
+
+    if (useCloud) {
+      try {
+        await this.speakWithCloudTTS(cleanText, language);
+        return;
+      } catch (error) {
+        console.warn('Cloud TTS failed, falling back to Web Speech API:', error);
+      }
+    }
+
+    // Fallback to Web Speech API
+    await this.speakWithWebSpeech(cleanText, language, options);
+  }
+
+  /**
+   * Speak using Google Cloud TTS via Firebase Functions
+   */
+  private async speakWithCloudTTS(text: string, language: Language): Promise<void> {
+    const langCode = language === 'catalan' ? 'ca-ES' : 'en-US';
+    const cacheKey = `${langCode}:${text.toLowerCase()}`;
+
+    // Check in-memory URL cache first
+    let audioUrl = this.audioUrlCache.get(cacheKey);
+
+    if (!audioUrl) {
+      // Call Firebase Function
+      const result = await generateAudioFunction({ text, language: langCode });
+      audioUrl = result.data.url;
+
+      // Cache the URL in memory for this session
+      this.audioUrlCache.set(cacheKey, audioUrl);
+    }
+
+    // Play the audio
+    await this.playAudioUrl(audioUrl);
+  }
+
+  /**
+   * Play audio from a URL using HTML Audio element
+   */
+  private playAudioUrl(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.audioElement) {
+        reject(new Error('Audio element not available'));
+        return;
+      }
+
+      // Remove previous listeners
+      this.audioElement.onended = null;
+      this.audioElement.onerror = null;
+
+      this.audioElement.src = url;
+      this.audioElement.onended = () => resolve();
+      this.audioElement.onerror = (e) => reject(e);
+      this.audioElement.play().catch(reject);
+    });
+  }
+
+  /**
+   * Speak using Web Speech API (fallback)
+   */
+  private async speakWithWebSpeech(text: string, language: Language, options: AudioOptions): Promise<void> {
     if (!this.synthesis) {
       console.warn('Speech synthesis not supported');
       return;
@@ -92,7 +170,7 @@ class AudioService {
     // Cancel any ongoing speech
     this.synthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(cleanTextForSpeech(text));
+    const utterance = new SpeechSynthesisUtterance(text);
 
     // Set voice based on language
     if (language === 'catalan' && this.catalanVoice) {
@@ -127,25 +205,65 @@ class AudioService {
   }
 
   stop(): void {
+    if (this.audioElement) {
+      this.audioElement.pause();
+      this.audioElement.currentTime = 0;
+    }
     if (this.synthesis) {
       this.synthesis.cancel();
     }
   }
 
   get isSupported(): boolean {
-    return this.synthesis !== null;
+    return this.synthesis !== null || this.audioElement !== null;
   }
 
   get hasCatalanVoice(): boolean {
-    return this.catalanVoice !== null;
+    // Cloud TTS always has Catalan, so return true unless in demo mode
+    return !isDemoMode || this.catalanVoice !== null;
   }
 
   get isUsingFallbackVoice(): boolean {
-    return this._isUsingFallbackVoice;
+    // Cloud TTS uses native Catalan, so no fallback needed unless in demo mode
+    return isDemoMode && this._isUsingFallbackVoice;
   }
 
   get catalanVoiceName(): string | null {
+    if (!isDemoMode) {
+      return 'Google Cloud TTS (Catalan)';
+    }
     return this.catalanVoice?.name || null;
+  }
+
+  /**
+   * Preload audio for a list of texts (for better UX during study sessions)
+   */
+  async preloadAudio(texts: Array<{ text: string; language: Language }>): Promise<void> {
+    if (isDemoMode) return;
+
+    const promises = texts.map(async ({ text, language }) => {
+      const langCode = language === 'catalan' ? 'ca-ES' : 'en-US';
+      const cleanText = cleanTextForSpeech(text);
+      const cacheKey = `${langCode}:${cleanText.toLowerCase()}`;
+
+      if (!this.audioUrlCache.has(cacheKey)) {
+        try {
+          const result = await generateAudioFunction({ text: cleanText, language: langCode });
+          this.audioUrlCache.set(cacheKey, result.data.url);
+        } catch (error) {
+          console.warn('Failed to preload audio:', text, error);
+        }
+      }
+    });
+
+    await Promise.allSettled(promises);
+  }
+
+  /**
+   * Clear the in-memory URL cache
+   */
+  clearCache(): void {
+    this.audioUrlCache.clear();
   }
 }
 
