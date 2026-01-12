@@ -40,7 +40,7 @@ export interface StudyCard {
   requiresTyping: boolean; // True for new cards or struggling cards
 }
 
-export type StudyMode = 'flip' | 'multiple-choice' | 'type-answer' | 'mixed' | 'listening' | 'sentences' | 'dictation';
+export type StudyMode = 'flip' | 'multiple-choice' | 'type-answer' | 'mixed' | 'listening' | 'sentences' | 'dictation' | 'speak';
 
 export interface StudySession {
   id: string;

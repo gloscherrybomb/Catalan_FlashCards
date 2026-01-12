@@ -17,7 +17,9 @@ export type AchievementRequirement =
   | { type: 'category_mastered'; category: string }
   | { type: 'level'; level: number }
   | { type: 'xp'; amount: number }
-  | { type: 'first_action'; action: string };
+  | { type: 'first_action'; action: string }
+  | { type: 'speaking_exercises'; count: number }
+  | { type: 'perfect_pronunciations'; count: number };
 
 export interface UnlockedAchievement {
   achievementId: string;

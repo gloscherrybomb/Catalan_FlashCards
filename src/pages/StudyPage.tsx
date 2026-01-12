@@ -14,6 +14,7 @@ import {
   Headphones,
   MessageSquare,
   Ear,
+  Mic,
 } from 'lucide-react';
 import { useSessionStore, type SessionSummary } from '../stores/sessionStore';
 import { useCardStore } from '../stores/cardStore';
@@ -28,6 +29,7 @@ import { ListeningMode } from '../components/cards/ListeningMode';
 import { SprintMode } from '../components/cards/SprintMode';
 import { SentenceMode } from '../components/cards/SentenceMode';
 import { DictationMode } from '../components/cards/DictationMode';
+import { SpeakMode } from '../components/cards/SpeakMode';
 import { Confetti } from '../components/ui/Confetti';
 import type { StudyMode } from '../types/flashcard';
 
@@ -401,6 +403,30 @@ export function StudyPage() {
                 </div>
               </Card>
 
+              {/* Speak Mode - Pronunciation Practice */}
+              <Card
+                hover
+                className="cursor-pointer bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/20 dark:to-fuchsia-950/20 border-violet-200 dark:border-violet-800"
+                onClick={() => handleStartSession('speak')}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center">
+                    <Mic size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-miro-blue dark:text-ink-light flex items-center gap-2">
+                      Pronunciation
+                      <span className="text-xs px-2 py-0.5 bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-300 rounded-full">
+                        New!
+                      </span>
+                    </h3>
+                    <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
+                      Practice speaking and get feedback
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
               {/* Sprint Mode */}
               <Card
                 hover
@@ -636,6 +662,14 @@ export function StudyPage() {
                     <DictationMode
                       studyCard={currentCard}
                       onComplete={(score, correct) => handleAnswer(correct ? (score >= 80 ? 5 : 4) : 2)}
+                    />
+                  );
+                case 'speak':
+                  return (
+                    <SpeakMode
+                      studyCard={currentCard}
+                      onComplete={(quality) => handleAnswer(quality)}
+                      onSkip={() => handleAnswer(0)}
                     />
                   );
                 default:

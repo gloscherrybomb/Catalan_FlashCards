@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Upload,
   Download,
+  Bell,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../stores/userStore';
@@ -12,6 +13,7 @@ import { useCardStore } from '../stores/cardStore';
 import { Card, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { exportToCSV } from '../services/csvParser';
+import { NotificationSettings } from '../components/settings/NotificationSettings';
 
 export function SettingsPage() {
   const navigate = useNavigate();
@@ -142,6 +144,25 @@ export function SettingsPage() {
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Notifications */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <Card className="mb-6">
+          <CardTitle>
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Notifications
+            </div>
+          </CardTitle>
+          <div className="mt-4">
+            <NotificationSettings />
           </div>
         </Card>
       </motion.div>
