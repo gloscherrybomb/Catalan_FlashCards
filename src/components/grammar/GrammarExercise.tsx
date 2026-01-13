@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check,
@@ -95,11 +95,12 @@ export function GrammarExercises({
   const currentExercise = exercises[currentIndex];
   const progress = ((currentIndex + 1) / exercises.length) * 100;
 
-  // Initialize available words for sentence-build when exercise changes
-  const initializeSentenceBuild = useCallback(() => {
-    if (currentExercise?.type === 'sentence-build' && currentExercise.words) {
+  // Initialize sentence-build when exercise index changes
+  useEffect(() => {
+    const exercise = exercises[currentIndex];
+    if (exercise?.type === 'sentence-build' && exercise.words) {
       // Create word objects with colors, then shuffle
-      const wordsWithColors: WordWithColor[] = currentExercise.words.map((word, i) => ({
+      const wordsWithColors: WordWithColor[] = exercise.words.map((word, i) => ({
         word,
         colorIndex: i % WORD_COLORS.length,
       }));
@@ -107,12 +108,7 @@ export function GrammarExercises({
       setAvailableWords(shuffled);
       setSelectedWords([]);
     }
-  }, [currentExercise]);
-
-  // Initialize when current exercise changes
-  useEffect(() => {
-    initializeSentenceBuild();
-  }, [initializeSentenceBuild]);
+  }, [currentIndex, exercises]);
 
   const checkAnswer = () => {
     let userAnswer: string | null = null;
