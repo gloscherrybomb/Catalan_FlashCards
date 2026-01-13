@@ -30,6 +30,21 @@ import { audioService } from '../services/audioService';
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 type CategoryFilter = string | 'all';
 
+// Helper to get nice category labels
+function getCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    articles: 'Articles',
+    verbs: 'Verbs',
+    pronouns: 'Pronouns',
+    adjectives: 'Adjectives',
+    prepositions: 'Prepositions',
+    basics: 'Basics',
+    structure: 'Sentence Structure',
+    tenses: 'Tenses',
+  };
+  return labels[category] || category;
+}
+
 // Helper to safely highlight words in example sentences without XSS risk
 function HighlightedText({ text, highlight }: { text: string; highlight?: string }) {
   if (!highlight) {
@@ -486,13 +501,13 @@ export function GrammarPage() {
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all capitalize ${
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                   categoryFilter === cat
                     ? 'bg-miro-orange text-white shadow-playful-sm'
                     : 'bg-gray-100 dark:bg-gray-800 text-miro-blue/70 dark:text-ink-light/70 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
-                {cat}
+                {getCategoryLabel(cat)}
               </button>
             ))}
           </div>

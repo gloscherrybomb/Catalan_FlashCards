@@ -17,9 +17,13 @@ export interface GrammarExample {
 
 export interface GrammarExercise {
   id: string;
-  type: 'fill-blank' | 'multiple-choice' | 'match';
+  type: 'fill-blank' | 'multiple-choice' | 'match' | 'sentence-build' | 'translate';
   question: string;
   options?: string[];
+  words?: string[];              // For sentence-build: jumbled words to arrange
+  pairs?: { left: string; right: string }[];  // For match: pairs to connect
+  hints?: string[];              // For translate: hint words
+  targetLanguage?: 'catalan' | 'english';  // For translate: direction
   correctAnswer: string;
   explanation: string;
 }
@@ -28,7 +32,7 @@ export interface GrammarLesson {
   id: string;
   title: string;
   titleCatalan: string;
-  category: 'articles' | 'verbs' | 'pronouns' | 'adjectives' | 'prepositions' | 'basics';
+  category: 'articles' | 'verbs' | 'pronouns' | 'adjectives' | 'prepositions' | 'basics' | 'structure' | 'tenses';
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   icon: string;
   estimatedMinutes: number;
@@ -553,6 +557,1324 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
       },
     ],
     relatedCategories: ['Pronouns'],
+  },
+
+  // ==========================================
+  // NEW STRUCTURE & SENTENCE PATTERN LESSONS
+  // ==========================================
+
+  // LESSON: Word Order Basics
+  {
+    id: 'word-order-basics',
+    title: 'Word Order in Catalan',
+    titleCatalan: "L'ordre de les paraules",
+    category: 'structure',
+    difficulty: 'beginner',
+    icon: '📝',
+    estimatedMinutes: 12,
+    content: {
+      introduction: 'Catalan follows Subject-Verb-Object (SVO) order like English, but with important differences in adjective and adverb placement.',
+      sections: [
+        {
+          title: 'Basic SVO Order',
+          explanation: 'Simple sentences follow Subject + Verb + Object order, just like English.',
+          examples: [
+            { catalan: 'El noi menja una poma', english: 'The boy eats an apple', highlight: 'menja' },
+            { catalan: 'La Maria llegeix un llibre', english: 'Maria reads a book', highlight: 'llegeix' },
+            { catalan: 'Nosaltres parlem català', english: 'We speak Catalan', highlight: 'parlem' },
+          ],
+          tips: [
+            'Subject comes first (who does the action)',
+            'Verb comes second (the action)',
+            'Object comes last (what receives the action)',
+          ],
+        },
+        {
+          title: 'Adjective Placement',
+          explanation: 'Unlike English, most adjectives come AFTER the noun in Catalan.',
+          examples: [
+            { catalan: 'un gat negre', english: 'a black cat', highlight: 'negre' },
+            { catalan: 'una casa gran', english: 'a big house', highlight: 'gran' },
+            { catalan: 'el cotxe vermell', english: 'the red car', highlight: 'vermell' },
+            { catalan: 'una noia intel·ligent', english: 'an intelligent girl', highlight: 'intel·ligent' },
+          ],
+          tips: [
+            'Color adjectives always follow: cotxe vermell (red car)',
+            'Size adjectives usually follow: casa gran (big house)',
+            'Some common adjectives can precede: bon amic (good friend)',
+            'Nationality adjectives follow: cuina catalana (Catalan cuisine)',
+          ],
+        },
+        {
+          title: 'Adverb Placement',
+          explanation: 'Adverbs typically come after the verb or at the end of the sentence.',
+          examples: [
+            { catalan: 'Parla bé el català', english: 'She speaks Catalan well', highlight: 'bé' },
+            { catalan: 'Corre ràpidament', english: 'He runs quickly', highlight: 'ràpidament' },
+            { catalan: 'Sempre arriba tard', english: 'He always arrives late', highlight: 'Sempre' },
+          ],
+          tips: [
+            'Time adverbs often come at the beginning: Avui treballo (Today I work)',
+            'Manner adverbs follow the verb: Canta bé (She sings well)',
+            'Frequency adverbs are flexible: Sempre menjo aquí / Menjo sempre aquí',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'word-order-1',
+        type: 'sentence-build',
+        question: 'Arrange the words to form a correct sentence: (The girl reads a book)',
+        words: ['un', 'llegeix', 'La', 'noia', 'llibre'],
+        correctAnswer: 'La noia llegeix un llibre',
+        explanation: 'Subject (La noia) + Verb (llegeix) + Object (un llibre)',
+      },
+      {
+        id: 'word-order-2',
+        type: 'sentence-build',
+        question: 'Arrange: (a black cat)',
+        words: ['negre', 'gat', 'un'],
+        correctAnswer: 'un gat negre',
+        explanation: 'In Catalan, adjectives come after the noun: gat negre (not negre gat).',
+      },
+      {
+        id: 'word-order-3',
+        type: 'multiple-choice',
+        question: 'Which is correct for "a big house"?',
+        options: ['una gran casa', 'una casa gran', 'gran una casa', 'casa gran una'],
+        correctAnswer: 'una casa gran',
+        explanation: 'Adjectives follow nouns in Catalan: casa gran.',
+      },
+    ],
+    relatedCategories: ['Basics', 'Structure'],
+  },
+
+  // LESSON: Question Formation
+  {
+    id: 'question-formation',
+    title: 'Forming Questions',
+    titleCatalan: 'Formar preguntes',
+    category: 'structure',
+    difficulty: 'beginner',
+    icon: '❓',
+    estimatedMinutes: 15,
+    content: {
+      introduction: 'Learn how to ask questions in Catalan - from simple yes/no questions to questions using question words.',
+      sections: [
+        {
+          title: 'Yes/No Questions',
+          explanation: 'To form a yes/no question, you can simply raise your intonation, or invert the subject and verb.',
+          examples: [
+            { catalan: 'Parles català?', english: 'Do you speak Catalan?', highlight: 'Parles' },
+            { catalan: 'Vols un cafè?', english: 'Do you want a coffee?', highlight: 'Vols' },
+            { catalan: 'És professor?', english: 'Is he a teacher?', highlight: 'És' },
+            { catalan: 'Tens germans?', english: 'Do you have siblings?', highlight: 'Tens' },
+          ],
+          tips: [
+            'Simply raise intonation at the end to make a question',
+            'No auxiliary verb needed (no "do" like in English)',
+            'Subject can be dropped: "Parles català?" (You speak Catalan?)',
+          ],
+        },
+        {
+          title: 'Question Words (Interrogatius)',
+          explanation: 'Use question words at the beginning of the sentence.',
+          examples: [
+            { catalan: 'Què vols?', english: 'What do you want?', highlight: 'Què' },
+            { catalan: 'Qui és?', english: 'Who is it?', highlight: 'Qui' },
+            { catalan: 'On vius?', english: 'Where do you live?', highlight: 'On' },
+            { catalan: 'Quan arribes?', english: 'When do you arrive?', highlight: 'Quan' },
+            { catalan: 'Com estàs?', english: 'How are you?', highlight: 'Com' },
+            { catalan: 'Per què plores?', english: 'Why are you crying?', highlight: 'Per què' },
+            { catalan: 'Quant costa?', english: 'How much does it cost?', highlight: 'Quant' },
+            { catalan: 'Quin llibre vols?', english: 'Which book do you want?', highlight: 'Quin' },
+          ],
+          tips: [
+            'QUÈ = What (Què fas? What are you doing?)',
+            'QUI = Who (Qui és ella? Who is she?)',
+            'ON = Where (On és el banc? Where is the bank?)',
+            'QUAN = When (Quan ve? When is he coming?)',
+            'COM = How (Com es diu? What is it called?)',
+            'PER QUÈ = Why (Per què no véns? Why don\'t you come?)',
+            'QUANT/A = How much/many',
+            'QUIN/A = Which/What',
+          ],
+        },
+        {
+          title: 'Question Word Agreement',
+          explanation: 'Some question words change based on gender and number.',
+          examples: [
+            { catalan: 'Quin cotxe tens?', english: 'Which car do you have? (masc)', highlight: 'Quin' },
+            { catalan: 'Quina casa vols?', english: 'Which house do you want? (fem)', highlight: 'Quina' },
+            { catalan: 'Quins llibres llegeixes?', english: 'Which books do you read? (masc pl)', highlight: 'Quins' },
+            { catalan: 'Quantes persones vénen?', english: 'How many people are coming? (fem pl)', highlight: 'Quantes' },
+          ],
+          tips: [
+            'QUIN (masc sing), QUINA (fem sing)',
+            'QUINS (masc pl), QUINES (fem pl)',
+            'QUANT (masc sing), QUANTA (fem sing)',
+            'QUANTS (masc pl), QUANTES (fem pl)',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'question-1',
+        type: 'fill-blank',
+        question: '___ et dius? (What is your name?)',
+        correctAnswer: 'Com',
+        explanation: '"Com et dius?" literally means "How do you call yourself?" - the standard way to ask someone\'s name.',
+      },
+      {
+        id: 'question-2',
+        type: 'multiple-choice',
+        question: 'How do you ask "Where is the station?"',
+        options: ['Què és l\'estació?', 'On és l\'estació?', 'Qui és l\'estació?', 'Com és l\'estació?'],
+        correctAnswer: 'On és l\'estació?',
+        explanation: '"On" means "where" for location questions.',
+      },
+      {
+        id: 'question-3',
+        type: 'translate',
+        question: 'Why are you tired?',
+        targetLanguage: 'catalan',
+        hints: ['per què', 'cansat/cansada', 'estàs'],
+        correctAnswer: 'Per què estàs cansat?',
+        explanation: 'Per què (why) + estàs (are you) + cansat (tired)',
+      },
+      {
+        id: 'question-4',
+        type: 'fill-blank',
+        question: '___ llibre vols, aquest o aquell? (Which book do you want?)',
+        correctAnswer: 'Quin',
+        explanation: '"Quin" is masculine singular, matching "llibre".',
+      },
+    ],
+    relatedCategories: ['Structure', 'Basics'],
+  },
+
+  // LESSON: Negation Patterns
+  {
+    id: 'negation-patterns',
+    title: 'Negation in Catalan',
+    titleCatalan: 'La negació',
+    category: 'structure',
+    difficulty: 'beginner',
+    icon: '🚫',
+    estimatedMinutes: 10,
+    content: {
+      introduction: 'Making negative sentences in Catalan is simple - just add "no" before the verb. But there are some special patterns to learn!',
+      sections: [
+        {
+          title: 'Basic Negation with NO',
+          explanation: 'Place "no" directly before the verb to make a sentence negative.',
+          examples: [
+            { catalan: 'No parlo anglès', english: 'I don\'t speak English', highlight: 'No' },
+            { catalan: 'No tinc gana', english: 'I\'m not hungry', highlight: 'No' },
+            { catalan: 'Ella no ve avui', english: 'She isn\'t coming today', highlight: 'no' },
+            { catalan: 'No és difícil', english: 'It\'s not difficult', highlight: 'No' },
+          ],
+          tips: [
+            'NO always comes directly before the verb',
+            'Subject can come before NO: "Jo no parlo"',
+            'No auxiliary verb needed (unlike English "don\'t/doesn\'t")',
+          ],
+        },
+        {
+          title: 'Double Negatives',
+          explanation: 'Unlike English, Catalan uses double negatives! When using negative words like "res" (nothing), you still need "no".',
+          examples: [
+            { catalan: 'No vull res', english: 'I don\'t want anything', highlight: 'res' },
+            { catalan: 'No ve ningú', english: 'Nobody is coming', highlight: 'ningú' },
+            { catalan: 'No vaig mai al gimnàs', english: 'I never go to the gym', highlight: 'mai' },
+            { catalan: 'No tinc cap problema', english: 'I don\'t have any problem', highlight: 'cap' },
+          ],
+          tips: [
+            'RES = nothing/anything (No sé res - I don\'t know anything)',
+            'NINGÚ = nobody/anyone (No conec ningú - I don\'t know anyone)',
+            'MAI = never/ever (No ho faig mai - I never do it)',
+            'CAP = no/any (No tinc cap idea - I have no idea)',
+            'ENLLOC = nowhere (No vaig enlloc - I\'m not going anywhere)',
+          ],
+        },
+        {
+          title: 'Negative Words at the Start',
+          explanation: 'If a negative word comes BEFORE the verb, you don\'t need "no".',
+          examples: [
+            { catalan: 'Ningú no ve', english: 'Nobody is coming', highlight: 'Ningú' },
+            { catalan: 'Res no passa', english: 'Nothing happens', highlight: 'Res' },
+            { catalan: 'Mai diu la veritat', english: 'He never tells the truth', highlight: 'Mai' },
+          ],
+          tips: [
+            'Negative word first = no "no" needed',
+            'Both forms are correct: "No ve ningú" = "Ningú no ve"',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'negation-1',
+        type: 'fill-blank',
+        question: '___ entenc el que dius. (I don\'t understand what you say)',
+        correctAnswer: 'No',
+        explanation: 'Place "no" before the verb to negate.',
+      },
+      {
+        id: 'negation-2',
+        type: 'sentence-build',
+        question: 'Arrange: (I don\'t want anything)',
+        words: ['vull', 'No', 'res'],
+        correctAnswer: 'No vull res',
+        explanation: 'Double negative: No + verb + res',
+      },
+      {
+        id: 'negation-3',
+        type: 'multiple-choice',
+        question: 'How do you say "I never eat meat"?',
+        options: ['Mai menjo carn', 'No menjo mai carn', 'No menjo carn', 'Menjo no carn'],
+        correctAnswer: 'No menjo mai carn',
+        explanation: 'Double negative with "mai": No + verb + mai + object',
+      },
+      {
+        id: 'negation-4',
+        type: 'translate',
+        question: 'Nobody speaks English here',
+        targetLanguage: 'catalan',
+        hints: ['ningú', 'parla', 'anglès', 'aquí'],
+        correctAnswer: 'Ningú no parla anglès aquí',
+        explanation: 'When ningú comes first, the "no" is optional but common.',
+      },
+    ],
+    relatedCategories: ['Structure', 'Basics'],
+  },
+
+  // LESSON: Possessive Adjectives
+  {
+    id: 'possessive-adjectives',
+    title: 'Possessive Adjectives',
+    titleCatalan: 'Els adjectius possessius',
+    category: 'adjectives',
+    difficulty: 'beginner',
+    icon: '👤',
+    estimatedMinutes: 12,
+    content: {
+      introduction: 'Possessive adjectives show ownership. In Catalan, they agree with the thing possessed, not the possessor!',
+      sections: [
+        {
+          title: 'The Possessive Forms',
+          explanation: 'Possessives change based on the gender and number of what is possessed.',
+          examples: [
+            { catalan: 'el meu llibre', english: 'my book', highlight: 'meu' },
+            { catalan: 'la meva casa', english: 'my house', highlight: 'meva' },
+            { catalan: 'els meus amics', english: 'my friends', highlight: 'meus' },
+            { catalan: 'les meves germanes', english: 'my sisters', highlight: 'meves' },
+          ],
+          tips: [
+            'MY: el meu / la meva / els meus / les meves',
+            'YOUR (sing): el teu / la teva / els teus / les teves',
+            'HIS/HER/ITS: el seu / la seva / els seus / les seves',
+            'OUR: el nostre / la nostra / els nostres / les nostres',
+            'YOUR (pl): el vostre / la vostra / els vostres / les vostres',
+            'THEIR: el seu / la seva / els seus / les seves',
+          ],
+        },
+        {
+          title: 'Using Articles with Possessives',
+          explanation: 'Unlike Spanish, Catalan typically uses the definite article WITH possessives.',
+          examples: [
+            { catalan: 'el meu cotxe', english: 'my car (with article)', highlight: 'el' },
+            { catalan: 'la teva mare', english: 'your mother', highlight: 'la' },
+            { catalan: 'Tinc el meu telèfon', english: 'I have my phone', highlight: 'el meu' },
+          ],
+          tips: [
+            'Always include the article: "el meu", not just "meu"',
+            'After prepositions, the article is optional: "a casa meva" or "a la meva casa"',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'possessive-1',
+        type: 'fill-blank',
+        question: 'On és ___ mare? (Where is your mother?)',
+        correctAnswer: 'la teva',
+        explanation: '"Mare" is feminine singular, so we use "la teva".',
+      },
+      {
+        id: 'possessive-2',
+        type: 'multiple-choice',
+        question: 'How do you say "our house"?',
+        options: ['el nostre casa', 'la nostra casa', 'nostre casa', 'casa nostra'],
+        correctAnswer: 'la nostra casa',
+        explanation: '"Casa" is feminine, so we use "la nostra".',
+      },
+      {
+        id: 'possessive-3',
+        type: 'match',
+        question: 'Match the possessives with their meanings:',
+        pairs: [
+          { left: 'el meu', right: 'my (masc)' },
+          { left: 'la teva', right: 'your (fem)' },
+          { left: 'els seus', right: 'his/her (masc pl)' },
+          { left: 'les nostres', right: 'our (fem pl)' },
+        ],
+        correctAnswer: 'el meu-my (masc),la teva-your (fem),els seus-his/her (masc pl),les nostres-our (fem pl)',
+        explanation: 'Possessives agree with the noun they modify in gender and number.',
+      },
+    ],
+    relatedCategories: ['Adjectives', 'Pronouns'],
+  },
+
+  // LESSON: Demonstratives
+  {
+    id: 'demonstratives',
+    title: 'Demonstratives (This/That)',
+    titleCatalan: 'Els demostratius',
+    category: 'adjectives',
+    difficulty: 'beginner',
+    icon: '👆',
+    estimatedMinutes: 10,
+    content: {
+      introduction: 'Demonstratives point to specific things. Catalan has three levels of distance: this (here), that (there), and that (over there).',
+      sections: [
+        {
+          title: 'Aquest/Aquesta (This - near speaker)',
+          explanation: 'Use for things close to the speaker.',
+          examples: [
+            { catalan: 'aquest llibre', english: 'this book (near me)', highlight: 'aquest' },
+            { catalan: 'aquesta casa', english: 'this house', highlight: 'aquesta' },
+            { catalan: 'aquests nens', english: 'these children', highlight: 'aquests' },
+            { catalan: 'aquestes flors', english: 'these flowers', highlight: 'aquestes' },
+          ],
+          tips: [
+            'AQUEST (masc sing), AQUESTA (fem sing)',
+            'AQUESTS (masc pl), AQUESTES (fem pl)',
+            'For things you can touch or that are very close',
+          ],
+        },
+        {
+          title: 'Aquell/Aquella (That - far from speaker)',
+          explanation: 'Use for things far from the speaker.',
+          examples: [
+            { catalan: 'aquell edifici', english: 'that building (over there)', highlight: 'aquell' },
+            { catalan: 'aquella muntanya', english: 'that mountain', highlight: 'aquella' },
+            { catalan: 'aquells cotxes', english: 'those cars', highlight: 'aquells' },
+            { catalan: 'aquelles persones', english: 'those people', highlight: 'aquelles' },
+          ],
+          tips: [
+            'AQUELL (masc sing), AQUELLA (fem sing)',
+            'AQUELLS (masc pl), AQUELLES (fem pl)',
+            'For things at a distance',
+          ],
+        },
+        {
+          title: 'Neuter Demonstratives',
+          explanation: 'For abstract ideas or when not referring to a specific noun.',
+          examples: [
+            { catalan: 'Això és important', english: 'This is important', highlight: 'Això' },
+            { catalan: 'Allò era difícil', english: 'That was difficult', highlight: 'Allò' },
+            { catalan: 'Què és això?', english: 'What is this?', highlight: 'això' },
+          ],
+          tips: [
+            'AIXÒ = this (thing/concept)',
+            'ALLÒ = that (thing/concept)',
+            'Use when not pointing to a specific gendered noun',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'demonstrative-1',
+        type: 'fill-blank',
+        question: '___ és el meu amic Pere. (This is my friend Pere - pointing to someone near)',
+        correctAnswer: 'Aquest',
+        explanation: '"Aquest" for masculine, near the speaker.',
+      },
+      {
+        id: 'demonstrative-2',
+        type: 'multiple-choice',
+        question: 'How do you say "those houses" (far away)?',
+        options: ['aquestes cases', 'aquelles cases', 'aquest cases', 'aquella cases'],
+        correctAnswer: 'aquelles cases',
+        explanation: '"Cases" is feminine plural, far away = aquelles.',
+      },
+      {
+        id: 'demonstrative-3',
+        type: 'translate',
+        question: 'What is that?',
+        targetLanguage: 'catalan',
+        hints: ['què', 'és', 'això/allò'],
+        correctAnswer: 'Què és això?',
+        explanation: 'Use "això" for nearby things, "allò" for distant things.',
+      },
+    ],
+    relatedCategories: ['Adjectives'],
+  },
+
+  // LESSON: Present Tense -ir Verbs
+  {
+    id: 'present-tense-ir',
+    title: 'Present Tense: -ir Verbs',
+    titleCatalan: 'Present: verbs en -ir',
+    category: 'verbs',
+    difficulty: 'beginner',
+    icon: '🔤',
+    estimatedMinutes: 12,
+    content: {
+      introduction: 'The third verb group in Catalan ends in -IR. Many of these verbs have stem changes, so pay attention to the patterns!',
+      sections: [
+        {
+          title: 'Pure -IR Verbs (like "dormir")',
+          explanation: 'Regular -IR verbs follow this pattern:',
+          examples: [
+            { catalan: 'Dormo vuit hores', english: 'I sleep eight hours', highlight: 'Dormo' },
+            { catalan: 'Els nens dormen', english: 'The children sleep', highlight: 'dormen' },
+          ],
+          table: {
+            verb: 'dormir',
+            verbEnglish: 'to sleep',
+            tense: 'Present',
+            conjugations: [
+              { pronoun: 'jo', form: 'dormo' },
+              { pronoun: 'tu', form: 'dorms' },
+              { pronoun: 'ell/ella', form: 'dorm' },
+              { pronoun: 'nosaltres', form: 'dormim' },
+              { pronoun: 'vosaltres', form: 'dormiu' },
+              { pronoun: 'ells/elles', form: 'dormen' },
+            ],
+          },
+          tips: [
+            'The endings: -o, -s, -(none), -im, -iu, -en',
+            'Similar to -RE verbs but with -im, -iu for nosaltres/vosaltres',
+          ],
+        },
+        {
+          title: 'Incoative -IR Verbs (like "servir")',
+          explanation: 'Many -IR verbs add -eix- in some forms. These are called "incoative" verbs.',
+          examples: [
+            { catalan: 'Serveixo el dinar', english: 'I serve lunch', highlight: 'Serveixo' },
+            { catalan: 'Prefereixo el te', english: 'I prefer tea', highlight: 'Prefereixo' },
+          ],
+          table: {
+            verb: 'servir',
+            verbEnglish: 'to serve',
+            tense: 'Present',
+            conjugations: [
+              { pronoun: 'jo', form: 'serveixo', irregular: true },
+              { pronoun: 'tu', form: 'serveixes', irregular: true },
+              { pronoun: 'ell/ella', form: 'serveix', irregular: true },
+              { pronoun: 'nosaltres', form: 'servim' },
+              { pronoun: 'vosaltres', form: 'serviu' },
+              { pronoun: 'ells/elles', form: 'serveixen', irregular: true },
+            ],
+          },
+          tips: [
+            'The -eix- appears in jo, tu, ell/ella, ells/elles',
+            'Nosaltres and vosaltres are regular',
+            'Common incoative verbs: servir, preferir, decidir, repetir',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'ir-verb-1',
+        type: 'fill-blank',
+        question: 'Jo ___ a les onze. (I sleep at eleven - dormir)',
+        correctAnswer: 'dormo',
+        explanation: 'Regular -IR verb: dorm + o = dormo.',
+      },
+      {
+        id: 'ir-verb-2',
+        type: 'multiple-choice',
+        question: 'Complete: Ella ___ el cafè. (She serves the coffee - servir)',
+        options: ['servo', 'serveix', 'serveixo', 'servim'],
+        correctAnswer: 'serveix',
+        explanation: 'Incoative verb: for ell/ella, use serveix.',
+      },
+    ],
+    relatedCategories: ['Verbs'],
+  },
+
+  // LESSON: Reflexive Verbs
+  {
+    id: 'reflexive-verbs',
+    title: 'Reflexive Verbs',
+    titleCatalan: 'Els verbs reflexius',
+    category: 'verbs',
+    difficulty: 'intermediate',
+    icon: '🔄',
+    estimatedMinutes: 15,
+    content: {
+      introduction: 'Reflexive verbs express actions done to oneself. They\'re very common in Catalan for daily routines!',
+      sections: [
+        {
+          title: 'Reflexive Pronouns',
+          explanation: 'Reflexive verbs use special pronouns that refer back to the subject.',
+          examples: [
+            { catalan: 'Em rento les mans', english: 'I wash my hands', highlight: 'Em' },
+            { catalan: 'Et lleves tard', english: 'You get up late', highlight: 'Et' },
+            { catalan: 'Es dutxa cada dia', english: 'She showers every day', highlight: 'Es' },
+          ],
+          tips: [
+            'EM = myself (jo)',
+            'ET = yourself (tu)',
+            'ES = himself/herself/itself (ell/ella)',
+            'ENS = ourselves (nosaltres)',
+            'US = yourselves (vosaltres)',
+            'ES = themselves (ells/elles)',
+          ],
+        },
+        {
+          title: 'Common Reflexive Verbs',
+          explanation: 'Many daily routine verbs are reflexive in Catalan.',
+          examples: [
+            { catalan: 'llevar-se', english: 'to get up', highlight: 'llevar-se' },
+            { catalan: 'dutxar-se', english: 'to shower', highlight: 'dutxar-se' },
+            { catalan: 'vestir-se', english: 'to get dressed', highlight: 'vestir-se' },
+            { catalan: 'pentinar-se', english: 'to comb one\'s hair', highlight: 'pentinar-se' },
+            { catalan: 'rentar-se', english: 'to wash oneself', highlight: 'rentar-se' },
+          ],
+          table: {
+            verb: 'llevar-se',
+            verbEnglish: 'to get up',
+            tense: 'Present',
+            conjugations: [
+              { pronoun: 'jo', form: 'em llevo' },
+              { pronoun: 'tu', form: 'et lleves' },
+              { pronoun: 'ell/ella', form: 'es lleva' },
+              { pronoun: 'nosaltres', form: 'ens llevem' },
+              { pronoun: 'vosaltres', form: 'us lleveu' },
+              { pronoun: 'ells/elles', form: 'es lleven' },
+            ],
+          },
+          tips: [
+            'The pronoun goes BEFORE the conjugated verb',
+            'In infinitives, the pronoun attaches: llevar-se',
+            'Many verbs that aren\'t reflexive in English are reflexive in Catalan',
+          ],
+        },
+        {
+          title: 'Pronoun Placement',
+          explanation: 'The reflexive pronoun changes position with infinitives and commands.',
+          examples: [
+            { catalan: 'Vull dutxar-me', english: 'I want to shower', highlight: 'dutxar-me' },
+            { catalan: 'Lleva\'t!', english: 'Get up!', highlight: 'Lleva\'t' },
+            { catalan: 'Em vull dutxar', english: 'I want to shower (alt.)', highlight: 'Em' },
+          ],
+          tips: [
+            'With infinitive: pronoun can attach (dutxar-me) or go before the conjugated verb (em vull dutxar)',
+            'With commands: pronoun attaches (Lleva\'t!)',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'reflexive-1',
+        type: 'fill-blank',
+        question: 'Jo ___ a les set del matí. (I get up at 7 in the morning)',
+        correctAnswer: 'em llevo',
+        explanation: 'Reflexive pronoun "em" + verb "llevo".',
+      },
+      {
+        id: 'reflexive-2',
+        type: 'sentence-build',
+        question: 'Arrange: (She showers every day)',
+        words: ['dia', 'dutxa', 'Es', 'cada'],
+        correctAnswer: 'Es dutxa cada dia',
+        explanation: 'Reflexive pronoun (Es) comes before the verb (dutxa).',
+      },
+      {
+        id: 'reflexive-3',
+        type: 'multiple-choice',
+        question: 'How do you say "We get dressed"?',
+        options: ['Ens vestim', 'Es vestim', 'Em vestim', 'Vestim-nos'],
+        correctAnswer: 'Ens vestim',
+        explanation: '"Nosaltres" uses the reflexive pronoun "ens".',
+      },
+    ],
+    relatedCategories: ['Verbs', 'Pronouns'],
+  },
+
+  // LESSON: Direct Object Pronouns
+  {
+    id: 'direct-object-pronouns',
+    title: 'Direct Object Pronouns',
+    titleCatalan: 'Els pronoms febles de CD',
+    category: 'pronouns',
+    difficulty: 'intermediate',
+    icon: '➡️',
+    estimatedMinutes: 15,
+    content: {
+      introduction: 'Direct object pronouns replace the thing directly receiving the action. They\'re called "weak pronouns" (pronoms febles) in Catalan.',
+      sections: [
+        {
+          title: 'The Direct Object Pronouns',
+          explanation: 'These pronouns replace direct objects to avoid repetition.',
+          examples: [
+            { catalan: 'Veus el gat? Sí, el veig.', english: 'Do you see the cat? Yes, I see it.', highlight: 'el' },
+            { catalan: 'Tens la clau? Sí, la tinc.', english: 'Do you have the key? Yes, I have it.', highlight: 'la' },
+            { catalan: 'Em veus?', english: 'Do you see me?', highlight: 'Em' },
+          ],
+          tips: [
+            'EM = me',
+            'ET = you (informal)',
+            'EL = him / it (masc)',
+            'LA = her / it (fem)',
+            'ENS = us',
+            'US = you (plural)',
+            'ELS = them (masc)',
+            'LES = them (fem)',
+          ],
+        },
+        {
+          title: 'Pronoun Placement',
+          explanation: 'Direct object pronouns go BEFORE the conjugated verb.',
+          examples: [
+            { catalan: 'El compro demà', english: 'I\'ll buy it tomorrow', highlight: 'El' },
+            { catalan: 'La veig cada dia', english: 'I see her every day', highlight: 'La' },
+            { catalan: 'No els conec', english: 'I don\'t know them', highlight: 'els' },
+          ],
+          tips: [
+            'Before the verb: El veig (I see it)',
+            'Before "no": No el veig (I don\'t see it)',
+            'With infinitives, can attach: Vull veure-la or La vull veure',
+          ],
+        },
+        {
+          title: 'Elision and Contraction',
+          explanation: 'Some pronouns contract with vowels.',
+          examples: [
+            { catalan: "L'estimo", english: 'I love him/her', highlight: "L'" },
+            { catalan: 'M\'ajudes?', english: 'Will you help me?', highlight: "M'" },
+            { catalan: "T'entenc", english: 'I understand you', highlight: "T'" },
+          ],
+          tips: [
+            'Before vowels: em → m\', et → t\', el/la → l\'',
+            'Examples: m\'agrada, l\'he vist, t\'escolto',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'dop-1',
+        type: 'fill-blank',
+        question: 'Vols el cafè? Sí, ___ vull. (Do you want the coffee? Yes, I want it.)',
+        correctAnswer: 'el',
+        explanation: '"El cafè" is masculine singular, so we use "el".',
+      },
+      {
+        id: 'dop-2',
+        type: 'multiple-choice',
+        question: 'How do you say "I see them (feminine)"?',
+        options: ['Els veig', 'Les veig', 'La veig', 'Los veig'],
+        correctAnswer: 'Les veig',
+        explanation: 'Feminine plural direct object uses "les".',
+      },
+      {
+        id: 'dop-3',
+        type: 'translate',
+        question: 'I love you (informal)',
+        targetLanguage: 'catalan',
+        hints: ['estimo', "t'"],
+        correctAnswer: "T'estimo",
+        explanation: '"Et" contracts to "t\'" before a vowel.',
+      },
+    ],
+    relatedCategories: ['Pronouns'],
+  },
+
+  // LESSON: Past Tense - Preterit Perifràstic
+  {
+    id: 'past-periphrastic',
+    title: 'Past Tense: Preterit Perifràstic',
+    titleCatalan: 'El pretèrit perifràstic',
+    category: 'tenses',
+    difficulty: 'intermediate',
+    icon: '⏮️',
+    estimatedMinutes: 15,
+    content: {
+      introduction: 'The most common past tense in spoken Catalan! It\'s formed with "anar" (to go) + infinitive. Yes, "went" + verb!',
+      sections: [
+        {
+          title: 'Formation',
+          explanation: 'Use the present tense of "anar" + the infinitive of the main verb.',
+          examples: [
+            { catalan: 'Vaig menjar', english: 'I ate', highlight: 'Vaig' },
+            { catalan: 'Vas parlar', english: 'You spoke', highlight: 'Vas' },
+            { catalan: 'Va arribar', english: 'He/She arrived', highlight: 'Va' },
+            { catalan: 'Vam comprar', english: 'We bought', highlight: 'Vam' },
+          ],
+          table: {
+            verb: 'menjar',
+            verbEnglish: 'to eat (past)',
+            tense: 'Preterit Perifràstic',
+            conjugations: [
+              { pronoun: 'jo', form: 'vaig menjar' },
+              { pronoun: 'tu', form: 'vas menjar' },
+              { pronoun: 'ell/ella', form: 'va menjar' },
+              { pronoun: 'nosaltres', form: 'vam menjar' },
+              { pronoun: 'vosaltres', form: 'vau menjar' },
+              { pronoun: 'ells/elles', form: 'van menjar' },
+            ],
+          },
+          tips: [
+            'VAIG, VAS, VA, VAM, VAU, VAN + infinitive',
+            'The main verb stays in infinitive form',
+            'This is the most common past tense in everyday speech',
+          ],
+        },
+        {
+          title: 'Using It',
+          explanation: 'Use for completed actions in the past.',
+          examples: [
+            { catalan: 'Ahir vaig anar al cine', english: 'Yesterday I went to the cinema', highlight: 'vaig anar' },
+            { catalan: 'Què vas fer?', english: 'What did you do?', highlight: 'vas fer' },
+            { catalan: 'Van arribar tard', english: 'They arrived late', highlight: 'Van arribar' },
+          ],
+          tips: [
+            'Used for specific completed actions',
+            'Common with time markers: ahir, l\'any passat, fa dos dies',
+            'In writing, the simple preterite is sometimes used instead',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'past-1',
+        type: 'fill-blank',
+        question: 'Ahir ___ al supermercat. (Yesterday I went to the supermarket)',
+        correctAnswer: 'vaig anar',
+        explanation: 'Vaig (I) + anar (to go) = I went.',
+      },
+      {
+        id: 'past-2',
+        type: 'sentence-build',
+        question: 'Arrange: (She ate paella)',
+        words: ['paella', 'Va', 'menjar'],
+        correctAnswer: 'Va menjar paella',
+        explanation: 'Va (auxiliary for she) + menjar (infinitive) + object.',
+      },
+      {
+        id: 'past-3',
+        type: 'translate',
+        question: 'What did you do yesterday?',
+        targetLanguage: 'catalan',
+        hints: ['què', 'vas', 'fer', 'ahir'],
+        correctAnswer: 'Què vas fer ahir?',
+        explanation: 'Question word + vas (you) + fer (do/make) + ahir (yesterday).',
+      },
+    ],
+    relatedCategories: ['Verbs', 'Tenses'],
+  },
+
+  // LESSON: Imperfect Tense
+  {
+    id: 'imperfect-tense',
+    title: 'Past Tense: Imperfect',
+    titleCatalan: "L'imperfet",
+    category: 'tenses',
+    difficulty: 'intermediate',
+    icon: '🔄',
+    estimatedMinutes: 15,
+    content: {
+      introduction: 'The imperfect tense describes ongoing or habitual actions in the past - things you "used to do" or "were doing".',
+      sections: [
+        {
+          title: 'Regular -AR Verbs',
+          explanation: 'For -AR verbs, replace -ar with these endings:',
+          examples: [
+            { catalan: 'De petit, jugava cada dia', english: 'As a child, I played every day', highlight: 'jugava' },
+            { catalan: 'Parlàvem català a casa', english: 'We used to speak Catalan at home', highlight: 'Parlàvem' },
+          ],
+          table: {
+            verb: 'parlar',
+            verbEnglish: 'to speak',
+            tense: 'Imperfet',
+            conjugations: [
+              { pronoun: 'jo', form: 'parlava' },
+              { pronoun: 'tu', form: 'parlaves' },
+              { pronoun: 'ell/ella', form: 'parlava' },
+              { pronoun: 'nosaltres', form: 'parlàvem' },
+              { pronoun: 'vosaltres', form: 'parlàveu' },
+              { pronoun: 'ells/elles', form: 'parlaven' },
+            ],
+          },
+          tips: [
+            'Endings: -ava, -aves, -ava, -àvem, -àveu, -aven',
+            'Note: jo and ell/ella have the same form',
+          ],
+        },
+        {
+          title: 'Regular -ER/-IR Verbs',
+          explanation: 'For -ER and -IR verbs, use these endings:',
+          examples: [
+            { catalan: 'Vivia a Barcelona', english: 'I lived in Barcelona', highlight: 'Vivia' },
+            { catalan: 'Bevia molta aigua', english: 'He drank a lot of water', highlight: 'Bevia' },
+          ],
+          table: {
+            verb: 'viure',
+            verbEnglish: 'to live',
+            tense: 'Imperfet',
+            conjugations: [
+              { pronoun: 'jo', form: 'vivia' },
+              { pronoun: 'tu', form: 'vivies' },
+              { pronoun: 'ell/ella', form: 'vivia' },
+              { pronoun: 'nosaltres', form: 'vivíem' },
+              { pronoun: 'vosaltres', form: 'vivíeu' },
+              { pronoun: 'ells/elles', form: 'vivien' },
+            ],
+          },
+          tips: [
+            'Endings: -ia, -ies, -ia, -íem, -íeu, -ien',
+            'Same pattern for both -ER and -IR verbs',
+          ],
+        },
+        {
+          title: 'When to Use Imperfect',
+          explanation: 'Use imperfect for background descriptions, habits, and ongoing past states.',
+          examples: [
+            { catalan: 'Quan era petit...', english: 'When I was little...', highlight: 'era' },
+            { catalan: 'Feia bon temps', english: 'The weather was nice', highlight: 'Feia' },
+            { catalan: 'Mentre dormia...', english: 'While I was sleeping...', highlight: 'dormia' },
+          ],
+          tips: [
+            'Habitual past: "Anava al gimnàs cada dia" (I used to go to the gym every day)',
+            'Background: "Feia sol" (It was sunny)',
+            'Ongoing action: "Llegia quan va trucar" (I was reading when he called)',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'imperfect-1',
+        type: 'fill-blank',
+        question: 'Quan era petit, ___ futbol. (When I was little, I played football)',
+        correctAnswer: 'jugava',
+        explanation: 'Habitual action in the past: jugava (used to play).',
+      },
+      {
+        id: 'imperfect-2',
+        type: 'multiple-choice',
+        question: 'How do you say "We used to live in Girona"?',
+        options: ['Vam viure a Girona', 'Vivíem a Girona', 'Viure a Girona', 'Vivim a Girona'],
+        correctAnswer: 'Vivíem a Girona',
+        explanation: 'Habitual/ongoing past state = imperfect: vivíem.',
+      },
+    ],
+    relatedCategories: ['Verbs', 'Tenses'],
+  },
+
+  // LESSON: Future Tense
+  {
+    id: 'future-tense',
+    title: 'Future Tense',
+    titleCatalan: 'El futur',
+    category: 'tenses',
+    difficulty: 'intermediate',
+    icon: '⏭️',
+    estimatedMinutes: 12,
+    content: {
+      introduction: 'The future tense in Catalan adds endings directly to the infinitive. It\'s simpler than you might think!',
+      sections: [
+        {
+          title: 'Formation',
+          explanation: 'Add these endings directly to the infinitive form:',
+          examples: [
+            { catalan: 'Demà parlaré amb ella', english: 'Tomorrow I\'ll speak with her', highlight: 'parlaré' },
+            { catalan: 'Vindràs a la festa?', english: 'Will you come to the party?', highlight: 'Vindràs' },
+          ],
+          table: {
+            verb: 'parlar',
+            verbEnglish: 'to speak',
+            tense: 'Futur',
+            conjugations: [
+              { pronoun: 'jo', form: 'parlaré' },
+              { pronoun: 'tu', form: 'parlaràs' },
+              { pronoun: 'ell/ella', form: 'parlarà' },
+              { pronoun: 'nosaltres', form: 'parlarem' },
+              { pronoun: 'vosaltres', form: 'parlareu' },
+              { pronoun: 'ells/elles', form: 'parlaran' },
+            ],
+          },
+          tips: [
+            'Endings: -é, -às, -à, -em, -eu, -an',
+            'These endings are the same for ALL verb types',
+            'Simply add them to the full infinitive',
+          ],
+        },
+        {
+          title: 'Irregular Stems',
+          explanation: 'Some common verbs have irregular future stems:',
+          examples: [
+            { catalan: 'Faré els deures', english: 'I\'ll do my homework', highlight: 'Faré' },
+            { catalan: 'Tindré temps', english: 'I\'ll have time', highlight: 'Tindré' },
+            { catalan: 'Podrem venir', english: 'We\'ll be able to come', highlight: 'Podrem' },
+          ],
+          tips: [
+            'FER → far- (faré, faràs...)',
+            'TENIR → tindr- (tindré, tindràs...)',
+            'PODER → podr- (podré, podràs...)',
+            'VENIR → vindr- (vindré, vindràs...)',
+            'SABER → sabr- (sabré, sabràs...)',
+            'VOLER → voldr- (voldré, voldràs...)',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'future-1',
+        type: 'fill-blank',
+        question: 'Demà ___ a Barcelona. (Tomorrow I will go to Barcelona - anar)',
+        correctAnswer: 'aniré',
+        explanation: 'Anar + é = aniré.',
+      },
+      {
+        id: 'future-2',
+        type: 'translate',
+        question: 'Will you have time?',
+        targetLanguage: 'catalan',
+        hints: ['tindràs', 'temps'],
+        correctAnswer: 'Tindràs temps?',
+        explanation: 'Tenir has irregular stem tindr-: tindràs.',
+      },
+      {
+        id: 'future-3',
+        type: 'multiple-choice',
+        question: 'How do you say "We will eat at eight"?',
+        options: ['Menjam a les vuit', 'Menjarem a les vuit', 'Vam menjar a les vuit', 'Menjar a les vuit'],
+        correctAnswer: 'Menjarem a les vuit',
+        explanation: 'Menjar + em = menjarem.',
+      },
+    ],
+    relatedCategories: ['Verbs', 'Tenses'],
+  },
+
+  // LESSON: Conditional Mood
+  {
+    id: 'conditional-mood',
+    title: 'Conditional Mood',
+    titleCatalan: 'El condicional',
+    category: 'tenses',
+    difficulty: 'intermediate',
+    icon: '🤔',
+    estimatedMinutes: 12,
+    content: {
+      introduction: 'The conditional expresses what "would" happen. It\'s formed like the future but with different endings.',
+      sections: [
+        {
+          title: 'Formation',
+          explanation: 'Add these endings to the infinitive (or irregular future stem):',
+          examples: [
+            { catalan: 'M\'agradaria viatjar', english: 'I would like to travel', highlight: 'agradaria' },
+            { catalan: 'Podries ajudar-me?', english: 'Could you help me?', highlight: 'Podries' },
+          ],
+          table: {
+            verb: 'parlar',
+            verbEnglish: 'to speak',
+            tense: 'Condicional',
+            conjugations: [
+              { pronoun: 'jo', form: 'parlaria' },
+              { pronoun: 'tu', form: 'parlaries' },
+              { pronoun: 'ell/ella', form: 'parlaria' },
+              { pronoun: 'nosaltres', form: 'parlaríem' },
+              { pronoun: 'vosaltres', form: 'parlaríeu' },
+              { pronoun: 'ells/elles', form: 'parlarien' },
+            ],
+          },
+          tips: [
+            'Endings: -ia, -ies, -ia, -íem, -íeu, -ien',
+            'Same irregular stems as future: far-, tindr-, podr-, etc.',
+            'Jo and ell/ella have the same form',
+          ],
+        },
+        {
+          title: 'Common Uses',
+          explanation: 'The conditional is used for polite requests, hypotheticals, and wishes.',
+          examples: [
+            { catalan: 'Voldria un cafè', english: 'I would like a coffee', highlight: 'Voldria' },
+            { catalan: 'Si pogués, vindria', english: 'If I could, I would come', highlight: 'vindria' },
+            { catalan: 'Hauries de estudiar', english: 'You should study', highlight: 'Hauries' },
+          ],
+          tips: [
+            'Polite requests: Podria... (Could I...)',
+            'Wishes: M\'agradaria... (I would like...)',
+            '"Should": hauria de + infinitive',
+            'Hypothetical: Si tingués diners, compraria... (If I had money, I would buy...)',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'conditional-1',
+        type: 'fill-blank',
+        question: '___ un got d\'aigua, sisplau. (I would like a glass of water)',
+        correctAnswer: 'Voldria',
+        explanation: 'Voler → voldr- + ia = voldria.',
+      },
+      {
+        id: 'conditional-2',
+        type: 'translate',
+        question: 'Could you help me?',
+        targetLanguage: 'catalan',
+        hints: ['podries', 'ajudar-me'],
+        correctAnswer: 'Podries ajudar-me?',
+        explanation: 'Poder → podr- + ies = podries.',
+      },
+    ],
+    relatedCategories: ['Verbs', 'Tenses'],
+  },
+
+  // LESSON: Indirect Object Pronouns
+  {
+    id: 'indirect-object-pronouns',
+    title: 'Indirect Object Pronouns',
+    titleCatalan: 'Els pronoms febles de CI',
+    category: 'pronouns',
+    difficulty: 'intermediate',
+    icon: '↩️',
+    estimatedMinutes: 12,
+    content: {
+      introduction: 'Indirect object pronouns indicate to whom or for whom an action is done. They\'re essential for natural-sounding Catalan!',
+      sections: [
+        {
+          title: 'The Indirect Object Pronouns',
+          explanation: 'These pronouns answer "to whom?" or "for whom?"',
+          examples: [
+            { catalan: 'Li dono el llibre', english: 'I give him/her the book', highlight: 'Li' },
+            { catalan: 'Em diu la veritat', english: 'He tells me the truth', highlight: 'Em' },
+            { catalan: 'Ens escriu cartes', english: 'She writes us letters', highlight: 'Ens' },
+          ],
+          tips: [
+            'EM = to me',
+            'ET = to you (informal)',
+            'LI = to him/her/you (formal)',
+            'ENS = to us',
+            'US = to you (plural)',
+            'ELS = to them',
+          ],
+        },
+        {
+          title: 'Common Verbs with Indirect Objects',
+          explanation: 'These verbs commonly use indirect object pronouns:',
+          examples: [
+            { catalan: "M'agrada el cafè", english: 'I like coffee (lit: coffee pleases to me)', highlight: "M'" },
+            { catalan: 'Li sembla bé', english: 'It seems good to him/her', highlight: 'Li' },
+            { catalan: 'Ens falta temps', english: 'We lack time', highlight: 'Ens' },
+          ],
+          tips: [
+            'AGRADAR: M\'agrada (I like), T\'agrada (you like), Li agrada (he/she likes)',
+            'SEMBLAR: Li sembla (it seems to him/her)',
+            'FALTAR: Em falta (I\'m missing / I need)',
+            'INTERESSAR: M\'interessa (it interests me)',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'iop-1',
+        type: 'fill-blank',
+        question: '___ agrada la música. (I like music)',
+        correctAnswer: "M'",
+        explanation: 'Agradar uses indirect object: M\' (to me) agrada.',
+      },
+      {
+        id: 'iop-2',
+        type: 'multiple-choice',
+        question: 'How do you say "She gives them a gift"?',
+        options: ['Els dóna un regal', 'Les dóna un regal', 'Li dóna un regal', 'Ens dóna un regal'],
+        correctAnswer: 'Els dóna un regal',
+        explanation: '"To them" = els.',
+      },
+    ],
+    relatedCategories: ['Pronouns'],
+  },
+
+  // LESSON: Relative Clauses
+  {
+    id: 'relative-clauses',
+    title: 'Relative Clauses',
+    titleCatalan: 'Les oracions de relatiu',
+    category: 'structure',
+    difficulty: 'intermediate',
+    icon: '🔗',
+    estimatedMinutes: 12,
+    content: {
+      introduction: 'Relative clauses connect ideas using words like "that," "which," "who," and "where." They\'re essential for complex sentences!',
+      sections: [
+        {
+          title: 'QUE (that/which/who)',
+          explanation: 'The most common relative pronoun, used for people and things.',
+          examples: [
+            { catalan: 'El llibre que llegeixes', english: 'The book that you are reading', highlight: 'que' },
+            { catalan: 'La noia que parla', english: 'The girl who is speaking', highlight: 'que' },
+            { catalan: 'Les coses que vull', english: 'The things that I want', highlight: 'que' },
+          ],
+          tips: [
+            'QUE is invariable (doesn\'t change)',
+            'Used for subjects and direct objects',
+            'Can refer to people or things',
+          ],
+        },
+        {
+          title: 'QUI (who - after prepositions)',
+          explanation: 'Use QUI for people after prepositions.',
+          examples: [
+            { catalan: 'L\'home amb qui parlo', english: 'The man with whom I speak', highlight: 'qui' },
+            { catalan: 'La persona a qui escric', english: 'The person to whom I write', highlight: 'qui' },
+          ],
+          tips: [
+            'Use QUI after prepositions when referring to people',
+            'amb qui, a qui, per a qui, de qui',
+          ],
+        },
+        {
+          title: 'ON (where)',
+          explanation: 'Use ON for places.',
+          examples: [
+            { catalan: 'La ciutat on visc', english: 'The city where I live', highlight: 'on' },
+            { catalan: 'El restaurant on mengem', english: 'The restaurant where we eat', highlight: 'on' },
+          ],
+          tips: [
+            'ON = where (for locations)',
+            'Can also be d\'on (from where)',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'relative-1',
+        type: 'fill-blank',
+        question: 'El cotxe ___ he comprat és vermell. (The car that I bought is red)',
+        correctAnswer: 'que',
+        explanation: '"Que" is the general relative pronoun.',
+      },
+      {
+        id: 'relative-2',
+        type: 'multiple-choice',
+        question: 'Complete: La casa ___ viuen és gran.',
+        options: ['que', 'on', 'qui', 'qual'],
+        correctAnswer: 'on',
+        explanation: 'For places, use "on" (where).',
+      },
+      {
+        id: 'relative-3',
+        type: 'sentence-build',
+        question: 'Arrange: (The person who called)',
+        words: ['persona', 'que', 'La', 'trucat', 'ha'],
+        correctAnswer: 'La persona que ha trucat',
+        explanation: 'Subject + que + verb.',
+      },
+    ],
+    relatedCategories: ['Structure'],
+  },
+
+  // LESSON: Present Subjunctive
+  {
+    id: 'present-subjunctive',
+    title: 'Present Subjunctive',
+    titleCatalan: 'El present de subjuntiu',
+    category: 'tenses',
+    difficulty: 'advanced',
+    icon: '💭',
+    estimatedMinutes: 20,
+    content: {
+      introduction: 'The subjunctive mood expresses doubt, wishes, emotions, and hypothetical situations. It\'s essential for expressing nuance!',
+      sections: [
+        {
+          title: 'Formation - AR Verbs',
+          explanation: 'For -AR verbs, use these endings:',
+          examples: [
+            { catalan: 'Vull que parlis', english: 'I want you to speak', highlight: 'parlis' },
+            { catalan: 'Espero que arribi', english: 'I hope he/she arrives', highlight: 'arribi' },
+          ],
+          table: {
+            verb: 'parlar',
+            verbEnglish: 'to speak',
+            tense: 'Present Subjuntiu',
+            conjugations: [
+              { pronoun: 'jo', form: 'parli' },
+              { pronoun: 'tu', form: 'parlis' },
+              { pronoun: 'ell/ella', form: 'parli' },
+              { pronoun: 'nosaltres', form: 'parlem' },
+              { pronoun: 'vosaltres', form: 'parleu' },
+              { pronoun: 'ells/elles', form: 'parlin' },
+            ],
+          },
+          tips: [
+            'Endings: -i, -is, -i, -em, -eu, -in',
+            'Similar to imperative forms',
+          ],
+        },
+        {
+          title: 'Formation - ER/IR Verbs',
+          explanation: 'For -ER and -IR verbs:',
+          examples: [
+            { catalan: 'Cal que vingui', english: 'It\'s necessary that he/she comes', highlight: 'vingui' },
+          ],
+          table: {
+            verb: 'viure',
+            verbEnglish: 'to live',
+            tense: 'Present Subjuntiu',
+            conjugations: [
+              { pronoun: 'jo', form: 'visqui' },
+              { pronoun: 'tu', form: 'visquis' },
+              { pronoun: 'ell/ella', form: 'visqui' },
+              { pronoun: 'nosaltres', form: 'visquem' },
+              { pronoun: 'vosaltres', form: 'visqueu' },
+              { pronoun: 'ells/elles', form: 'visquin' },
+            ],
+          },
+        },
+        {
+          title: 'When to Use It',
+          explanation: 'The subjunctive appears after certain triggers:',
+          examples: [
+            { catalan: 'Vull que vinguis', english: 'I want you to come (desire)', highlight: 'vinguis' },
+            { catalan: 'Dubto que sàpiga', english: 'I doubt that he/she knows (doubt)', highlight: 'sàpiga' },
+            { catalan: 'És important que estudïis', english: 'It\'s important that you study (necessity)', highlight: 'estudïis' },
+          ],
+          tips: [
+            'After DESIRE verbs: voler, desitjar, preferir',
+            'After DOUBT verbs: dubtar, no creure',
+            'After EMOTION verbs: alegrar-se, tenir por',
+            'After IMPERSONAL expressions: cal que, és important que',
+            'After COMMANDS: dir que, demanar que',
+          ],
+        },
+      ],
+    },
+    exercises: [
+      {
+        id: 'subjunctive-1',
+        type: 'fill-blank',
+        question: 'Vull que ___ a la festa. (I want you to come to the party)',
+        correctAnswer: 'vinguis',
+        explanation: 'After "vull que" (I want that), use subjunctive.',
+      },
+      {
+        id: 'subjunctive-2',
+        type: 'multiple-choice',
+        question: 'Complete: És important que ___. (It\'s important that he studies)',
+        options: ['estudia', 'estudïi', 'estudiar', 'estudiava'],
+        correctAnswer: 'estudïi',
+        explanation: 'After "és important que", use subjunctive.',
+      },
+    ],
+    relatedCategories: ['Verbs', 'Tenses'],
   },
 ];
 
