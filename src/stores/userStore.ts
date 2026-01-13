@@ -263,17 +263,18 @@ export const useUserStore = create<UserState>()(
         else if (progress.currentStreak >= 7) multiplier = XP_VALUES.STREAK_BONUS_7;
 
         const bonusXP = Math.round(amount * multiplier);
-        const newXP = progress.xp + bonusXP;
+        const newXP = (progress.xp || 0) + bonusXP;
         const newLevel = getLevelForXP(newXP).level;
 
-        // Update daily XP tracking
+        // Update daily XP tracking - ensure dailyActivity exists
         const todayKey = getTodayKey();
-        const todayActivity = progress.dailyActivity[todayKey] || { cards: 0, xp: 0 };
+        const dailyActivity = progress.dailyActivity || {};
+        const todayActivity = dailyActivity[todayKey] || { cards: 0, xp: 0 };
         const updatedDailyActivity = {
-          ...progress.dailyActivity,
+          ...dailyActivity,
           [todayKey]: {
             ...todayActivity,
-            xp: todayActivity.xp + bonusXP,
+            xp: (todayActivity.xp || 0) + bonusXP,
           },
         };
 
@@ -373,21 +374,22 @@ export const useUserStore = create<UserState>()(
       recordStudySession: async (cardsReviewed: number, correctAnswers: number, timeSpentMs: number) => {
         const { user, progress } = get();
 
-        // Update daily activity
+        // Update daily activity - ensure dailyActivity exists
         const todayKey = getTodayKey();
-        const todayActivity = progress.dailyActivity[todayKey] || { cards: 0, xp: 0 };
+        const dailyActivity = progress.dailyActivity || {};
+        const todayActivity = dailyActivity[todayKey] || { cards: 0, xp: 0 };
         const updatedDailyActivity = {
-          ...progress.dailyActivity,
+          ...dailyActivity,
           [todayKey]: {
-            cards: todayActivity.cards + cardsReviewed,
-            xp: todayActivity.xp, // XP is tracked separately via addXP
+            cards: (todayActivity.cards || 0) + cardsReviewed,
+            xp: todayActivity.xp || 0, // XP is tracked separately via addXP
           },
         };
 
         const newProgress: Partial<UserProgress> = {
-          totalCardsReviewed: progress.totalCardsReviewed + cardsReviewed,
-          totalCorrect: progress.totalCorrect + correctAnswers,
-          totalTimeSpentMs: progress.totalTimeSpentMs + timeSpentMs,
+          totalCardsReviewed: (progress.totalCardsReviewed || 0) + cardsReviewed,
+          totalCorrect: (progress.totalCorrect || 0) + correctAnswers,
+          totalTimeSpentMs: (progress.totalTimeSpentMs || 0) + timeSpentMs,
           dailyActivity: updatedDailyActivity,
         };
 
