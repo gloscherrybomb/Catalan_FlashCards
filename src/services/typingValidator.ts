@@ -37,6 +37,18 @@ export function normalizeForComparison(text: string): string {
     .replace(/\s+/g, ' '); // Normalize whitespace
 }
 
+// Normalize for loose comparison (ignores spaces entirely)
+// E.g., "goodnight" = "good night", "thankyou" = "thank you"
+export function normalizeLooseComparison(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/·/g, '') // Remove middle dot
+    .replace(/[-\s]+/g, ''); // Remove all spaces and hyphens
+}
+
 export function validateTyping(userAnswer: string, correctAnswer: string): TypingResult {
   const trimmedUser = userAnswer.trim();
   const trimmedCorrect = correctAnswer.trim();
@@ -82,6 +94,21 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
         userAnswer: trimmedUser,
         correctAnswer: trimmedCorrect,
         corrections,
+      };
+    }
+
+    // Tier 3.5: Loose comparison ignoring spaces ("goodnight" = "good night")
+    const looseUser = normalizeLooseComparison(trimmedUser);
+    const looseForm = normalizeLooseComparison(cleanedForm);
+
+    if (looseUser === looseForm) {
+      // Space difference only - count as correct
+      return {
+        isCorrect: true,
+        isAcceptable: true,
+        userAnswer: trimmedUser,
+        correctAnswer: trimmedCorrect,
+        corrections: [],
       };
     }
 

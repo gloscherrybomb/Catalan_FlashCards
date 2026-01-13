@@ -97,8 +97,8 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
 
     return (
       <div className="mt-4 space-y-2">
-        <p className="text-sm text-gray-600">Correct answer:</p>
-        <div className="p-3 bg-white rounded-lg font-mono text-lg">
+        <p className="text-sm text-gray-600 dark:text-gray-400">Correct answer:</p>
+        <div className="p-3 bg-white dark:bg-gray-700 rounded-lg font-mono text-lg text-gray-800 dark:text-white">
           {correctAnswer.split('').map((char, i) => {
             const correction = result.corrections.find(c => c.position === i);
             if (correction) {
@@ -107,8 +107,8 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
                   key={i}
                   className={`px-0.5 rounded ${
                     correction.type === 'accent'
-                      ? 'bg-yellow-200 text-yellow-800'
-                      : 'bg-red-200 text-red-800'
+                      ? 'bg-miro-yellow/40 text-amber-800 dark:text-yellow-200'
+                      : 'bg-miro-red/40 text-red-800 dark:text-red-200'
                   }`}
                   title={`Expected "${correction.expected}", got "${correction.received}"`}
                 >
@@ -121,7 +121,7 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
         </div>
 
         {result.corrections.some(c => c.type === 'accent') && (
-          <p className="text-sm text-yellow-700">
+          <p className="text-sm text-amber-700 dark:text-yellow-400">
             Pay attention to accents! They change pronunciation and meaning.
           </p>
         )}
@@ -132,23 +132,23 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Question card */}
-      <div className="bg-white rounded-3xl shadow-playful p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-playful p-6 mb-6 border-3 border-miro-blue dark:border-ink-light/50">
         <div className="flex items-start justify-between mb-4">
           <CategoryIcon category={flashcard.category} word={question} size="md" />
           <div className="flex flex-col items-end gap-1">
-            <span className="text-xs font-medium text-gray-400 uppercase">{questionLabel}</span>
+            <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">{questionLabel}</span>
             {flashcard.gender && (
               <Badge text={flashcard.gender === 'masculine' ? 'Masc' : 'Fem'} variant={flashcard.gender} />
             )}
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-800 text-center my-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center my-6">
           {question}
         </h2>
 
         {flashcard.notes && (
-          <p className="text-center text-gray-500 text-sm italic">
+          <p className="text-center text-gray-500 dark:text-gray-400 text-sm italic">
             {flashcard.notes}
           </p>
         )}
@@ -167,9 +167,9 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
             className={`w-full px-4 py-4 text-lg rounded-xl border-2 transition-colors outline-none ${
               hasSubmitted
                 ? result?.isCorrect || result?.isAcceptable
-                  ? 'border-green-400 bg-green-50'
-                  : 'border-red-400 bg-red-50'
-                : 'border-gray-200 focus:border-primary'
+                  ? 'border-miro-green bg-miro-green/10 dark:bg-miro-green/20 text-gray-800 dark:text-white'
+                  : 'border-miro-red bg-miro-red/10 dark:bg-miro-red/20 text-gray-800 dark:text-white'
+                : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:border-miro-blue dark:focus:border-miro-yellow placeholder:text-gray-400 dark:placeholder:text-gray-500'
             }`}
             autoComplete="off"
             autoCapitalize="off"
@@ -180,7 +180,7 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
           <button
             type="button"
             onClick={() => setShowKeyboard(!showKeyboard)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
           >
             <Keyboard size={20} />
           </button>
@@ -193,7 +193,7 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-gray-100 rounded-xl p-3 space-y-2"
+              className="bg-gray-100 dark:bg-gray-700 rounded-xl p-3 space-y-2"
             >
               {CATALAN_KEYBOARD.map((row, rowIndex) => (
                 <div key={rowIndex} className="flex justify-center gap-2">
@@ -202,7 +202,7 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
                       key={char}
                       type="button"
                       onClick={() => insertChar(char)}
-                      className="w-10 h-10 bg-white rounded-lg shadow-sm text-lg font-medium hover:bg-gray-50 active:bg-gray-100"
+                      className="w-10 h-10 bg-white dark:bg-gray-600 rounded-lg shadow-sm text-lg font-medium text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-500 active:bg-gray-100 dark:active:bg-gray-400"
                     >
                       {char}
                     </button>
@@ -234,29 +234,29 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
             exit={{ opacity: 0 }}
             className={`mt-4 p-4 rounded-xl ${
               result.isCorrect
-                ? 'bg-green-100'
+                ? 'bg-miro-green/20 dark:bg-miro-green/30'
                 : result.isAcceptable
-                ? 'bg-yellow-100'
-                : 'bg-red-100'
+                ? 'bg-miro-yellow/20 dark:bg-miro-yellow/30'
+                : 'bg-miro-red/20 dark:bg-miro-red/30'
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
               {result.isCorrect ? (
                 <>
-                  <Check className="w-5 h-5 text-green-600" />
-                  <span className="font-bold text-green-700">Perfect!</span>
+                  <Check className="w-5 h-5 text-miro-green" />
+                  <span className="font-bold text-miro-green">Perfect!</span>
                 </>
               ) : result.isAcceptable ? (
                 <>
-                  <Check className="w-5 h-5 text-yellow-600" />
-                  <span className="font-bold text-yellow-700">
+                  <Check className="w-5 h-5 text-miro-yellow dark:text-yellow-400" />
+                  <span className="font-bold text-amber-700 dark:text-yellow-400">
                     {result.hasTypo ? 'Correct! Minor typo:' : 'Almost! Watch the accents.'}
                   </span>
                 </>
               ) : (
                 <>
-                  <X className="w-5 h-5 text-red-600" />
-                  <span className="font-bold text-red-700">Not quite right</span>
+                  <X className="w-5 h-5 text-miro-red" />
+                  <span className="font-bold text-miro-red">Not quite right</span>
                 </>
               )}
             </div>

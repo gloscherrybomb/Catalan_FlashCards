@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Filter } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -13,14 +14,19 @@ import {
 } from '../data/stories';
 import { useStoryStore } from '../stores/storyStore';
 import { useUserStore } from '../stores/userStore';
+import { useCurriculumStore } from '../stores/curriculumStore';
 
 type ViewMode = 'list' | 'reading' | 'quiz';
 
 export function StoriesPage() {
+  const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<StoryLevel | 'all'>('all');
   const [selectedCategory, setSelectedCategory] = useState<StoryCategory | 'all'>('all');
+
+  // Get curriculum lesson ID from URL (for Learning Path progress tracking)
+  const lessonId = useMemo(() => searchParams.get('lesson') || undefined, [searchParams]);
 
   const {
     getStoryProgress,
@@ -31,6 +37,7 @@ export function StoriesPage() {
   } = useStoryStore();
 
   const addXP = useUserStore(state => state.addXP);
+  const completeCurriculumLesson = useCurriculumStore(state => state.completeLesson);
 
   const filteredStories = useMemo(() => {
     let stories = STORIES;
@@ -67,6 +74,11 @@ export function StoriesPage() {
       // Award XP if passing score (70%+)
       if (score >= 70) {
         await addXP(selectedStory.xpReward);
+      }
+
+      // Mark curriculum lesson as complete if we came from Learning Path
+      if (lessonId && score >= 60) {
+        completeCurriculumLesson(lessonId, score);
       }
     }
   };

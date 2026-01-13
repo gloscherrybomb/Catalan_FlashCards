@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle, Filter, Trophy } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -7,6 +8,7 @@ import { ScenarioSelector } from '../components/conversation/ScenarioSelector';
 import { ChatInterface } from '../components/conversation/ChatInterface';
 import { type ConversationScenario } from '../services/conversationService';
 import { useUserStore } from '../stores/userStore';
+import { useCurriculumStore } from '../stores/curriculumStore';
 
 type ViewMode = 'select' | 'chat' | 'results';
 
@@ -17,12 +19,17 @@ interface ConversationResults {
 }
 
 export function ConversationPage() {
+  const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<ViewMode>('select');
   const [selectedScenario, setSelectedScenario] = useState<ConversationScenario | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'A1' | 'A2' | 'B1' | 'B2'>('all');
   const [results, setResults] = useState<ConversationResults | null>(null);
 
+  // Get curriculum lesson ID from URL (for Learning Path progress tracking)
+  const lessonId = useMemo(() => searchParams.get('lesson') || undefined, [searchParams]);
+
   const addXP = useUserStore(state => state.addXP);
+  const completeLesson = useCurriculumStore(state => state.completeLesson);
 
   const levels: Array<'all' | 'A1' | 'A2' | 'B1' | 'B2'> = ['all', 'A1', 'A2', 'B1', 'B2'];
 
@@ -50,6 +57,13 @@ export function ConversationPage() {
 
     // Award XP
     await addXP(xpEarned);
+
+    // Mark curriculum lesson as complete if we came from Learning Path
+    // Require at least 3 messages exchanged to count as completed
+    if (lessonId && messageCount >= 3) {
+      const score = Math.min(messageCount * 10, 100); // Score based on engagement
+      completeLesson(lessonId, score);
+    }
 
     setViewMode('results');
   };

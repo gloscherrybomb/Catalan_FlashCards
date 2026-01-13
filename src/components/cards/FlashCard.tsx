@@ -358,6 +358,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
               >
                 <span className="text-2xl mb-1" aria-hidden="true">😵</span>
                 <span className="text-xs font-semibold">Again</span>
+                <span className="text-[10px] opacity-50 mt-0.5">1</span>
               </motion.button>
 
               <motion.button
@@ -369,6 +370,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
               >
                 <span className="text-2xl mb-1" aria-hidden="true">😅</span>
                 <span className="text-xs font-semibold">Hard</span>
+                <span className="text-[10px] opacity-50 mt-0.5">2-3</span>
               </motion.button>
 
               <motion.button
@@ -380,6 +382,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
               >
                 <span className="text-2xl mb-1" aria-hidden="true">🙂</span>
                 <span className="text-xs font-semibold">Good</span>
+                <span className="text-[10px] opacity-50 mt-0.5">4</span>
               </motion.button>
 
               <motion.button
@@ -391,6 +394,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
               >
                 <span className="text-2xl mb-1" aria-hidden="true">🤩</span>
                 <span className="text-xs font-semibold">Easy</span>
+                <span className="text-[10px] opacity-50 mt-0.5">5</span>
               </motion.button>
             </div>
           </motion.div>
