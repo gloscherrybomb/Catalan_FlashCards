@@ -16,11 +16,13 @@ import {
   Headphones,
   PenTool,
   Play,
+  RotateCcw,
 } from 'lucide-react';
 import { useCardStore } from '../stores/cardStore';
 import { STARTER_VOCABULARY_COUNT } from '../data/starterVocabulary';
 import { useUserStore } from '../stores/userStore';
 import { useCurriculumStore } from '../stores/curriculumStore';
+import { useGrammarStore } from '../stores/grammarStore';
 import { CURRICULUM_UNITS, getTotalLessons } from '../data/curriculum';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -39,6 +41,10 @@ export function HomePage() {
   const getLevelProgress = useCurriculumStore((state) => state.getLevelProgress);
   const getUnitProgress = useCurriculumStore((state) => state.getUnitProgress);
   const getTotalXPEarned = useCurriculumStore((state) => state.getTotalXPEarned);
+
+  // Grammar review state
+  const grammarNeedsReview = useGrammarStore((state) => state.hasLessonsForReview());
+  const lessonsForReview = useGrammarStore((state) => state.getLessonsNeedingReview());
 
   const hasCards = flashcards.length > 0;
   const nextLesson = getNextLesson();
@@ -311,11 +317,12 @@ export function HomePage() {
                 onClick={() => navigate('/study?mode=dictation')}
               />
               <PracticeCard
-                icon={<BookOpen className="w-6 h-6" />}
-                title="Grammar"
-                subtitle="Learn rules"
-                color="from-amber-500 to-orange-600"
-                onClick={() => navigate('/grammar')}
+                icon={grammarNeedsReview ? <RotateCcw className="w-6 h-6" /> : <BookOpen className="w-6 h-6" />}
+                title={grammarNeedsReview ? "Grammar Review" : "Grammar"}
+                subtitle={grammarNeedsReview ? "Practice weak areas" : "Learn rules"}
+                color={grammarNeedsReview ? "from-rose-500 to-pink-600" : "from-amber-500 to-orange-600"}
+                onClick={() => navigate(grammarNeedsReview ? `/grammar/${lessonsForReview[0]?.lessonId || ''}` : '/grammar')}
+                badge={grammarNeedsReview ? `${lessonsForReview.length}` : undefined}
               />
             </div>
           </motion.section>

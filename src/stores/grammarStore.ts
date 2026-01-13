@@ -19,6 +19,12 @@ interface PersistedGrammarState {
   currentLesson?: string | null;
 }
 
+interface ReviewLesson {
+  lessonId: string;
+  priority: number; // Higher = needs more review
+  reason: 'low_score' | 'old' | 'failed_exercises';
+}
+
 interface GrammarState {
   lessonProgress: Map<string, LessonProgress>;
   currentLesson: string | null;
@@ -35,6 +41,10 @@ interface GrammarState {
   getCompletedLessonCount: () => number;
   getTotalScore: () => number;
   resetProgress: () => void;
+
+  // Review system
+  getLessonsNeedingReview: () => ReviewLesson[];
+  hasLessonsForReview: () => boolean;
 }
 
 const createInitialProgress = (lessonId: string): LessonProgress => ({
@@ -219,6 +229,57 @@ export const useGrammarStore = create<GrammarState>()(
         const cleared = new Map<string, LessonProgress>();
         set({ lessonProgress: cleared, currentLesson: null });
         syncToFirebase(currentUserId, cleared);
+      },
+
+      getLessonsNeedingReview: () => {
+        const { lessonProgress } = get();
+        const reviewLessons: ReviewLesson[] = [];
+        const now = new Date();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        lessonProgress.forEach((progress) => {
+          if (!progress.completed) return;
+
+          // Check for low score (below 80%)
+          if (progress.bestScore < 80) {
+            reviewLessons.push({
+              lessonId: progress.lessonId,
+              priority: 100 - progress.bestScore, // Lower score = higher priority
+              reason: 'low_score',
+            });
+            return;
+          }
+
+          // Check for failed exercises
+          const failedCount = Object.values(progress.exerciseScores).filter(s => !s).length;
+          if (failedCount > 0) {
+            reviewLessons.push({
+              lessonId: progress.lessonId,
+              priority: failedCount * 20,
+              reason: 'failed_exercises',
+            });
+            return;
+          }
+
+          // Check if lesson is old (completed more than a week ago)
+          if (progress.completedAt) {
+            const daysSinceCompletion = (now.getTime() - progress.completedAt.getTime()) / oneDayMs;
+            if (daysSinceCompletion > 7) {
+              reviewLessons.push({
+                lessonId: progress.lessonId,
+                priority: Math.min(daysSinceCompletion, 30), // Cap at 30 days
+                reason: 'old',
+              });
+            }
+          }
+        });
+
+        // Sort by priority (highest first)
+        return reviewLessons.sort((a, b) => b.priority - a.priority);
+      },
+
+      hasLessonsForReview: () => {
+        return get().getLessonsNeedingReview().length > 0;
       },
     }),
     {

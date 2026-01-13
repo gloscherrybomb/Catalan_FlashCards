@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check,
@@ -11,10 +11,51 @@ import {
   Shuffle,
   Languages,
   Link2,
+  Zap,
+  Star,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import type { GrammarExercise as GrammarExerciseType } from '../../data/grammarLessons';
+
+// Color palette for word chips in sentence-build
+const WORD_COLORS = [
+  { bg: 'bg-gradient-to-br from-rose-400 to-pink-500', text: 'text-white', shadow: 'shadow-pink-200 dark:shadow-pink-900/30' },
+  { bg: 'bg-gradient-to-br from-amber-400 to-orange-500', text: 'text-white', shadow: 'shadow-orange-200 dark:shadow-orange-900/30' },
+  { bg: 'bg-gradient-to-br from-emerald-400 to-teal-500', text: 'text-white', shadow: 'shadow-teal-200 dark:shadow-teal-900/30' },
+  { bg: 'bg-gradient-to-br from-sky-400 to-blue-500', text: 'text-white', shadow: 'shadow-blue-200 dark:shadow-blue-900/30' },
+  { bg: 'bg-gradient-to-br from-violet-400 to-purple-500', text: 'text-white', shadow: 'shadow-purple-200 dark:shadow-purple-900/30' },
+  { bg: 'bg-gradient-to-br from-fuchsia-400 to-pink-500', text: 'text-white', shadow: 'shadow-pink-200 dark:shadow-pink-900/30' },
+];
+
+// Confetti particle component
+const ConfettiParticle = ({ delay, color }: { delay: number; color: string }) => (
+  <motion.div
+    initial={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+    animate={{
+      opacity: [1, 1, 0],
+      y: [0, -80, -120],
+      x: [0, (Math.random() - 0.5) * 100],
+      scale: [1, 1.2, 0.5],
+      rotate: [0, Math.random() * 360],
+    }}
+    transition={{ duration: 1.2, delay, ease: 'easeOut' }}
+    className={`absolute w-2 h-2 rounded-sm ${color}`}
+    style={{ left: '50%', top: '50%' }}
+  />
+);
+
+// Success burst animation for correct answers
+const SuccessBurst = () => {
+  const colors = ['bg-miro-yellow', 'bg-miro-green', 'bg-miro-red', 'bg-pink-400', 'bg-sky-400'];
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {[...Array(12)].map((_, i) => (
+        <ConfettiParticle key={i} delay={i * 0.05} color={colors[i % colors.length]} />
+      ))}
+    </div>
+  );
+};
 
 interface GrammarExercisesProps {
   exercises: GrammarExerciseType[];
@@ -46,6 +87,15 @@ export function GrammarExercises({
   const [matchSelections, setMatchSelections] = useState<{ left: string | null; right: string | null }>({ left: null, right: null });
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
 
+  // State for animations
+  const [showSuccessBurst, setShowSuccessBurst] = useState(false);
+  const [recentlyMatched, setRecentlyMatched] = useState<string[]>([]);
+  const [wordColorMap, setWordColorMap] = useState<Map<string, number>>(new Map());
+
+  // Refs for match exercise connection lines
+  const leftRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const rightRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+
   const currentExercise = exercises[currentIndex];
   const progress = ((currentIndex + 1) / exercises.length) * 100;
 
@@ -56,6 +106,13 @@ export function GrammarExercises({
       const shuffled = [...currentExercise.words].sort(() => Math.random() - 0.5);
       setAvailableWords(shuffled);
       setSelectedWords([]);
+
+      // Assign colors to words
+      const colorMap = new Map<string, number>();
+      currentExercise.words.forEach((word, index) => {
+        colorMap.set(word, index % WORD_COLORS.length);
+      });
+      setWordColorMap(colorMap);
     }
   }, [currentExercise]);
 
@@ -104,6 +161,9 @@ export function GrammarExercises({
 
     if (correct) {
       setScore((prev) => prev + 1);
+      // Trigger success burst animation
+      setShowSuccessBurst(true);
+      setTimeout(() => setShowSuccessBurst(false), 1500);
     }
 
     onExerciseComplete?.(currentExercise.id, correct);
@@ -126,11 +186,20 @@ export function GrammarExercises({
       if (nextExercise?.type === 'sentence-build' && nextExercise.words) {
         const shuffled = [...nextExercise.words].sort(() => Math.random() - 0.5);
         setAvailableWords(shuffled);
+
+        // Set up color map for next exercise
+        const colorMap = new Map<string, number>();
+        nextExercise.words.forEach((word, index) => {
+          colorMap.set(word, index % WORD_COLORS.length);
+        });
+        setWordColorMap(colorMap);
       }
 
       // Reset match state
       setMatchSelections({ left: null, right: null });
       setMatchedPairs([]);
+      setRecentlyMatched([]);
+      setShowSuccessBurst(false);
     } else {
       setIsComplete(true);
       onComplete(Math.round((score / exercises.length) * 100));
@@ -195,6 +264,10 @@ export function GrammarExercises({
         p => p.left === newSelections.left && p.right === newSelections.right
       );
       if (pair) {
+        // Mark as recently matched for animation
+        setRecentlyMatched([newSelections.left, newSelections.right]);
+        setTimeout(() => setRecentlyMatched([]), 600);
+
         setMatchedPairs([...matchedPairs, newSelections.left, newSelections.right]);
       }
       // Reset selections after a short delay
@@ -453,194 +526,435 @@ export function GrammarExercises({
               </div>
             )}
 
-            {/* Sentence Build Exercise */}
+            {/* Sentence Build Exercise - Enhanced */}
             {currentExercise.type === 'sentence-build' && (
-              <div className="mb-6 space-y-4">
-                {/* Selected words area */}
-                <div
-                  className={`min-h-[60px] p-3 rounded-xl border-3 ${
+              <div className="mb-6 space-y-5 relative">
+                {/* Success burst animation */}
+                {showSuccessBurst && <SuccessBurst />}
+
+                {/* Sentence construction zone */}
+                <div className="relative">
+                  {/* Decorative corner accents */}
+                  <div className={`absolute -top-1 -left-1 w-4 h-4 border-l-3 border-t-3 rounded-tl-lg ${
                     isAnswered
-                      ? isCorrect
-                        ? 'border-miro-green bg-miro-green/5'
-                        : 'border-miro-red bg-miro-red/5'
-                      : 'border-miro-blue/20 dark:border-ink-light/20 bg-gray-50 dark:bg-gray-800/50'
-                  }`}
-                >
-                  <p className="text-xs text-miro-blue/50 dark:text-ink-light/50 mb-2">Your sentence:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedWords.length === 0 ? (
-                      <span className="text-miro-blue/30 dark:text-ink-light/30 italic">Tap words below to build the sentence...</span>
-                    ) : (
-                      selectedWords.map((word, index) => (
-                        <motion.button
-                          key={`selected-${index}`}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          onClick={() => handleRemoveWord(word, index)}
-                          disabled={isAnswered}
-                          className={`px-3 py-2 rounded-lg font-medium transition-all ${
-                            isAnswered
-                              ? 'bg-white dark:bg-gray-700 text-miro-blue dark:text-ink-light cursor-default'
-                              : 'bg-miro-yellow text-miro-blue hover:bg-miro-yellow/80 cursor-pointer'
-                          }`}
-                        >
-                          {word}
-                        </motion.button>
-                      ))
-                    )}
-                  </div>
-                </div>
+                      ? isCorrect ? 'border-miro-green' : 'border-miro-red'
+                      : 'border-miro-yellow'
+                  }`} />
+                  <div className={`absolute -top-1 -right-1 w-4 h-4 border-r-3 border-t-3 rounded-tr-lg ${
+                    isAnswered
+                      ? isCorrect ? 'border-miro-green' : 'border-miro-red'
+                      : 'border-miro-yellow'
+                  }`} />
+                  <div className={`absolute -bottom-1 -left-1 w-4 h-4 border-l-3 border-b-3 rounded-bl-lg ${
+                    isAnswered
+                      ? isCorrect ? 'border-miro-green' : 'border-miro-red'
+                      : 'border-miro-yellow'
+                  }`} />
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-r-3 border-b-3 rounded-br-lg ${
+                    isAnswered
+                      ? isCorrect ? 'border-miro-green' : 'border-miro-red'
+                      : 'border-miro-yellow'
+                  }`} />
 
-                {/* Available words */}
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-miro-blue/50 dark:text-ink-light/50">Available words:</p>
-                  {!isAnswered && (
-                    <button
-                      onClick={handleShuffleWords}
-                      className="text-xs text-miro-blue/50 dark:text-ink-light/50 hover:text-miro-blue dark:hover:text-ink-light flex items-center gap-1"
-                    >
-                      <Shuffle className="w-3 h-3" />
-                      Shuffle
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {availableWords.map((word, index) => (
-                    <motion.button
-                      key={`available-${index}`}
-                      layout
-                      onClick={() => handleSelectWord(word, index)}
-                      disabled={isAnswered}
-                      className={`px-3 py-2 rounded-lg border-2 font-medium transition-all ${
+                  <div
+                    className={`min-h-[80px] p-4 rounded-xl transition-all duration-300 ${
+                      isAnswered
+                        ? isCorrect
+                          ? 'bg-gradient-to-br from-miro-green/10 to-emerald-50 dark:from-miro-green/10 dark:to-emerald-900/10'
+                          : 'bg-gradient-to-br from-miro-red/10 to-rose-50 dark:from-miro-red/10 dark:to-rose-900/10'
+                        : 'bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-800/80 dark:to-gray-900/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap className={`w-4 h-4 ${
                         isAnswered
-                          ? 'border-gray-200 dark:border-gray-700 text-miro-blue/40 dark:text-ink-light/40 cursor-default'
-                          : 'border-miro-blue/20 dark:border-ink-light/20 text-miro-blue dark:text-ink-light hover:border-miro-yellow hover:bg-miro-yellow/10 cursor-pointer'
-                      }`}
-                    >
-                      {word}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            )}
+                          ? isCorrect ? 'text-miro-green' : 'text-miro-red'
+                          : 'text-miro-yellow'
+                      }`} />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-miro-blue/60 dark:text-ink-light/60">
+                        Your sentence
+                      </span>
+                    </div>
 
-            {/* Translate Exercise */}
-            {currentExercise.type === 'translate' && (
-              <div className="mb-6 space-y-4">
-                {/* Hints */}
-                {currentExercise.hints && currentExercise.hints.length > 0 && (
-                  <div className="p-3 rounded-xl bg-miro-yellow/10 dark:bg-miro-yellow/5 border border-miro-yellow/30">
-                    <p className="text-xs text-miro-blue/60 dark:text-ink-light/60 mb-1">Helpful words:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {currentExercise.hints.map((hint, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-1 bg-white dark:bg-gray-800 rounded-md text-sm font-medium text-miro-blue dark:text-ink-light"
-                        >
-                          {hint}
-                        </span>
-                      ))}
+                    <div className="flex flex-wrap gap-2 min-h-[44px] items-center">
+                      <AnimatePresence mode="popLayout">
+                        {selectedWords.length === 0 ? (
+                          <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.5 }}
+                            className="text-miro-blue/40 dark:text-ink-light/40 italic text-sm"
+                          >
+                            Tap the colorful words below to build your sentence...
+                          </motion.span>
+                        ) : (
+                          selectedWords.map((word, index) => {
+                            const colorIndex = wordColorMap.get(word) ?? 0;
+                            const colors = WORD_COLORS[colorIndex];
+                            return (
+                              <motion.button
+                                key={`selected-${word}-${index}`}
+                                initial={{ scale: 0.5, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.8, opacity: 0, y: -10 }}
+                                whileHover={!isAnswered ? { scale: 1.05, y: -2 } : {}}
+                                whileTap={!isAnswered ? { scale: 0.95 } : {}}
+                                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                onClick={() => handleRemoveWord(word, index)}
+                                disabled={isAnswered}
+                                className={`px-4 py-2 rounded-xl font-semibold shadow-md transition-shadow ${
+                                  isAnswered
+                                    ? `${colors.bg} ${colors.text} cursor-default opacity-80`
+                                    : `${colors.bg} ${colors.text} ${colors.shadow} cursor-pointer hover:shadow-lg`
+                                }`}
+                              >
+                                {word}
+                              </motion.button>
+                            );
+                          })
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
+                </div>
+
+                {/* Available words section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-miro-blue dark:bg-ink-light rounded-full animate-pulse" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-miro-blue/60 dark:text-ink-light/60">
+                        Available words
+                      </span>
+                    </div>
+                    {!isAnswered && (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleShuffleWords}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-miro-blue/5 dark:bg-ink-light/5 text-xs font-medium text-miro-blue/70 dark:text-ink-light/70 hover:bg-miro-blue/10 dark:hover:bg-ink-light/10 transition-colors"
+                      >
+                        <Shuffle className="w-3 h-3" />
+                        Shuffle
+                      </motion.button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <AnimatePresence mode="popLayout">
+                      {availableWords.map((word, index) => {
+                        const colorIndex = wordColorMap.get(word) ?? 0;
+                        const colors = WORD_COLORS[colorIndex];
+                        return (
+                          <motion.button
+                            key={`available-${word}-${index}`}
+                            layout
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.5, opacity: 0 }}
+                            whileHover={!isAnswered ? { scale: 1.08, y: -3 } : {}}
+                            whileTap={!isAnswered ? { scale: 0.92 } : {}}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                            onClick={() => handleSelectWord(word, index)}
+                            disabled={isAnswered}
+                            className={`px-4 py-2 rounded-xl font-semibold shadow-md transition-all ${
+                              isAnswered
+                                ? 'bg-gray-100 dark:bg-gray-800 text-miro-blue/30 dark:text-ink-light/30 cursor-default shadow-none'
+                                : `${colors.bg} ${colors.text} ${colors.shadow} cursor-pointer hover:shadow-lg`
+                            }`}
+                          >
+                            {word}
+                          </motion.button>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Translate Exercise - Enhanced */}
+            {currentExercise.type === 'translate' && (
+              <div className="mb-6 space-y-5 relative">
+                {/* Success burst animation */}
+                {showSuccessBurst && <SuccessBurst />}
+
+                {/* Hints section with enhanced styling */}
+                {currentExercise.hints && currentExercise.hints.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/10 border-2 border-dashed border-miro-yellow/40"
+                  >
+                    {/* Lightbulb decoration */}
+                    <div className="absolute -top-3 left-4 bg-miro-yellow rounded-full p-1.5 shadow-md">
+                      <Star className="w-4 h-4 text-white" />
+                    </div>
+
+                    <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-3 ml-6">
+                      Helpful vocabulary
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {currentExercise.hints.map((hint, i) => (
+                        <motion.span
+                          key={i}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg text-sm font-semibold text-miro-blue dark:text-ink-light shadow-sm border border-amber-200 dark:border-amber-800/30 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-default"
+                        >
+                          {hint}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </motion.div>
                 )}
 
-                {/* Translation input */}
+                {/* Translation input with enhanced styling */}
                 {!isAnswered && (
-                  <div>
-                    <label className="text-xs text-miro-blue/50 dark:text-ink-light/50 mb-1 block">
-                      Your translation ({currentExercise.targetLanguage === 'catalan' ? 'in Catalan' : 'in English'}):
-                    </label>
-                    <input
-                      type="text"
-                      value={inputAnswer}
-                      onChange={(e) => setInputAnswer(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && inputAnswer.trim()) {
-                          checkAnswer();
-                        }
-                      }}
-                      placeholder={`Type your ${currentExercise.targetLanguage === 'catalan' ? 'Catalan' : 'English'} translation...`}
-                      className="w-full px-4 py-3 text-lg border-3 border-miro-blue/20 dark:border-ink-light/20 rounded-xl bg-white dark:bg-gray-800 text-miro-blue dark:text-ink-light placeholder-miro-blue/40 dark:placeholder-ink-light/40 focus:border-miro-yellow focus:ring-0 transition-colors"
-                      autoFocus
-                    />
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Languages className="w-4 h-4 text-miro-blue/60 dark:text-ink-light/60" />
+                      <label className="text-xs font-semibold uppercase tracking-wider text-miro-blue/60 dark:text-ink-light/60">
+                        Your translation ({currentExercise.targetLanguage === 'catalan' ? 'in Catalan' : 'in English'})
+                      </label>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={inputAnswer}
+                        onChange={(e) => setInputAnswer(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && inputAnswer.trim()) {
+                            checkAnswer();
+                          }
+                        }}
+                        placeholder={`Type your ${currentExercise.targetLanguage === 'catalan' ? 'Catalan' : 'English'} translation...`}
+                        className="w-full px-4 py-4 text-lg border-3 border-miro-blue/20 dark:border-ink-light/20 rounded-2xl bg-white dark:bg-gray-800 text-miro-blue dark:text-ink-light placeholder-miro-blue/40 dark:placeholder-ink-light/40 focus:border-miro-yellow focus:ring-4 focus:ring-miro-yellow/20 transition-all"
+                        autoFocus
+                      />
+
+                      {/* Typing progress indicator */}
+                      {inputAnswer.length > 0 && (
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min((inputAnswer.length / 30) * 100, 100)}%` }}
+                          className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-miro-yellow to-miro-green rounded-full"
+                        />
+                      )}
+                    </div>
+
+                    {/* Character count hint */}
+                    {inputAnswer.length > 0 && (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-xs text-miro-blue/40 dark:text-ink-light/40 text-right"
+                      >
+                        {inputAnswer.length} characters typed
+                      </motion.p>
+                    )}
                   </div>
                 )}
 
-                {/* Show user's answer after submission */}
+                {/* Show user's answer after submission - Enhanced */}
                 {isAnswered && (
-                  <div className={`p-3 rounded-xl ${isCorrect ? 'bg-miro-green/10' : 'bg-miro-red/10'}`}>
-                    <p className="text-xs text-miro-blue/50 dark:text-ink-light/50 mb-1">Your translation:</p>
-                    <p className={`font-medium ${isCorrect ? 'text-miro-green' : 'text-miro-red'}`}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className={`relative p-4 rounded-2xl overflow-hidden ${
+                      isCorrect
+                        ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/10'
+                        : 'bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-900/20 dark:to-red-900/10'
+                    }`}
+                  >
+                    {/* Icon badge */}
+                    <div className={`absolute -top-2 -right-2 p-3 rounded-full ${
+                      isCorrect ? 'bg-miro-green' : 'bg-miro-red'
+                    }`}>
+                      {isCorrect ? (
+                        <Check className="w-5 h-5 text-white" />
+                      ) : (
+                        <X className="w-5 h-5 text-white" />
+                      )}
+                    </div>
+
+                    <p className="text-xs font-semibold uppercase tracking-wider text-miro-blue/50 dark:text-ink-light/50 mb-2">
+                      Your translation
+                    </p>
+                    <p className={`text-lg font-semibold ${isCorrect ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
                       {inputAnswer}
                     </p>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             )}
 
-            {/* Match Exercise */}
+            {/* Match Exercise - Enhanced */}
             {currentExercise.type === 'match' && currentExercise.pairs && (
-              <div className="mb-6">
-                <p className="text-xs text-miro-blue/50 dark:text-ink-light/50 mb-3">Match the items on the left with their translations on the right:</p>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Left column */}
-                  <div className="space-y-2">
-                    {currentExercise.pairs.map((pair) => {
+              <div className="mb-6 space-y-4 relative">
+                {/* Success burst animation */}
+                {showSuccessBurst && <SuccessBurst />}
+
+                {/* Header */}
+                <div className="flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-miro-blue/60 dark:text-ink-light/60" />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-miro-blue/60 dark:text-ink-light/60">
+                    Connect matching pairs
+                  </p>
+                </div>
+
+                {/* Match grid with enhanced styling */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Left column - Catalan */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 rounded-full bg-gradient-to-br from-sky-400 to-blue-500" />
+                      <span className="text-xs font-medium text-miro-blue/50 dark:text-ink-light/50">Catalan</span>
+                    </div>
+                    {currentExercise.pairs.map((pair, index) => {
                       const isMatched = matchedPairs.includes(pair.left);
                       const isSelected = matchSelections.left === pair.left;
+                      const isRecentlyMatched = recentlyMatched.includes(pair.left);
 
                       return (
                         <motion.button
                           key={`left-${pair.left}`}
+                          ref={(el) => el && leftRefs.current.set(pair.left, el)}
                           onClick={() => handleMatchSelect('left', pair.left)}
                           disabled={isMatched || isAnswered}
-                          className={`w-full p-3 rounded-xl border-2 text-left font-medium transition-all ${
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{
+                            opacity: 1,
+                            x: 0,
+                            scale: isRecentlyMatched ? [1, 1.05, 1] : 1,
+                          }}
+                          transition={{
+                            delay: index * 0.05,
+                            scale: { duration: 0.4 },
+                          }}
+                          whileHover={!isMatched && !isAnswered ? { scale: 1.02, x: 4 } : {}}
+                          whileTap={!isMatched && !isAnswered ? { scale: 0.98 } : {}}
+                          className={`w-full p-4 rounded-xl border-3 text-left font-semibold transition-all relative overflow-hidden ${
                             isMatched
-                              ? 'border-miro-green bg-miro-green/10 text-miro-green'
+                              ? 'border-emerald-400 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/20 text-emerald-700 dark:text-emerald-300'
                               : isSelected
-                              ? 'border-miro-yellow bg-miro-yellow/10 text-miro-blue dark:text-ink-light'
-                              : 'border-miro-blue/20 dark:border-ink-light/20 text-miro-blue dark:text-ink-light hover:border-miro-yellow'
+                              ? 'border-miro-yellow bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/20 text-miro-blue dark:text-ink-light shadow-lg shadow-yellow-200/50 dark:shadow-yellow-900/20'
+                              : 'border-sky-200 dark:border-sky-800 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/10 text-miro-blue dark:text-ink-light hover:border-sky-400 hover:shadow-md'
                           }`}
                         >
-                          {isMatched && <Check className="inline w-4 h-4 mr-2" />}
-                          {pair.left}
+                          {/* Match indicator */}
+                          {isMatched && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center"
+                            >
+                              <Check className="w-4 h-4 text-white" />
+                            </motion.div>
+                          )}
+
+                          {/* Selection pulse effect */}
+                          {isSelected && (
+                            <motion.div
+                              initial={{ opacity: 0.5, scale: 0.8 }}
+                              animate={{ opacity: 0, scale: 2 }}
+                              transition={{ duration: 0.8, repeat: Infinity }}
+                              className="absolute inset-0 bg-miro-yellow rounded-xl"
+                            />
+                          )}
+
+                          <span className="relative z-10">{pair.left}</span>
                         </motion.button>
                       );
                     })}
                   </div>
 
-                  {/* Right column */}
-                  <div className="space-y-2">
-                    {currentExercise.pairs.map((pair) => {
+                  {/* Right column - English */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 rounded-full bg-gradient-to-br from-violet-400 to-purple-500" />
+                      <span className="text-xs font-medium text-miro-blue/50 dark:text-ink-light/50">English</span>
+                    </div>
+                    {currentExercise.pairs.map((pair, index) => {
                       const isMatched = matchedPairs.includes(pair.right);
                       const isSelected = matchSelections.right === pair.right;
+                      const isRecentlyMatched = recentlyMatched.includes(pair.right);
 
                       return (
                         <motion.button
                           key={`right-${pair.right}`}
+                          ref={(el) => el && rightRefs.current.set(pair.right, el)}
                           onClick={() => handleMatchSelect('right', pair.right)}
                           disabled={isMatched || isAnswered}
-                          className={`w-full p-3 rounded-xl border-2 text-left font-medium transition-all ${
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{
+                            opacity: 1,
+                            x: 0,
+                            scale: isRecentlyMatched ? [1, 1.05, 1] : 1,
+                          }}
+                          transition={{
+                            delay: index * 0.05,
+                            scale: { duration: 0.4 },
+                          }}
+                          whileHover={!isMatched && !isAnswered ? { scale: 1.02, x: -4 } : {}}
+                          whileTap={!isMatched && !isAnswered ? { scale: 0.98 } : {}}
+                          className={`w-full p-4 rounded-xl border-3 text-left font-semibold transition-all relative overflow-hidden ${
                             isMatched
-                              ? 'border-miro-green bg-miro-green/10 text-miro-green'
+                              ? 'border-emerald-400 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/20 text-emerald-700 dark:text-emerald-300'
                               : isSelected
-                              ? 'border-miro-yellow bg-miro-yellow/10 text-miro-blue dark:text-ink-light'
-                              : 'border-miro-blue/20 dark:border-ink-light/20 text-miro-blue dark:text-ink-light hover:border-miro-yellow'
+                              ? 'border-miro-yellow bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/20 text-miro-blue dark:text-ink-light shadow-lg shadow-yellow-200/50 dark:shadow-yellow-900/20'
+                              : 'border-violet-200 dark:border-violet-800 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/10 text-miro-blue dark:text-ink-light hover:border-violet-400 hover:shadow-md'
                           }`}
                         >
-                          {isMatched && <Check className="inline w-4 h-4 mr-2" />}
-                          {pair.right}
+                          {/* Match indicator */}
+                          {isMatched && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center"
+                            >
+                              <Check className="w-4 h-4 text-white" />
+                            </motion.div>
+                          )}
+
+                          {/* Selection pulse effect */}
+                          {isSelected && (
+                            <motion.div
+                              initial={{ opacity: 0.5, scale: 0.8 }}
+                              animate={{ opacity: 0, scale: 2 }}
+                              transition={{ duration: 0.8, repeat: Infinity }}
+                              className="absolute inset-0 bg-miro-yellow rounded-xl"
+                            />
+                          )}
+
+                          <span className="relative z-10">{pair.right}</span>
                         </motion.button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Progress indicator for match */}
+                {/* Enhanced progress indicator */}
                 {!isAnswered && (
-                  <p className="text-center text-sm text-miro-blue/50 dark:text-ink-light/50 mt-3">
-                    {matchedPairs.length / 2} / {currentExercise.pairs.length} pairs matched
-                  </p>
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-miro-blue/50 dark:text-ink-light/50">
+                        Progress
+                      </span>
+                      <span className="text-xs font-bold text-miro-blue dark:text-ink-light">
+                        {matchedPairs.length / 2} / {currentExercise.pairs.length}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(matchedPairs.length / 2 / currentExercise.pairs.length) * 100}%` }}
+                        transition={{ type: 'spring', stiffness: 100 }}
+                        className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             )}

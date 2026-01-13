@@ -12,23 +12,28 @@ import {
   Sparkles,
   Check,
   Filter,
+  LayoutGrid,
+  Type,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { GrammarCard } from '../components/grammar/GrammarCard';
 import { GrammarExercises } from '../components/grammar/GrammarExercise';
 import { ConjugationTable } from '../components/grammar/ConjugationTable';
+import { SentencePatternGrid } from '../components/grammar/SentencePattern';
 import {
   GRAMMAR_LESSONS,
   type GrammarLesson,
   type GrammarExample,
 } from '../data/grammarLessons';
+import { SENTENCE_PATTERNS } from '../data/sentencePatterns';
 import { useGrammarStore } from '../stores/grammarStore';
 import { useCurriculumStore } from '../stores/curriculumStore';
 import { audioService } from '../services/audioService';
 
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 type CategoryFilter = string | 'all';
+type ViewMode = 'lessons' | 'patterns';
 
 // Helper to get nice category labels
 function getCategoryLabel(category: string): string {
@@ -347,6 +352,7 @@ export function GrammarPage() {
   const navigate = useNavigate();
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('lessons');
 
   // Get curriculum lesson ID from URL (for Learning Path progress tracking)
   const curriculumLessonId = searchParams.get('lesson') || undefined;
@@ -409,7 +415,7 @@ export function GrammarPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-miro-blue dark:text-ink-light">
-              Grammar Lessons
+              Grammar
             </h1>
             <p className="text-miro-blue/60 dark:text-ink-light/60 italic">
               Gramàtica
@@ -417,6 +423,48 @@ export function GrammarPage() {
           </div>
         </div>
 
+        {/* View Mode Tabs */}
+        <div className="flex gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+          <button
+            onClick={() => setViewMode('lessons')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+              viewMode === 'lessons'
+                ? 'bg-white dark:bg-gray-700 text-miro-blue dark:text-ink-light shadow-sm'
+                : 'text-miro-blue/60 dark:text-ink-light/60 hover:text-miro-blue dark:hover:text-ink-light'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            Lessons
+          </button>
+          <button
+            onClick={() => setViewMode('patterns')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+              viewMode === 'patterns'
+                ? 'bg-white dark:bg-gray-700 text-miro-blue dark:text-ink-light shadow-sm'
+                : 'text-miro-blue/60 dark:text-ink-light/60 hover:text-miro-blue dark:hover:text-ink-light'
+            }`}
+          >
+            <Type className="w-4 h-4" />
+            Sentence Patterns
+          </button>
+        </div>
+
+        {/* Patterns View */}
+        {viewMode === 'patterns' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="text-miro-blue/70 dark:text-ink-light/70 mb-6">
+              Visual guides showing how Catalan sentences are structured. Click any pattern to see examples and tips.
+            </p>
+            <SentencePatternGrid patterns={SENTENCE_PATTERNS} />
+          </motion.div>
+        )}
+
+        {/* Lessons View */}
+        {viewMode === 'lessons' && (
+          <>
         {/* Progress Summary */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <Card className="bg-gradient-to-br from-miro-green/5 to-miro-green/10 dark:from-miro-green/10 dark:to-miro-green/5 border border-miro-green/20">
@@ -545,6 +593,8 @@ export function GrammarPage() {
               Clear Filters
             </Button>
           </div>
+        )}
+          </>
         )}
       </motion.div>
     </div>
