@@ -4,7 +4,8 @@ import { ChevronRight, ChevronLeft, Check, Trophy, Target, Sparkles } from 'luci
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { PLACEMENT_QUESTIONS, type PlacementQuestion } from '../../data/curriculum';
-import { useCurriculumStore, type PlacementResult } from '../../stores/curriculumStore';
+import { useCurriculumStore } from '../../stores/curriculumStore';
+import type { PlacementResult } from '../../types/curriculum';
 
 interface PlacementTestProps {
   onComplete: (result: PlacementResult) => void;

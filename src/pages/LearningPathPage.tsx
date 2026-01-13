@@ -22,7 +22,8 @@ import {
   type CurriculumUnit,
   type CEFRLevel,
 } from '../data/curriculum';
-import { useCurriculumStore, type PlacementResult } from '../stores/curriculumStore';
+import { useCurriculumStore } from '../stores/curriculumStore';
+import type { PlacementResult } from '../types/curriculum';
 
 type ViewMode = 'overview' | 'placement' | 'unit-detail';
 
