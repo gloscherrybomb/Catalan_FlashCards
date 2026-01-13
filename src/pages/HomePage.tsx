@@ -42,9 +42,12 @@ export function HomePage() {
   const getUnitProgress = useCurriculumStore((state) => state.getUnitProgress);
   const getTotalXPEarned = useCurriculumStore((state) => state.getTotalXPEarned);
 
-  // Grammar review state
-  const grammarNeedsReview = useGrammarStore((state) => state.hasLessonsForReview());
-  const lessonsForReview = useGrammarStore((state) => state.getLessonsNeedingReview());
+  // Grammar review state - get the function, not its result, to avoid infinite re-renders
+  const getLessonsNeedingReview = useGrammarStore((state) => state.getLessonsNeedingReview);
+
+  // Memoize the results to avoid recalculating on every render
+  const lessonsForReview = useMemo(() => getLessonsNeedingReview(), [getLessonsNeedingReview]);
+  const grammarNeedsReview = lessonsForReview.length > 0;
 
   const hasCards = flashcards.length > 0;
   const nextLesson = getNextLesson();
