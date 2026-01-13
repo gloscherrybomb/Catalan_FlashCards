@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookText,
@@ -24,6 +24,7 @@ import {
   type GrammarExample,
 } from '../data/grammarLessons';
 import { useGrammarStore } from '../stores/grammarStore';
+import { useCurriculumStore } from '../stores/curriculumStore';
 import { audioService } from '../services/audioService';
 
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
@@ -101,11 +102,12 @@ function HighlightedExample({ example }: { example: GrammarExample }) {
 }
 
 // Lesson Detail Component
-function LessonDetail({ lesson }: { lesson: GrammarLesson }) {
+function LessonDetail({ lesson, curriculumLessonId }: { lesson: GrammarLesson; curriculumLessonId?: string }) {
   const navigate = useNavigate();
   const [showExercises, setShowExercises] = useState(false);
   const { startLesson, completeExercise, completeLesson, getLessonProgress } =
     useGrammarStore();
+  const completeCurriculumLesson = useCurriculumStore((state) => state.completeLesson);
 
   const progress = getLessonProgress(lesson.id);
   const isCompleted = progress?.completed ?? false;
@@ -119,8 +121,12 @@ function LessonDetail({ lesson }: { lesson: GrammarLesson }) {
     completeExercise(lesson.id, exerciseId, correct);
   };
 
-  const handleAllExercisesComplete = (_score: number) => {
+  const handleAllExercisesComplete = (score: number) => {
     completeLesson(lesson.id);
+    // Also mark curriculum lesson as complete if we came from Learning Path
+    if (curriculumLessonId && score >= 60) {
+      completeCurriculumLesson(curriculumLessonId, score);
+    }
     // Stay on exercises to show completion screen
   };
 
@@ -322,9 +328,13 @@ function LessonDetail({ lesson }: { lesson: GrammarLesson }) {
 // Main Grammar Page Component
 export function GrammarPage() {
   const { lessonId } = useParams<{ lessonId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+
+  // Get curriculum lesson ID from URL (for Learning Path progress tracking)
+  const curriculumLessonId = searchParams.get('lesson') || undefined;
 
   const { getCompletedLessonCount, getTotalScore } = useGrammarStore();
 
@@ -355,7 +365,7 @@ export function GrammarPage() {
 
   // Show lesson detail if we have a lesson
   if (currentLesson) {
-    return <LessonDetail lesson={currentLesson} />;
+    return <LessonDetail lesson={currentLesson} curriculumLessonId={curriculumLessonId} />;
   }
 
   // Show 404 if lessonId is invalid

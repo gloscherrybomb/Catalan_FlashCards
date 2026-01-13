@@ -1,0 +1,2347 @@
+[
+  {
+    "catalan": "autocar",
+    "english": "coach",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "autopista",
+    "english": "motorway",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "aventura",
+    "english": "adventure",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "aviat",
+    "english": "soon, early",
+    "gender": ""
+  },
+  {
+    "catalan": "avorrit",
+    "english": "boring",
+    "gender": ""
+  },
+  {
+    "catalan": "avui",
+    "english": "today",
+    "gender": ""
+  },
+  {
+    "catalan": "baixar",
+    "english": "to go down,",
+    "gender": ""
+  },
+  {
+    "catalan": "to",
+    "english": "get off",
+    "gender": ""
+  },
+  {
+    "catalan": "barat",
+    "english": "cheap",
+    "gender": ""
+  },
+  {
+    "catalan": "barreja",
+    "english": "mixture",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "base",
+    "english": "de dades database",
+    "gender": ""
+  },
+  {
+    "catalan": "berenar",
+    "english": "afternoon snack,",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "afternoon",
+    "english": "tea",
+    "gender": ""
+  },
+  {
+    "catalan": "bistec",
+    "english": "steak",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "blanc, -a",
+    "english": "white",
+    "gender": ""
+  },
+  {
+    "catalan": "boda",
+    "english": "wedding",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "bomba",
+    "english": "bomb",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "bon",
+    "english": "dia good day, good",
+    "gender": ""
+  },
+  {
+    "catalan": "bona",
+    "english": "tarda good afternoon",
+    "gender": ""
+  },
+  {
+    "catalan": "bossa",
+    "english": "bag, purse",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "botifarra",
+    "english": "cooked pork",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "botiga",
+    "english": "shop",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "botiguer, -a",
+    "english": "shopkeeper",
+    "gender": ""
+  },
+  {
+    "catalan": "buit, -da",
+    "english": "empty",
+    "gender": ""
+  },
+  {
+    "catalan": "buscar",
+    "english": "to look for",
+    "gender": ""
+  },
+  {
+    "catalan": "cabra",
+    "english": "goat",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "cada",
+    "english": "each, every",
+    "gender": ""
+  },
+  {
+    "catalan": "calamar",
+    "english": "squidcambrer (m.) waiter",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "caminar",
+    "english": "to walk",
+    "gender": ""
+  },
+  {
+    "catalan": "camisa",
+    "english": "shirt",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "camp",
+    "english": "countryside,",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "campionat",
+    "english": "championship",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "cangur",
+    "english": "babysitter",
+    "gender": ""
+  },
+  {
+    "catalan": "cansat, -ada",
+    "english": "tired",
+    "gender": ""
+  },
+  {
+    "catalan": "cantant",
+    "english": "singer",
+    "gender": ""
+  },
+  {
+    "catalan": "cantonada",
+    "english": "corner",
+    "gender": ""
+  },
+  {
+    "catalan": "canvi",
+    "english": "change",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "other",
+    "english": "hand",
+    "gender": ""
+  },
+  {
+    "catalan": "cap",
+    "english": "head, any,",
+    "gender": ""
+  },
+  {
+    "catalan": "capella",
+    "english": "chapel",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "car, -a",
+    "english": "expensive",
+    "gender": ""
+  },
+  {
+    "catalan": "cara",
+    "english": "face",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "característica",
+    "english": "characteristic",
+    "gender": ""
+  },
+  {
+    "catalan": "carn",
+    "english": "meat",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "carnisseria",
+    "english": "butcher’s",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "carrer",
+    "english": "street",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "carrera",
+    "english": "university degree",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "carretera",
+    "english": "road",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "carril",
+    "english": "trafﬁc lane",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "carta",
+    "english": "letter",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "casa",
+    "english": "house, home",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "casat, -ada",
+    "english": "married",
+    "gender": ""
+  },
+  {
+    "catalan": "casolà",
+    "english": "home-made",
+    "gender": ""
+  },
+  {
+    "catalan": "casteller, -a",
+    "english": "castle-builder",
+    "gender": ""
+  },
+  {
+    "catalan": "cavall",
+    "english": "horse",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "ceba",
+    "english": "onion",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "cervesa",
+    "english": "beer",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "cinturó",
+    "english": "belt",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "circulació",
+    "english": "trafﬁc circulation",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "ciutat",
+    "english": "town, city",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "claredat",
+    "english": "clarity",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "clima",
+    "english": "climate",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "cobrar",
+    "english": "to take payment1111",
+    "gender": ""
+  },
+  {
+    "catalan": "coincidir",
+    "english": "to coincide, to",
+    "gender": ""
+  },
+  {
+    "catalan": "be",
+    "english": "together",
+    "gender": ""
+  },
+  {
+    "catalan": "com",
+    "english": "how, like, as",
+    "gender": ""
+  },
+  {
+    "catalan": "començar",
+    "english": "to start",
+    "gender": ""
+  },
+  {
+    "catalan": "compartir",
+    "english": "share",
+    "gender": ""
+  },
+  {
+    "catalan": "comprar",
+    "english": "to buy",
+    "gender": ""
+  },
+  {
+    "catalan": "comunicar",
+    "english": "to be engaged, to",
+    "gender": ""
+  },
+  {
+    "catalan": "conèixer",
+    "english": "to know (people),",
+    "gender": ""
+  },
+  {
+    "catalan": "connectar",
+    "english": "to connect",
+    "gender": ""
+  },
+  {
+    "catalan": "consigna",
+    "english": "left-luggage ofﬁce",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "consultar",
+    "english": "to consult",
+    "gender": ""
+  },
+  {
+    "catalan": "cordialment",
+    "english": "warm greetings",
+    "gender": ""
+  },
+  {
+    "catalan": "córrer",
+    "english": "run",
+    "gender": ""
+  },
+  {
+    "catalan": "corresponsal",
+    "english": "correspondent",
+    "gender": ""
+  },
+  {
+    "catalan": "correus",
+    "english": "postal service",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "cosa",
+    "english": "thing",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "costat",
+    "english": "side",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "costum",
+    "english": "habit, custom",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "cotxe",
+    "english": "car",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "creure",
+    "english": "to believe",
+    "gender": ""
+  },
+  {
+    "catalan": "cru, -a",
+    "english": "raw",
+    "gender": ""
+  },
+  {
+    "catalan": "cuina",
+    "english": "cuisine, kitchen",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "cuinar",
+    "english": "to cook",
+    "gender": ""
+  },
+  {
+    "catalan": "cuiner",
+    "english": "cook, chef",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "curs",
+    "english": "course",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "cursa",
+    "english": "race",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "curt, -a",
+    "english": "short",
+    "gender": ""
+  },
+  {
+    "catalan": "demanar",
+    "english": "to order, to ask",
+    "gender": ""
+  },
+  {
+    "catalan": "dents",
+    "english": "teeth",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "depèn",
+    "english": "it dependsdependent shopkeeper",
+    "gender": ""
+  },
+  {
+    "catalan": "des",
+    "english": "de from, since",
+    "gender": ""
+  },
+  {
+    "catalan": "desaparèixer",
+    "english": "to disappear",
+    "gender": ""
+  },
+  {
+    "catalan": "després",
+    "english": "after, then",
+    "gender": ""
+  },
+  {
+    "catalan": "destacar",
+    "english": "to point out",
+    "gender": ""
+  },
+  {
+    "catalan": "deute",
+    "english": "debt",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "dia",
+    "english": "day",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "diari",
+    "english": "newspaper",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "dinar",
+    "english": "lunch",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "dintre",
+    "english": "inside",
+    "gender": ""
+  },
+  {
+    "catalan": "dir",
+    "english": "to say",
+    "gender": ""
+  },
+  {
+    "catalan": "directament",
+    "english": "directly",
+    "gender": ""
+  },
+  {
+    "catalan": "directe",
+    "english": "non-stop",
+    "gender": ""
+  },
+  {
+    "catalan": "discutir",
+    "english": "to discuss",
+    "gender": ""
+  },
+  {
+    "catalan": "disponible",
+    "english": "available",
+    "gender": ""
+  },
+  {
+    "catalan": "dissenyador",
+    "english": "designer",
+    "gender": ""
+  },
+  {
+    "catalan": "distingit, -ida",
+    "english": "dear (formal)",
+    "gender": ""
+  },
+  {
+    "catalan": "divertit, -da",
+    "english": "funny,",
+    "gender": ""
+  },
+  {
+    "catalan": "dolent, -a",
+    "english": "bad",
+    "gender": ""
+  },
+  {
+    "catalan": "dona",
+    "english": "woman, wife",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "donar",
+    "english": "to give",
+    "gender": ""
+  },
+  {
+    "catalan": "doncs",
+    "english": "then, well",
+    "gender": ""
+  },
+  {
+    "catalan": "dormir",
+    "english": "to sleep",
+    "gender": ""
+  },
+  {
+    "catalan": "dreta",
+    "english": "right",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "dubtar",
+    "english": "to doubt",
+    "gender": ""
+  },
+  {
+    "catalan": "durant",
+    "english": "during",
+    "gender": ""
+  },
+  {
+    "catalan": "dutxar-se",
+    "english": "to have a shower",
+    "gender": ""
+  },
+  {
+    "catalan": "educat, -ada",
+    "english": "polite",
+    "gender": ""
+  },
+  {
+    "catalan": "empleat, -ada",
+    "english": "employee",
+    "gender": ""
+  },
+  {
+    "catalan": "empresa",
+    "english": "company",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "encantat, -ada",
+    "english": "delighted/pleased",
+    "gender": ""
+  },
+  {
+    "catalan": "encara",
+    "english": "still",
+    "gender": ""
+  },
+  {
+    "catalan": "encàrrec",
+    "english": "errand",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "enciam",
+    "english": "lettuce",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "enllaç",
+    "english": "link",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "enlloc",
+    "english": "de instead of",
+    "gender": ""
+  },
+  {
+    "catalan": "entendre",
+    "english": "understand",
+    "gender": ""
+  },
+  {
+    "catalan": "entrants",
+    "english": "starters",
+    "gender": ""
+  },
+  {
+    "catalan": "entrar",
+    "english": "to go in",
+    "gender": ""
+  },
+  {
+    "catalan": "entre",
+    "english": "between",
+    "gender": ""
+  },
+  {
+    "catalan": "entrepà",
+    "english": "sandwich",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "entrevistador",
+    "english": "interviewer",
+    "gender": ""
+  },
+  {
+    "catalan": "enviar",
+    "english": "to send",
+    "gender": ""
+  },
+  {
+    "catalan": "equipatge",
+    "english": "luggage",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "equivocar-se",
+    "english": "to be mistaken",
+    "gender": ""
+  },
+  {
+    "catalan": "escalada",
+    "english": "rock climbing",
+    "gender": ""
+  },
+  {
+    "catalan": "escarola",
+    "english": "broad-leafed",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "escola",
+    "english": "school",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "escoltar",
+    "english": "to listen",
+    "gender": ""
+  },
+  {
+    "catalan": "escriure",
+    "english": "to write",
+    "gender": ""
+  },
+  {
+    "catalan": "esmorzar",
+    "english": "breakfast",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "espai",
+    "english": "space",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "especialitat",
+    "english": "speciality",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "esperar",
+    "english": "to wait",
+    "gender": ""
+  },
+  {
+    "catalan": "esportiu, -iva",
+    "english": "sports",
+    "gender": ""
+  },
+  {
+    "catalan": "esquerra",
+    "english": "left",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "estació",
+    "english": "de underground",
+    "gender": ""
+  },
+  {
+    "catalan": "metro",
+    "english": "station",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "estalviar",
+    "english": "to save",
+    "gender": ""
+  },
+  {
+    "catalan": "estar",
+    "english": "a punt de to be about to",
+    "gender": ""
+  },
+  {
+    "catalan": "estimar",
+    "english": "to love",
+    "gender": ""
+  },
+  {
+    "catalan": "estona",
+    "english": "while (period of",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "estranger",
+    "english": "foreigner",
+    "gender": ""
+  },
+  {
+    "catalan": "estrella",
+    "english": "star",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "estressant",
+    "english": "stressful",
+    "gender": ""
+  },
+  {
+    "catalan": "estudiar",
+    "english": "to study",
+    "gender": ""
+  },
+  {
+    "catalan": "ètnic",
+    "english": "ethnic",
+    "gender": ""
+  },
+  {
+    "catalan": "explicar",
+    "english": "to explainF",
+    "gender": ""
+  },
+  {
+    "catalan": "fàbrica",
+    "english": "factory",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "fàcil",
+    "english": "easy",
+    "gender": ""
+  },
+  {
+    "catalan": "facturar",
+    "english": "to check in",
+    "gender": ""
+  },
+  {
+    "catalan": "faixa",
+    "english": "sash, belt",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "feina",
+    "english": "work, job",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "fer",
+    "english": "de to work as",
+    "gender": ""
+  },
+  {
+    "catalan": "ferrocarril",
+    "english": "train",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "fora",
+    "english": "outside",
+    "gender": ""
+  },
+  {
+    "catalan": "foraster",
+    "english": "foreigner, outsider",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "força",
+    "english": "quite, a lot",
+    "gender": ""
+  },
+  {
+    "catalan": "forestal",
+    "english": "forestry",
+    "gender": ""
+  },
+  {
+    "catalan": "formatge",
+    "english": "cheese",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "fosc, -a",
+    "english": "dark",
+    "gender": ""
+  },
+  {
+    "catalan": "fresc, -a",
+    "english": "fresh",
+    "gender": ""
+  },
+  {
+    "catalan": "fruita",
+    "english": "fruit",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "fullet",
+    "english": "leaﬂet",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "fum",
+    "english": "smoke",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "gaire",
+    "english": "not very",
+    "gender": ""
+  },
+  {
+    "catalan": "gairebé",
+    "english": "almost",
+    "gender": ""
+  },
+  {
+    "catalan": "gallina",
+    "english": "chicken",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "gamba",
+    "english": "prawn",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "gens",
+    "english": "not at all",
+    "gender": ""
+  },
+  {
+    "catalan": "gent",
+    "english": "people",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "germana",
+    "english": "sister",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "gimnàs",
+    "english": "gym",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "gira",
+    "english": "tour",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "gos",
+    "english": "dog1111",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "gràcies",
+    "english": "thank you",
+    "gender": ""
+  },
+  {
+    "catalan": "gran",
+    "english": "big, old",
+    "gender": ""
+  },
+  {
+    "catalan": "guanyar-se",
+    "english": "la to earn a living",
+    "gender": ""
+  },
+  {
+    "catalan": "gustós",
+    "english": "tasty",
+    "gender": ""
+  },
+  {
+    "catalan": "habitació",
+    "english": "room",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "haver",
+    "english": "de to have to",
+    "gender": ""
+  },
+  {
+    "catalan": "herbolari",
+    "english": "herbalist",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "hora",
+    "english": "hour, time",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "horari",
+    "english": "opening hours",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "illenc, -a",
+    "english": "islander",
+    "gender": ""
+  },
+  {
+    "catalan": "impressora",
+    "english": "computer printer",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "inclòs, -osa",
+    "english": "included",
+    "gender": ""
+  },
+  {
+    "catalan": "infermer, -a",
+    "english": "nurse",
+    "gender": ""
+  },
+  {
+    "catalan": "infusió",
+    "english": "herbal tea",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "iniciar",
+    "english": "to begin",
+    "gender": ""
+  },
+  {
+    "catalan": "inundació",
+    "english": "ﬂood",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "ja",
+    "english": "no longer, already,",
+    "gender": ""
+  },
+  {
+    "catalan": "jardí",
+    "english": "garden",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "julivert",
+    "english": "parsley",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "junt",
+    "english": "together",
+    "gender": ""
+  },
+  {
+    "catalan": "jurat",
+    "english": "jury",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "laboral",
+    "english": "work (related)",
+    "gender": ""
+  },
+  {
+    "catalan": "lent, -a",
+    "english": "slowlitoral (m.) coast (littoral)",
+    "gender": ""
+  },
+  {
+    "catalan": "llarg, -a",
+    "english": "long",
+    "gender": ""
+  },
+  {
+    "catalan": "llavors",
+    "english": "then",
+    "gender": ""
+  },
+  {
+    "catalan": "llegir",
+    "english": "to read",
+    "gender": ""
+  },
+  {
+    "catalan": "llengua",
+    "english": "language",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "llet",
+    "english": "milk",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "lleuger, -a",
+    "english": "light",
+    "gender": ""
+  },
+  {
+    "catalan": "llevar-se",
+    "english": "to get up, to get",
+    "gender": ""
+  },
+  {
+    "catalan": "out",
+    "english": "of bed",
+    "gender": ""
+  },
+  {
+    "catalan": "llibre",
+    "english": "book",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "llibreria",
+    "english": "bookshop",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "llista",
+    "english": "list",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "lliure",
+    "english": "free",
+    "gender": ""
+  },
+  {
+    "catalan": "lloc",
+    "english": "place",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "lloguer",
+    "english": "hire, charge",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "lluç",
+    "english": "hake",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "lluny",
+    "english": "far",
+    "gender": ""
+  },
+  {
+    "catalan": "mà",
+    "english": "hand",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "maco, -a",
+    "english": "handsome,",
+    "gender": ""
+  },
+  {
+    "catalan": "my",
+    "english": "love, good",
+    "gender": ""
+  },
+  {
+    "catalan": "madur, -a",
+    "english": "ripe",
+    "gender": ""
+  },
+  {
+    "catalan": "mai",
+    "english": "never",
+    "gender": ""
+  },
+  {
+    "catalan": "majoria",
+    "english": "majority",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "malament",
+    "english": "badly",
+    "gender": ""
+  },
+  {
+    "catalan": "malauradament",
+    "english": "unfortunately",
+    "gender": ""
+  },
+  {
+    "catalan": "maleta",
+    "english": "suitcase",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "mapa",
+    "english": "map",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "marxa",
+    "english": "action, nightlife,",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "zest",
+    "english": "for life",
+    "gender": ""
+  },
+  {
+    "catalan": "masia",
+    "english": "traditional",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "mateix,-a",
+    "english": "the same",
+    "gender": ""
+  },
+  {
+    "catalan": "meitat",
+    "english": "half",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "menjador",
+    "english": "dining room",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "mentre",
+    "english": "while",
+    "gender": ""
+  },
+  {
+    "catalan": "més",
+    "english": "more",
+    "gender": ""
+  },
+  {
+    "catalan": "metge",
+    "english": "doctor",
+    "gender": ""
+  },
+  {
+    "catalan": "mica",
+    "english": "a little, fairly",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "millor",
+    "english": "better",
+    "gender": ""
+  },
+  {
+    "catalan": "-ida",
+    "english": "disability",
+    "gender": ""
+  },
+  {
+    "catalan": "mirar",
+    "english": "to look",
+    "gender": ""
+  },
+  {
+    "catalan": "mòdul",
+    "english": "module",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "molt, -a",
+    "english": "very, much",
+    "gender": ""
+  },
+  {
+    "catalan": "món",
+    "english": "world",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "moneda",
+    "english": "coin",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "motxilla",
+    "english": "rucksack",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "muntar",
+    "english": "to ride",
+    "gender": ""
+  },
+  {
+    "catalan": "musclo",
+    "english": "mussel",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "museu",
+    "english": "museum",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "Nadal",
+    "english": "Christmas",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "nadar",
+    "english": "to swim",
+    "gender": ""
+  },
+  {
+    "catalan": "necessitar",
+    "english": "to need",
+    "gender": ""
+  },
+  {
+    "catalan": "negre, -a",
+    "english": "black",
+    "gender": ""
+  },
+  {
+    "catalan": "néixer",
+    "english": "to be born",
+    "gender": ""
+  },
+  {
+    "catalan": "nen",
+    "english": "child, boy",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "noi",
+    "english": "boy, girl",
+    "gender": ""
+  },
+  {
+    "catalan": "nom",
+    "english": "name",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "només",
+    "english": "only",
+    "gender": ""
+  },
+  {
+    "catalan": "notícia",
+    "english": "news item",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "número",
+    "english": "number",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "obert, -a",
+    "english": "open",
+    "gender": ""
+  },
+  {
+    "catalan": "obertura",
+    "english": "opening (up)",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "obra",
+    "english": "work",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "obrir",
+    "english": "to open",
+    "gender": ""
+  },
+  {
+    "catalan": "ocupat, -a",
+    "english": "occupied, busy",
+    "gender": ""
+  },
+  {
+    "catalan": "oferta",
+    "english": "offeroﬁcina (f.) ofﬁce",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "oliva",
+    "english": "olive",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "on",
+    "english": "where",
+    "gender": ""
+  },
+  {
+    "catalan": "opinar",
+    "english": "to think, to",
+    "gender": ""
+  },
+  {
+    "catalan": "express",
+    "english": "an opinion",
+    "gender": ""
+  },
+  {
+    "catalan": "pa",
+    "english": "bread",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "pagar",
+    "english": "to pay",
+    "gender": ""
+  },
+  {
+    "catalan": "pagès",
+    "english": "peasant, farmer,",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "pàgina",
+    "english": "page",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "país",
+    "english": "country",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "paisatge",
+    "english": "landscape",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "palau",
+    "english": "palace",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "parada",
+    "english": "stall, stop",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "parar",
+    "english": "to stop",
+    "gender": ""
+  },
+  {
+    "catalan": "pare",
+    "english": "father, parent",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "parell",
+    "english": "couple",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "parlar",
+    "english": "to speak",
+    "gender": ""
+  },
+  {
+    "catalan": "passar",
+    "english": "to spend, pass,",
+    "gender": ""
+  },
+  {
+    "catalan": "passejar",
+    "english": "to stroll",
+    "gender": ""
+  },
+  {
+    "catalan": "passi-ho",
+    "english": "bé goodbye",
+    "gender": ""
+  },
+  {
+    "catalan": "pastisseria",
+    "english": "cake shop, bakery",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "patates",
+    "english": "fregides crisps, chips",
+    "gender": ""
+  },
+  {
+    "catalan": "patir",
+    "english": "to suffer",
+    "gender": ""
+  },
+  {
+    "catalan": "peixateria",
+    "english": "ﬁshmonger’s",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "pel·lícula",
+    "english": "ﬁlm",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "pensar",
+    "english": "to think",
+    "gender": ""
+  },
+  {
+    "catalan": "peó",
+    "english": "labourer, unskilled",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "per",
+    "english": "això for this reason",
+    "gender": ""
+  },
+  {
+    "catalan": "perdona",
+    "english": "excuse me",
+    "gender": ""
+  },
+  {
+    "catalan": "perdre",
+    "english": "to lose",
+    "gender": ""
+  },
+  {
+    "catalan": "periodista",
+    "english": "journalist",
+    "gender": ""
+  },
+  {
+    "catalan": "pernil",
+    "english": "cured ham",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "però",
+    "english": "but",
+    "gender": ""
+  },
+  {
+    "catalan": "perquè",
+    "english": "because",
+    "gender": ""
+  },
+  {
+    "catalan": "petit, -a",
+    "english": "small",
+    "gender": ""
+  },
+  {
+    "catalan": "peu",
+    "english": "foot",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "pis",
+    "english": "ﬂoor, ﬂat,",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "piscina",
+    "english": "swimming pool",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "plaça",
+    "english": "square",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "plaer",
+    "english": "pleasure",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "plantilla",
+    "english": "staff, work force",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "planxa",
+    "english": "hotplate",
+    "gender": ""
+  },
+  {
+    "catalan": "plat",
+    "english": "plate, dish,",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "plata",
+    "english": "silver",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "platja",
+    "english": "beach",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "ploure",
+    "english": "to rain",
+    "gender": ""
+  },
+  {
+    "catalan": "plovent",
+    "english": "raining",
+    "gender": ""
+  },
+  {
+    "catalan": "poble",
+    "english": "village, small",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "poc",
+    "english": "little",
+    "gender": ""
+  },
+  {
+    "catalan": "poder",
+    "english": "to be able",
+    "gender": ""
+  },
+  {
+    "catalan": "poma",
+    "english": "apple",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "port",
+    "english": "harbour, port",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "portar",
+    "english": "to bring",
+    "gender": ""
+  },
+  {
+    "catalan": "posar",
+    "english": "to put; to serve,",
+    "gender": ""
+  },
+  {
+    "catalan": "potser",
+    "english": "maybe, perhaps",
+    "gender": ""
+  },
+  {
+    "catalan": "preferir",
+    "english": "to prefer",
+    "gender": ""
+  },
+  {
+    "catalan": "preguntar",
+    "english": "to ask",
+    "gender": ""
+  },
+  {
+    "catalan": "prendre",
+    "english": "to take, to have",
+    "gender": ""
+  },
+  {
+    "catalan": "pressa",
+    "english": "hurry",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "preu",
+    "english": "priceprimer cognom ﬁrst surname",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "procedent",
+    "english": "coming from",
+    "gender": ""
+  },
+  {
+    "catalan": "professor, -a",
+    "english": "teacher",
+    "gender": ""
+  },
+  {
+    "catalan": "prometre",
+    "english": "to promise",
+    "gender": ""
+  },
+  {
+    "catalan": "prou",
+    "english": "enough",
+    "gender": ""
+  },
+  {
+    "catalan": "provar",
+    "english": "to try",
+    "gender": ""
+  },
+  {
+    "catalan": "pujar",
+    "english": "to go up, to get on",
+    "gender": ""
+  },
+  {
+    "catalan": "puntualment",
+    "english": "locally",
+    "gender": ""
+  },
+  {
+    "catalan": "qualsevol",
+    "english": "any",
+    "gender": ""
+  },
+  {
+    "catalan": "quan",
+    "english": "when",
+    "gender": ""
+  },
+  {
+    "catalan": "quant",
+    "english": "val? how much is it?",
+    "gender": ""
+  },
+  {
+    "catalan": "quantitat",
+    "english": "quantity",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "que",
+    "english": "that, which, who,",
+    "gender": ""
+  },
+  {
+    "catalan": "quedar",
+    "english": "to arrange to meet",
+    "gender": ""
+  },
+  {
+    "catalan": "quedar-se",
+    "english": "to stay",
+    "gender": ""
+  },
+  {
+    "catalan": "qui",
+    "english": "who",
+    "gender": ""
+  },
+  {
+    "catalan": "quina",
+    "english": "llàstima! what a pity",
+    "gender": ""
+  },
+  {
+    "catalan": "ratolí",
+    "english": "mouse",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "ratxa",
+    "english": "gust",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "realitzar",
+    "english": "to carry out, to",
+    "gender": ""
+  },
+  {
+    "catalan": "rebre",
+    "english": "to receive",
+    "gender": ""
+  },
+  {
+    "catalan": "recollir",
+    "english": "pick up",
+    "gender": ""
+  },
+  {
+    "catalan": "recomanable",
+    "english": "advisable",
+    "gender": ""
+  },
+  {
+    "catalan": "recomanar",
+    "english": "to recommend",
+    "gender": ""
+  },
+  {
+    "catalan": "refrescant",
+    "english": "refreshing",
+    "gender": ""
+  },
+  {
+    "catalan": "refugiar-se",
+    "english": "to take refuge",
+    "gender": ""
+  },
+  {
+    "catalan": "regal",
+    "english": "present, gift",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "regalar",
+    "english": "to give (a gift)",
+    "gender": ""
+  },
+  {
+    "catalan": "regla",
+    "english": "rule282",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "rentar-se",
+    "english": "to wash",
+    "gender": ""
+  },
+  {
+    "catalan": "resposta",
+    "english": "answer",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "retenció",
+    "english": "hold up",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "reunió",
+    "english": "meeting",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "riure",
+    "english": "to laugh",
+    "gender": ""
+  },
+  {
+    "catalan": "rosa",
+    "english": "rose",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "saber",
+    "english": "to know",
+    "gender": ""
+  },
+  {
+    "catalan": "sala",
+    "english": "room",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "saludable",
+    "english": "healthy",
+    "gender": ""
+  },
+  {
+    "catalan": "salut",
+    "english": "health, cheers",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "samarreta",
+    "english": "T-shirt, football",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "sant, -a",
+    "english": "saint",
+    "gender": ""
+  },
+  {
+    "catalan": "segons",
+    "english": "according",
+    "gender": ""
+  },
+  {
+    "catalan": "segur, -a",
+    "english": "sure",
+    "gender": ""
+  },
+  {
+    "catalan": "semblar-se",
+    "english": "to look like",
+    "gender": ""
+  },
+  {
+    "catalan": "sempre",
+    "english": "always",
+    "gender": ""
+  },
+  {
+    "catalan": "sencer, -a",
+    "english": "whole",
+    "gender": ""
+  },
+  {
+    "catalan": "sense",
+    "english": "without",
+    "gender": ""
+  },
+  {
+    "catalan": "ser",
+    "english": "to be",
+    "gender": ""
+  },
+  {
+    "catalan": "servir",
+    "english": "to serve, to be",
+    "gender": ""
+  },
+  {
+    "catalan": "of",
+    "english": "use",
+    "gender": ""
+  },
+  {
+    "catalan": "sí",
+    "english": "yes",
+    "gender": ""
+  },
+  {
+    "catalan": "signar",
+    "english": "to sign",
+    "gender": ""
+  },
+  {
+    "catalan": "simpàtic, -a",
+    "english": "nice, likeable,",
+    "gender": ""
+  },
+  {
+    "catalan": "sípia",
+    "english": "cuttleﬁsh",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "sisplau",
+    "english": "please",
+    "gender": ""
+  },
+  {
+    "catalan": "sobretot",
+    "english": "above all",
+    "gender": ""
+  },
+  {
+    "catalan": "sol",
+    "english": "sun",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "sol, -a",
+    "english": "alone",
+    "gender": ""
+  },
+  {
+    "catalan": "soler",
+    "english": "to usually do",
+    "gender": ""
+  },
+  {
+    "catalan": "sonar",
+    "english": "to soundsortida (f.) exit, departure",
+    "gender": ""
+  },
+  {
+    "catalan": "sovint",
+    "english": "often",
+    "gender": ""
+  },
+  {
+    "catalan": "suc",
+    "english": "juice",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "també",
+    "english": "also",
+    "gender": ""
+  },
+  {
+    "catalan": "tampoc",
+    "english": "neither",
+    "gender": ""
+  },
+  {
+    "catalan": "tancar",
+    "english": "to close",
+    "gender": ""
+  },
+  {
+    "catalan": "tant",
+    "english": "so often, so much",
+    "gender": ""
+  },
+  {
+    "catalan": "tard",
+    "english": "late",
+    "gender": ""
+  },
+  {
+    "catalan": "taronja",
+    "english": "orange",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "te",
+    "english": "tea",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "témer",
+    "english": "to fear",
+    "gender": ""
+  },
+  {
+    "catalan": "temporada",
+    "english": "period (of time),",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "tenir",
+    "english": "to have",
+    "gender": ""
+  },
+  {
+    "catalan": "terra",
+    "english": "earth",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "tipus",
+    "english": "type",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "tocar",
+    "english": "to be one’s turn,",
+    "gender": ""
+  },
+  {
+    "catalan": "tomàquet",
+    "english": "tomato",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "tornar",
+    "english": "a to return, to come",
+    "gender": ""
+  },
+  {
+    "catalan": "tornar-se",
+    "english": "to become",
+    "gender": ""
+  },
+  {
+    "catalan": "tot",
+    "english": "all",
+    "gender": ""
+  },
+  {
+    "catalan": "tota",
+    "english": "mena every type",
+    "gender": ""
+  },
+  {
+    "catalan": "tothom",
+    "english": "everybody",
+    "gender": ""
+  },
+  {
+    "catalan": "tractament",
+    "english": "treatment",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "traductor,-a",
+    "english": "translator",
+    "gender": ""
+  },
+  {
+    "catalan": "transbord",
+    "english": "change of trains",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "trànsit",
+    "english": "trafﬁc",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "trobar",
+    "english": "to ﬁnd",
+    "gender": ""
+  },
+  {
+    "catalan": "trucar",
+    "english": "to call",
+    "gender": ""
+  },
+  {
+    "catalan": "truita",
+    "english": "omelette1111",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "una",
+    "english": "mica a little",
+    "gender": ""
+  },
+  {
+    "catalan": "únic, -a",
+    "english": "the only (one)",
+    "gender": ""
+  },
+  {
+    "catalan": "útil",
+    "english": "useful",
+    "gender": ""
+  },
+  {
+    "catalan": "vagó",
+    "english": "carriage",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "variar",
+    "english": "to vary",
+    "gender": ""
+  },
+  {
+    "catalan": "vas",
+    "english": "glass, cup",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "vedella",
+    "english": "veal",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "vegada",
+    "english": "time",
+    "gender": ""
+  },
+  {
+    "catalan": "vell, -a",
+    "english": "old",
+    "gender": ""
+  },
+  {
+    "catalan": "vendre",
+    "english": "to sell",
+    "gender": ""
+  },
+  {
+    "catalan": "venir",
+    "english": "to come",
+    "gender": ""
+  },
+  {
+    "catalan": "verdura",
+    "english": "vegetableveritat (f.) truth",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "vermell, -a",
+    "english": "red",
+    "gender": ""
+  },
+  {
+    "catalan": "vespre",
+    "english": "evening",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "vestit",
+    "english": "costume",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "veure",
+    "english": "to see",
+    "gender": ""
+  },
+  {
+    "catalan": "vi",
+    "english": "wine",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "via",
+    "english": "platform (track)",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "viatge",
+    "english": "journey",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "viatjar",
+    "english": "to travel",
+    "gender": ""
+  },
+  {
+    "catalan": "vida",
+    "english": "life",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "visitar",
+    "english": "to visit",
+    "gender": ""
+  },
+  {
+    "catalan": "viure",
+    "english": "to live",
+    "gender": ""
+  },
+  {
+    "catalan": "vol",
+    "english": "ﬂight",
+    "gender": "masculine"
+  },
+  {
+    "catalan": "voler",
+    "english": "to want",
+    "gender": ""
+  },
+  {
+    "catalan": "xarcuteria",
+    "english": "charcuterie,",
+    "gender": "feminine"
+  },
+  {
+    "catalan": "afterwards",
+    "english": "després",
+    "gender": ""
+  },
+  {
+    "catalan": "almost",
+    "english": "gairebé, quasi",
+    "gender": ""
+  },
+  {
+    "catalan": "anything",
+    "english": "res, qualsevol",
+    "gender": ""
+  },
+  {
+    "catalan": "arrange",
+    "english": "to meet quedar",
+    "gender": ""
+  },
+  {
+    "catalan": "at",
+    "english": "all gens",
+    "gender": ""
+  },
+  {
+    "catalan": "attraction",
+    "english": "l’atracció",
+    "gender": ""
+  },
+  {
+    "catalan": "because",
+    "english": "perquè",
+    "gender": ""
+  },
+  {
+    "catalan": "bilingual",
+    "english": "bilingüe",
+    "gender": ""
+  },
+  {
+    "catalan": "bill",
+    "english": "el compte",
+    "gender": ""
+  },
+  {
+    "catalan": "boring",
+    "english": "avorrit, -ida",
+    "gender": ""
+  },
+  {
+    "catalan": "brother",
+    "english": "germà",
+    "gender": ""
+  },
+  {
+    "catalan": "cheap",
+    "english": "barat, -achildren els ﬁlls",
+    "gender": ""
+  },
+  {
+    "catalan": "climbing",
+    "english": "l’escalada",
+    "gender": ""
+  },
+  {
+    "catalan": "connection",
+    "english": "la connexió",
+    "gender": ""
+  },
+  {
+    "catalan": "daughter",
+    "english": "la ﬁlla",
+    "gender": ""
+  },
+  {
+    "catalan": "day",
+    "english": "el dia",
+    "gender": ""
+  },
+  {
+    "catalan": "dear",
+    "english": "estimat, -da,",
+    "gender": ""
+  },
+  {
+    "catalan": "each",
+    "english": "cada",
+    "gender": ""
+  },
+  {
+    "catalan": "early",
+    "english": "aviat",
+    "gender": ""
+  },
+  {
+    "catalan": "evening",
+    "english": "el vespre",
+    "gender": ""
+  },
+  {
+    "catalan": "everything",
+    "english": "tot",
+    "gender": ""
+  },
+  {
+    "catalan": "exclusive",
+    "english": "exclusiu, -va",
+    "gender": ""
+  },
+  {
+    "catalan": "expensive",
+    "english": "car, -a",
+    "gender": ""
+  }
+]

@@ -72,19 +72,22 @@ export function LearningPathPage() {
     // Navigate based on lesson type
     switch (lesson.content.type) {
       case 'vocabulary':
-        // Navigate to study with category filter
-        if (lesson.content.cardCategories && lesson.content.cardCategories.length > 0) {
-          navigate(`/study?categories=${lesson.content.cardCategories.join(',')}`);
+        // Navigate to study with unit number (preferred) or category filter
+        // Include lessonId so StudyPage can mark lesson complete
+        if (lesson.content.unitNumber) {
+          navigate(`/study?unit=${lesson.content.unitNumber}&lesson=${lessonId}`);
+        } else if (lesson.content.cardCategories && lesson.content.cardCategories.length > 0) {
+          navigate(`/study?categories=${lesson.content.cardCategories.join(',')}&lesson=${lessonId}`);
         } else {
-          navigate('/study');
+          navigate(`/study?lesson=${lessonId}`);
         }
         break;
       case 'grammar':
-        // Navigate to grammar lesson
+        // Navigate to grammar lesson with curriculum lesson ID
         if (lesson.content.grammarLessonId) {
-          navigate(`/grammar/${lesson.content.grammarLessonId}`);
+          navigate(`/grammar/${lesson.content.grammarLessonId}?lesson=${lessonId}`);
         } else {
-          navigate('/grammar');
+          navigate(`/grammar?lesson=${lessonId}`);
         }
         break;
       case 'conversation':
@@ -94,6 +97,10 @@ export function LearningPathPage() {
       case 'culture':
         // Navigate to stories/culture content
         navigate('/stories');
+        break;
+      case 'review':
+        // Navigate to study with all learned units
+        navigate('/study?mode=review');
         break;
       default:
         navigate('/study');

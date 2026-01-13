@@ -106,6 +106,7 @@ function AppContent() {
         <Route path="/grammar" element={<GrammarPage />} />
         <Route path="/grammar/:lessonId" element={<GrammarPage />} />
         <Route path="/learn" element={<LearningPathPage />} />
+        <Route path="/learning-path" element={<LearningPathPage />} />
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/conversation" element={<ConversationPage />} />
         <Route path="/games" element={<GamesPage />} />

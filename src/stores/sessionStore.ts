@@ -28,7 +28,7 @@ interface SessionState {
   isComplete: boolean;
 
   // Actions
-  startSession: (mode: StudyMode, cardLimit?: number, includeDictation?: boolean, categoryFilter?: string[]) => void;
+  startSession: (mode: StudyMode, cardLimit?: number, includeDictation?: boolean, categoryFilter?: string[], unitNumber?: number) => void;
   submitAnswer: (quality: number, userAnswer?: string) => Promise<void>;
   nextCard: () => void;
   endSession: () => Promise<SessionSummary>;
@@ -78,9 +78,9 @@ export const useSessionStore = create<SessionState>()(
     return currentIndex >= cards.length;
   },
 
-  startSession: (mode: StudyMode, cardLimit = 20, includeDictation = true, categoryFilter?: string[]) => {
+  startSession: (mode: StudyMode, cardLimit = 20, includeDictation = true, categoryFilter?: string[], unitNumber?: number) => {
     const cardStore = useCardStore.getState();
-    const studyDeck = cardStore.getStudyDeck(cardLimit, categoryFilter);
+    const studyDeck = cardStore.getStudyDeck(cardLimit, categoryFilter, unitNumber);
 
     if (studyDeck.length === 0) {
       // No cards due - this is not an error, just nothing to study

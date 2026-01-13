@@ -20,6 +20,7 @@ import {
 import { useSessionStore, type SessionSummary } from '../stores/sessionStore';
 import { useCardStore } from '../stores/cardStore';
 import { useAdaptiveLearningStore } from '../stores/adaptiveLearningStore';
+import { useCurriculumStore } from '../stores/curriculumStore';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
@@ -75,6 +76,20 @@ export function StudyPage() {
     return categoriesParam ? categoriesParam.split(',') : undefined;
   }, [searchParams]);
 
+  // Get unit number from URL (for Learning Path lessons)
+  const unitNumber = useMemo(() => {
+    const unitParam = searchParams.get('unit');
+    return unitParam ? parseInt(unitParam, 10) : undefined;
+  }, [searchParams]);
+
+  // Get lesson ID from URL (for Learning Path progress tracking)
+  const lessonId = useMemo(() => {
+    return searchParams.get('lesson') || undefined;
+  }, [searchParams]);
+
+  // Curriculum store for marking lessons complete
+  const completeLesson = useCurriculumStore((state) => state.completeLesson);
+
   // Check for special modes in URL or recoverable session
   useEffect(() => {
     const modeParam = searchParams.get('mode');
@@ -94,6 +109,12 @@ export function StudyPage() {
         // No weaknesses found, show mode select with message
         setShowModeSelect(true);
       }
+    } else if (unitNumber) {
+      // Unit-based vocabulary from Learning Path - auto-start in mixed mode
+      // The cardStore will load unit vocabulary when we pass unitNumber
+      setSelectedMode('mixed');
+      startSession('mixed', 20, true, undefined, unitNumber);
+      setShowModeSelect(false);
     } else if (categoryFilter && categoryFilter.length > 0) {
       // Category filter from Learning Path - auto-start in mixed mode
       setSelectedMode('mixed');
@@ -131,6 +152,12 @@ export function StudyPage() {
           if (s.accuracy >= 80) {
             setShowConfetti(true);
           }
+          // Mark curriculum lesson as complete if we came from Learning Path
+          // Require at least 60% accuracy to count as completed
+          if (lessonId && s.accuracy >= 60) {
+            completeLesson(lessonId, s.accuracy);
+            logger.info('Lesson marked complete', 'StudyPage', { lessonId, accuracy: s.accuracy });
+          }
         })
         .catch((error) => {
           logger.error('Failed to end session', 'StudyPage', { error: String(error) });
@@ -146,7 +173,7 @@ export function StudyPage() {
           });
         });
     }
-  }, [isComplete, isActive, endSession, cards.length]);
+  }, [isComplete, isActive, endSession, cards.length, lessonId, completeLesson]);
 
   const handleStartSession = (mode: StudyMode) => {
     setSelectedMode(mode);

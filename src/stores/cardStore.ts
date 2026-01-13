@@ -20,6 +20,7 @@ import {
 } from '../services/sm2Algorithm';
 import { parseCSV } from '../services/csvParser';
 import { getStarterFlashcards } from '../data/starterVocabulary';
+import { getUnitVocabulary, createFlashcardsFromUnit } from '../data/colloquialVocabulary';
 import {
   saveFlashcards,
   getFlashcards,
@@ -43,7 +44,7 @@ interface CardState {
   importCSV: (csvContent: string) => Promise<number>;
   loadStarterVocabulary: () => Promise<number>;
   deleteCard: (cardId: string) => Promise<void>;
-  getStudyDeck: (limit?: number, categoryFilter?: string[]) => StudyCard[];
+  getStudyDeck: (limit?: number, categoryFilter?: string[], unitNumber?: number) => StudyCard[];
   reviewCard: (cardId: string, direction: StudyDirection, quality: number) => Promise<void>;
   getProgress: (cardId: string, direction: StudyDirection) => CardProgress;
   getCategoryStats: () => Record<string, { total: number; mastered: number; learning: number }>;
@@ -193,17 +194,30 @@ export const useCardStore = create<CardState>()(
         }
       },
 
-      getStudyDeck: (limit = SESSION_CONFIG.DEFAULT_CARD_LIMIT, categoryFilter?: string[]) => {
+      getStudyDeck: (limit = SESSION_CONFIG.DEFAULT_CARD_LIMIT, categoryFilter?: string[], unitNumber?: number) => {
         const { flashcards, cardProgress } = get();
         const studyCards: StudyCard[] = [];
 
-        // Filter cards by category if specified
-        const filteredCards = categoryFilter && categoryFilter.length > 0
-          ? flashcards.filter(card => categoryFilter.includes(card.category))
-          : flashcards;
+        // Get cards - either from unit vocabulary, category filter, or all flashcards
+        let cardsToStudy: Flashcard[];
+
+        if (unitNumber) {
+          // Load vocabulary from the specific course unit
+          const unitVocab = getUnitVocabulary(unitNumber);
+          if (unitVocab) {
+            cardsToStudy = createFlashcardsFromUnit(unitVocab);
+          } else {
+            cardsToStudy = flashcards;
+          }
+        } else if (categoryFilter && categoryFilter.length > 0) {
+          // Filter by category
+          cardsToStudy = flashcards.filter(card => categoryFilter.includes(card.category));
+        } else {
+          cardsToStudy = flashcards;
+        }
 
         // Create study items for both directions
-        for (const card of filteredCards) {
+        for (const card of cardsToStudy) {
           for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
             const key = getProgressKey(card.id, direction);
             let progress = cardProgress.get(key);
