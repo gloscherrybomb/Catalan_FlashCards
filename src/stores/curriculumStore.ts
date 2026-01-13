@@ -7,6 +7,7 @@ import {
   getUnitForLesson,
   PLACEMENT_QUESTIONS,
 } from '../data/curriculum';
+import type { PlacementResult } from '../types/curriculum';
 import {
   getCurriculumProgress,
   updateCurriculumProgress,
@@ -20,20 +21,6 @@ export interface LessonProgress {
   completedAt?: string;
   score: number;
   attempts: number;
-}
-
-export interface PlacementResult {
-  level: CEFRLevel;
-  score: number;
-  totalQuestions: number;
-  correctAnswers: number;
-  takenAt: string;
-  breakdown: {
-    A1: { correct: number; total: number };
-    A2: { correct: number; total: number };
-    B1: { correct: number; total: number };
-    B2: { correct: number; total: number };
-  };
 }
 
 interface CurriculumState {
@@ -85,6 +72,45 @@ const calculateLevel = (breakdown: PlacementResult['breakdown']): CEFRLevel => {
   if (breakdown.A2.correct >= 3) return 'A2';
   // Default to A1
   return 'A1';
+};
+
+const CEFR_LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
+
+const isCEFRLevel = (value: string): value is CEFRLevel => {
+  return CEFR_LEVELS.includes(value as CEFRLevel);
+};
+
+const isPlacementBreakdown = (value: unknown): value is PlacementResult['breakdown'] => {
+  if (!value || typeof value !== 'object') return false;
+  const breakdown = value as PlacementResult['breakdown'];
+  const levels: Array<keyof PlacementResult['breakdown']> = ['A1', 'A2', 'B1', 'B2'];
+
+  return levels.every(level => {
+    const stats = breakdown[level];
+    return (
+      stats &&
+      typeof stats.correct === 'number' &&
+      typeof stats.total === 'number'
+    );
+  });
+};
+
+const normalizePlacementResult = (value: unknown): PlacementResult | null => {
+  if (!value || typeof value !== 'object') return null;
+  const result = value as PlacementResult;
+
+  if (!isCEFRLevel((result as { level?: string }).level || '')) return null;
+  if (
+    typeof result.score !== 'number' ||
+    typeof result.totalQuestions !== 'number' ||
+    typeof result.correctAnswers !== 'number' ||
+    typeof result.takenAt !== 'string'
+  ) {
+    return null;
+  }
+  if (!isPlacementBreakdown(result.breakdown)) return null;
+
+  return result;
 };
 
 // Helper to sync curriculum progress to Firebase
@@ -141,11 +167,17 @@ export const useCurriculumStore = create<CurriculumState>()(
               }
             }
 
+            const normalizedLevel = isCEFRLevel(firebaseData.currentLevel)
+              ? firebaseData.currentLevel
+              : localLevel;
+            const normalizedPlacement = normalizePlacementResult(firebaseData.placementResult)
+              || localPlacement;
+
             set({
               currentUserId: userId,
               lessonProgress: mergedLessonProgress,
-              currentLevel: (firebaseData.currentLevel as CEFRLevel) || localLevel,
-              placementResult: firebaseData.placementResult || localPlacement,
+              currentLevel: normalizedLevel,
+              placementResult: normalizedPlacement,
             });
 
             logger.debug('Curriculum progress loaded from Firebase', 'CurriculumStore', {
