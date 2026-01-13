@@ -9,6 +9,7 @@ import { useAdaptiveLearningStore } from './adaptiveLearningStore';
 import { checkAchievements } from '../services/achievementService';
 import { updateDailyChallenges } from '../types/challenges';
 import { updateWeeklyChallenges } from '../types/weeklyChallenges';
+import { getPersistStorage } from '../utils/persistStorage';
 
 interface SessionState {
   isActive: boolean;
@@ -233,7 +234,7 @@ export const useSessionStore = create<SessionState>()(
 
     // Update challenges, but don't block session completion if storage is corrupted.
     try {
-      updateDailyChallenges({
+      await updateDailyChallenges({
         cardsReviewed: totalCards,
         perfectStreak,
         fastAnswers,
@@ -246,7 +247,7 @@ export const useSessionStore = create<SessionState>()(
     }
 
     try {
-      updateWeeklyChallenges({
+      await updateWeeklyChallenges({
         cardsReviewed: totalCards,
         cardsMastered: 0, // Will be tracked properly if needed
         studiedToday: true,
@@ -449,6 +450,7 @@ export const useSessionStore = create<SessionState>()(
 }),
     {
       name: 'catalan-session-storage',
+      storage: getPersistStorage(),
       partialize: (state) => ({
         isActive: state.isActive,
         mode: state.mode,

@@ -10,9 +10,10 @@
  */
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { logger } from '../services/logger';
 import { adaptiveLearningService } from '../services/adaptiveLearningService';
+import { getPersistStorage } from '../utils/persistStorage';
 import type {
   AdaptiveLearningState,
   WeakSpot,
@@ -76,17 +77,6 @@ interface AdaptiveLearningStore extends AdaptiveLearningState {
   getActiveInsights: () => LearningInsight[];
   shouldReanalyze: () => boolean;
 }
-
-// Custom serialization for dates
-const dateReviver = (_key: string, value: unknown) => {
-  if (typeof value === 'string') {
-    const dateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
-    if (dateRegex.test(value)) {
-      return new Date(value);
-    }
-  }
-  return value;
-};
 
 export const useAdaptiveLearningStore = create<AdaptiveLearningStore>()(
   persist(
@@ -337,9 +327,7 @@ export const useAdaptiveLearningStore = create<AdaptiveLearningStore>()(
     }),
     {
       name: 'adaptive-learning-storage',
-      storage: createJSONStorage(() => localStorage, {
-        reviver: dateReviver,
-      }),
+      storage: getPersistStorage(),
       partialize: (state) => ({
         difficultyProfile: state.difficultyProfile,
         learningStyleProfile: state.learningStyleProfile,

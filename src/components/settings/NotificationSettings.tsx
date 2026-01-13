@@ -3,10 +3,8 @@ import { motion } from 'framer-motion';
 import { Bell, BellOff, Clock, Sun, Moon, Sunset, AlertCircle, Check } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import {
-  notificationService,
-  type NotificationSettings as NotificationSettingsType,
-} from '../../services/notificationService';
+import { notificationService } from '../../services/notificationService';
+import type { NotificationSettings as NotificationSettingsType } from '../../types/notifications';
 
 export function NotificationSettings() {
   const [settings, setSettings] = useState<NotificationSettingsType>(
@@ -63,7 +61,7 @@ export function NotificationSettings() {
 
   const sendTestNotification = async () => {
     await notificationService.showNotification(
-      '🎉 Test Notification',
+      'Test Notification',
       'Notifications are working! You\'ll receive reminders to study Catalan.'
     );
   };

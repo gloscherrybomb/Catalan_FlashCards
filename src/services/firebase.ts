@@ -24,6 +24,9 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import type { Flashcard, CardProgress } from '../types/flashcard';
 import type { PlacementResult } from '../types/curriculum';
+import type { DailyChallenge } from '../types/challenges';
+import type { WeeklyChallenge } from '../types/weeklyChallenges';
+import type { NotificationSettings } from '../types/notifications';
 import type { UserProfile, UserProgress, DailyStats } from '../types/user';
 import type { UnlockedAchievement } from '../types/gamification';
 import type { CEFRLevel } from '../data/curriculum';
@@ -306,4 +309,164 @@ export async function getDailyStats(userId: string, days: number = 30): Promise<
   return snapshot.docs
     .slice(0, days)
     .map(doc => doc.data() as DailyStats);
+}
+
+// Challenge storage types
+export interface DailyChallengesData {
+  date: string;
+  challenges: DailyChallenge[];
+}
+
+export interface WeeklyChallengesData {
+  weekStart: string;
+  challenges: WeeklyChallenge[];
+  daysStudied: string[];
+}
+
+export interface UIPreferencesData {
+  theme?: 'light' | 'dark' | 'system';
+  notificationSettings?: NotificationSettings;
+  studyReminderDismissedDate?: string;
+}
+
+function serializeDailyChallenge(challenge: DailyChallenge) {
+  return {
+    ...challenge,
+    expiresAt: Timestamp.fromDate(challenge.expiresAt),
+    completedAt: challenge.completedAt ? Timestamp.fromDate(challenge.completedAt) : null,
+  };
+}
+
+function deserializeDailyChallenge(challenge: any): DailyChallenge {
+  return {
+    ...challenge,
+    expiresAt: challenge.expiresAt?.toDate ? challenge.expiresAt.toDate() : new Date(challenge.expiresAt),
+    completedAt: challenge.completedAt?.toDate
+      ? challenge.completedAt.toDate()
+      : challenge.completedAt
+        ? new Date(challenge.completedAt)
+        : undefined,
+  } as DailyChallenge;
+}
+
+function serializeWeeklyChallenge(challenge: WeeklyChallenge) {
+  return {
+    ...challenge,
+    startsAt: Timestamp.fromDate(challenge.startsAt),
+    expiresAt: Timestamp.fromDate(challenge.expiresAt),
+    completedAt: challenge.completedAt ? Timestamp.fromDate(challenge.completedAt) : null,
+  };
+}
+
+function deserializeWeeklyChallenge(challenge: any): WeeklyChallenge {
+  return {
+    ...challenge,
+    startsAt: challenge.startsAt?.toDate ? challenge.startsAt.toDate() : new Date(challenge.startsAt),
+    expiresAt: challenge.expiresAt?.toDate ? challenge.expiresAt.toDate() : new Date(challenge.expiresAt),
+    completedAt: challenge.completedAt?.toDate
+      ? challenge.completedAt.toDate()
+      : challenge.completedAt
+        ? new Date(challenge.completedAt)
+        : undefined,
+  } as WeeklyChallenge;
+}
+
+export async function getDailyChallengesData(userId: string): Promise<DailyChallengesData | null> {
+  const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'dailyChallenges'));
+  if (!docSnap.exists()) return null;
+
+  const data = docSnap.data() as DailyChallengesData;
+  return {
+    date: data.date,
+    challenges: (data.challenges || []).map(deserializeDailyChallenge),
+  };
+}
+
+export async function setDailyChallengesData(userId: string, data: DailyChallengesData): Promise<void> {
+  const ref = doc(db, 'users', userId, 'data', 'dailyChallenges');
+  await setDoc(ref, {
+    date: data.date,
+    challenges: data.challenges.map(serializeDailyChallenge),
+  });
+}
+
+export async function getWeeklyChallengesData(userId: string): Promise<WeeklyChallengesData | null> {
+  const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'weeklyChallenges'));
+  if (!docSnap.exists()) return null;
+
+  const data = docSnap.data() as WeeklyChallengesData;
+  return {
+    weekStart: data.weekStart,
+    daysStudied: data.daysStudied || [],
+    challenges: (data.challenges || []).map(deserializeWeeklyChallenge),
+  };
+}
+
+export async function setWeeklyChallengesData(userId: string, data: WeeklyChallengesData): Promise<void> {
+  const ref = doc(db, 'users', userId, 'data', 'weeklyChallenges');
+  await setDoc(ref, {
+    weekStart: data.weekStart,
+    daysStudied: data.daysStudied,
+    challenges: data.challenges.map(serializeWeeklyChallenge),
+  });
+}
+
+export async function getUiPreferences(userId: string): Promise<UIPreferencesData | null> {
+  const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'uiPreferences'));
+  if (!docSnap.exists()) return null;
+  return docSnap.data() as UIPreferencesData;
+}
+
+export async function updateUiPreferences(userId: string, data: Partial<UIPreferencesData>): Promise<void> {
+  const ref = doc(db, 'users', userId, 'data', 'uiPreferences');
+  await setDoc(ref, data, { merge: true });
+}
+
+// Grammar progress types
+export interface GrammarProgressData {
+  lessonProgress: Record<string, {
+    lessonId: string;
+    completed: boolean;
+    completedAt?: string;
+    exerciseScores: Record<string, boolean>;
+    bestScore: number;
+    attempts: number;
+  }>;
+}
+
+// Grammar progress functions
+export async function getGrammarProgress(userId: string): Promise<GrammarProgressData | null> {
+  const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'grammar'));
+  if (!docSnap.exists()) return null;
+  return docSnap.data() as GrammarProgressData;
+}
+
+export async function updateGrammarProgress(userId: string, data: Partial<GrammarProgressData>): Promise<void> {
+  const ref = doc(db, 'users', userId, 'data', 'grammar');
+  await setDoc(ref, data, { merge: true });
+}
+
+// Story progress types
+export interface StoryProgressData {
+  storyProgress: Record<string, {
+    storyId: string;
+    completed: boolean;
+    completedAt?: string;
+    quizScore: number;
+    wordsLearned: string[];
+    readCount: number;
+    bestQuizScore: number;
+  }>;
+}
+
+// Story progress functions
+export async function getStoryProgress(userId: string): Promise<StoryProgressData | null> {
+  const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'stories'));
+  if (!docSnap.exists()) return null;
+  return docSnap.data() as StoryProgressData;
+}
+
+export async function updateStoryProgress(userId: string, data: Partial<StoryProgressData>): Promise<void> {
+  const ref = doc(db, 'users', userId, 'data', 'stories');
+  await setDoc(ref, data, { merge: true });
 }

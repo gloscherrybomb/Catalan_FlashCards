@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getPersistStorage } from '../utils/persistStorage';
+import { getStoryProgress, updateStoryProgress, isDemoMode } from '../services/firebase';
+import { logger } from '../services/logger';
 
 export interface StoryProgress {
   storyId: string;
@@ -17,12 +20,15 @@ interface StoryState {
   currentStoryId: string | null;
   currentParagraphIndex: number;
   quizAnswers: Record<string, number>; // questionId -> selectedIndex
+  currentUserId: string | null;
 
   // Reading preferences
   showTranslations: boolean;
   fontSize: 'small' | 'medium' | 'large';
 
   // Actions
+  initializeFromFirebase: (userId: string) => Promise<void>;
+  clearUser: () => void;
   startStory: (storyId: string) => void;
   nextParagraph: () => void;
   previousParagraph: () => void;
@@ -55,6 +61,16 @@ const createInitialProgress = (storyId: string): StoryProgress => ({
   bestQuizScore: 0,
 });
 
+async function syncToFirebase(userId: string | null, storyProgress: Record<string, StoryProgress>) {
+  if (!userId || isDemoMode) return;
+
+  try {
+    await updateStoryProgress(userId, { storyProgress });
+  } catch (error) {
+    logger.error('Failed to sync story progress to Firebase', 'StoryStore', { error: String(error) });
+  }
+}
+
 export const useStoryStore = create<StoryState>()(
   persist(
     (set, get) => ({
@@ -64,24 +80,53 @@ export const useStoryStore = create<StoryState>()(
       quizAnswers: {},
       showTranslations: false,
       fontSize: 'medium',
+      currentUserId: null,
+
+      initializeFromFirebase: async (userId: string) => {
+        if (isDemoMode) {
+          set({ currentUserId: userId });
+          return;
+        }
+
+        try {
+          const data = await getStoryProgress(userId);
+          if (data?.storyProgress) {
+            set({
+              currentUserId: userId,
+              storyProgress: data.storyProgress,
+            });
+          } else {
+            set({ currentUserId: userId });
+          }
+        } catch (error) {
+          logger.error('Failed to load story progress from Firebase', 'StoryStore', { error: String(error) });
+          set({ currentUserId: userId });
+        }
+      },
+
+      clearUser: () => {
+        set({ currentUserId: null });
+      },
 
       startStory: (storyId: string) => {
-        const { storyProgress } = get();
+        const { storyProgress, currentUserId } = get();
         const existing = storyProgress[storyId];
+        const updatedProgress = {
+          ...storyProgress,
+          [storyId]: {
+            ...createInitialProgress(storyId),
+            ...existing,
+            readCount: (existing?.readCount || 0) + 1,
+          },
+        };
 
         set({
           currentStoryId: storyId,
           currentParagraphIndex: 0,
           quizAnswers: {},
-          storyProgress: {
-            ...storyProgress,
-            [storyId]: {
-              ...createInitialProgress(storyId),
-              ...existing,
-              readCount: (existing?.readCount || 0) + 1,
-            },
-          },
+          storyProgress: updatedProgress,
         });
+        syncToFirebase(currentUserId, updatedProgress);
       },
 
       nextParagraph: () => {
@@ -110,29 +155,31 @@ export const useStoryStore = create<StoryState>()(
       },
 
       completeStory: (storyId: string, quizScore: number) => {
-        const { storyProgress } = get();
+        const { storyProgress, currentUserId } = get();
         const existing = storyProgress[storyId];
+        const updatedProgress = {
+          ...storyProgress,
+          [storyId]: {
+            ...createInitialProgress(storyId),
+            ...existing,
+            completed: true,
+            completedAt: new Date().toISOString(),
+            quizScore,
+            bestQuizScore: Math.max(existing?.bestQuizScore || 0, quizScore),
+          },
+        };
 
         set({
-          storyProgress: {
-            ...storyProgress,
-            [storyId]: {
-              ...createInitialProgress(storyId),
-              ...existing,
-              completed: true,
-              completedAt: new Date().toISOString(),
-              quizScore,
-              bestQuizScore: Math.max(existing?.bestQuizScore || 0, quizScore),
-            },
-          },
+          storyProgress: updatedProgress,
           currentStoryId: null,
           currentParagraphIndex: 0,
           quizAnswers: {},
         });
+        syncToFirebase(currentUserId, updatedProgress);
       },
 
       addLearnedWord: (storyId: string, word: string) => {
-        const { storyProgress } = get();
+        const { storyProgress, currentUserId } = get();
         const existing = storyProgress[storyId];
 
         if (!existing) return;
@@ -140,15 +187,15 @@ export const useStoryStore = create<StoryState>()(
         const wordsLearned = existing.wordsLearned || [];
         if (wordsLearned.includes(word)) return;
 
-        set({
-          storyProgress: {
-            ...storyProgress,
-            [storyId]: {
-              ...existing,
-              wordsLearned: [...wordsLearned, word],
-            },
+        const updatedProgress = {
+          ...storyProgress,
+          [storyId]: {
+            ...existing,
+            wordsLearned: [...wordsLearned, word],
           },
-        });
+        };
+        set({ storyProgress: updatedProgress });
+        syncToFirebase(currentUserId, updatedProgress);
       },
 
       getStoryProgress: (storyId: string) => {
@@ -204,16 +251,19 @@ export const useStoryStore = create<StoryState>()(
       },
 
       resetAllProgress: () => {
+        const { currentUserId } = get();
         set({
           storyProgress: {},
           currentStoryId: null,
           currentParagraphIndex: 0,
           quizAnswers: {},
         });
+        syncToFirebase(currentUserId, {});
       },
     }),
     {
       name: 'catalan-story-storage',
+      storage: getPersistStorage(),
     }
   )
 );

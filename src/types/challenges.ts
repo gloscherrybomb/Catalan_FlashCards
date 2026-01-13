@@ -1,5 +1,6 @@
 // Daily Challenge Types and Definitions
 import { useUserStore } from '../stores/userStore';
+import { getDailyChallengesData, setDailyChallengesData, isDemoMode } from '../services/firebase';
 
 export type ChallengeType =
   | 'review_cards'
@@ -154,15 +155,14 @@ export interface SessionResultsForChallenges {
   categoriesReviewed: Record<string, number>; // category -> count
 }
 
-export function updateDailyChallenges(results: SessionResultsForChallenges): DailyChallenge[] {
-  const stored = localStorage.getItem('daily-challenges');
-  if (!stored) return [];
+export async function updateDailyChallenges(results: SessionResultsForChallenges): Promise<DailyChallenge[]> {
+  const userId = useUserStore.getState().user?.uid;
+  if (!userId || isDemoMode) return [];
 
-  const { date, challenges } = JSON.parse(stored) as { date: string; challenges: DailyChallenge[] };
   const today = new Date().toISOString().split('T')[0];
+  const stored = await getDailyChallengesData(userId);
 
-  // Don't update if challenges are from a different day
-  if (date !== today) return challenges;
+  const challenges = stored?.date === today ? stored.challenges : generateDailyChallenges();
 
   const updatedChallenges = challenges.map((challenge) => {
     // Skip already completed challenges (they already got XP)
@@ -212,24 +212,26 @@ export function updateDailyChallenges(results: SessionResultsForChallenges): Dai
     };
   });
 
-  // Save updated challenges
-  localStorage.setItem('daily-challenges', JSON.stringify({
-    date,
+  await setDailyChallengesData(userId, {
+    date: today,
     challenges: updatedChallenges,
-  }));
+  });
 
   return updatedChallenges;
 }
 
-export function getDailyChallenges(): DailyChallenge[] {
-  const stored = localStorage.getItem('daily-challenges');
-  if (!stored) return [];
+export async function getDailyChallenges(): Promise<DailyChallenge[]> {
+  const userId = useUserStore.getState().user?.uid;
+  if (!userId || isDemoMode) return [];
 
-  const { date, challenges } = JSON.parse(stored) as { date: string; challenges: DailyChallenge[] };
   const today = new Date().toISOString().split('T')[0];
+  const stored = await getDailyChallengesData(userId);
 
-  // Return empty if challenges are from a different day (they'll be regenerated)
-  if (date !== today) return [];
+  if (stored?.date === today) {
+    return stored.challenges;
+  }
 
+  const challenges = generateDailyChallenges();
+  await setDailyChallengesData(userId, { date: today, challenges });
   return challenges;
 }

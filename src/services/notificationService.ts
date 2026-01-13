@@ -2,16 +2,8 @@
 // Uses Web Notification API and Service Worker for push notifications
 
 import { logger } from './logger';
-
-export interface NotificationSettings {
-  enabled: boolean;
-  dueCardReminders: boolean;
-  streakReminders: boolean;
-  dailyGoalReminders: boolean;
-  preferredTime: 'morning' | 'afternoon' | 'evening';
-  quietHoursStart: number; // Hour (0-23)
-  quietHoursEnd: number;   // Hour (0-23)
-}
+import type { NotificationSettings } from '../types/notifications';
+import { getUiPreferences, updateUiPreferences, isDemoMode } from './firebase';
 
 export interface ScheduledNotification {
   id: string;
@@ -31,14 +23,38 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   quietHoursEnd: 8,    // 8 AM
 };
 
-const STORAGE_KEY = 'catalan-notification-settings';
-
 class NotificationService {
   private settings: NotificationSettings;
   private scheduledNotifications: Map<string, NodeJS.Timeout> = new Map();
+  private currentUserId: string | null = null;
 
   constructor() {
-    this.settings = this.loadSettings();
+    this.settings = { ...DEFAULT_SETTINGS };
+  }
+
+  async initialize(userId: string | null): Promise<void> {
+    this.currentUserId = userId;
+    if (!userId || isDemoMode) {
+      this.settings = { ...DEFAULT_SETTINGS };
+      return;
+    }
+
+    try {
+      const prefs = await getUiPreferences(userId);
+      if (prefs?.notificationSettings) {
+        this.settings = { ...DEFAULT_SETTINGS, ...prefs.notificationSettings };
+      } else {
+        this.settings = { ...DEFAULT_SETTINGS };
+      }
+    } catch (error) {
+      logger.error('Error loading notification settings', 'NotificationService', { error: String(error) });
+      this.settings = { ...DEFAULT_SETTINGS };
+    }
+  }
+
+  clearUser(): void {
+    this.currentUserId = null;
+    this.settings = { ...DEFAULT_SETTINGS };
   }
 
   /**
@@ -71,7 +87,7 @@ class NotificationService {
 
       if (granted) {
         this.settings.enabled = true;
-        this.saveSettings();
+        await this.saveSettings();
       }
 
       return granted;
@@ -82,26 +98,15 @@ class NotificationService {
   }
 
   /**
-   * Load settings from localStorage
+   * Save settings to Firebase
    */
-  private loadSettings(): NotificationSettings {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
-      }
-    } catch (error) {
-      logger.error('Error loading notification settings', 'NotificationService', { error: String(error) });
-    }
-    return { ...DEFAULT_SETTINGS };
-  }
+  private async saveSettings(): Promise<void> {
+    if (!this.currentUserId || isDemoMode) return;
 
-  /**
-   * Save settings to localStorage
-   */
-  private saveSettings(): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.settings));
+      await updateUiPreferences(this.currentUserId, {
+        notificationSettings: this.settings,
+      });
     } catch (error) {
       logger.error('Error saving notification settings', 'NotificationService', { error: String(error) });
     }
@@ -119,7 +124,7 @@ class NotificationService {
    */
   updateSettings(newSettings: Partial<NotificationSettings>): void {
     this.settings = { ...this.settings, ...newSettings };
-    this.saveSettings();
+    void this.saveSettings();
 
     // Re-schedule notifications based on new settings
     if (this.settings.enabled) {

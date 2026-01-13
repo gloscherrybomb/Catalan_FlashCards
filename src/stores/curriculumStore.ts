@@ -15,6 +15,7 @@ import {
 } from '../services/firebase';
 import { logger } from '../services/logger';
 import { useCardStore } from './cardStore';
+import { getPersistStorage } from '../utils/persistStorage';
 
 export interface LessonProgress {
   lessonId: string;
@@ -454,6 +455,7 @@ export const useCurriculumStore = create<CurriculumState>()(
     }),
     {
       name: 'catalan-curriculum-storage',
+      storage: getPersistStorage(),
     }
   )
 );

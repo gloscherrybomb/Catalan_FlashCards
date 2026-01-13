@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { Flashcard, CardProgress, StudyDirection, StudyCard, MistakeRecord } from '../types/flashcard';
 import { logger } from '../services/logger';
 import { SESSION_CONFIG, MISTAKE_CONFIG, MASTERY_CONFIG } from '../config/constants';
+import { getPersistStorage } from '../utils/persistStorage';
 
 // Type for persisted state deserialization
 interface PersistedCardState {
@@ -94,6 +95,8 @@ export const useCardStore = create<CardState>()(
             }
 
             set({ flashcards: cards, cardProgress: progressMap, isLoading: false });
+          } else if (isDemoMode) {
+            set({ flashcards: getStarterFlashcards(), isLoading: false });
           } else {
             set({ isLoading: false });
           }
@@ -468,8 +471,8 @@ export const useCardStore = create<CardState>()(
         );
         set({ flashcards: newCards });
 
-        // Note: Firebase sync would be done here in production
-        // For now, this is persisted via localStorage
+        // Note: Firebase sync would be done here in production.
+        // For now, this remains in memory only.
       },
 
       // Deduplication: remove duplicate cards by normalized front text
@@ -547,6 +550,7 @@ export const useCardStore = create<CardState>()(
     }),
     {
       name: 'catalan-cards-storage',
+      storage: getPersistStorage(),
       partialize: (state) => ({
         // Note: flashcards are NOT persisted locally - they come from Firebase only
         // This prevents duplication between localStorage and Firebase

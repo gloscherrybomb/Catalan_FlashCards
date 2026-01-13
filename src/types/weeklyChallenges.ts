@@ -1,5 +1,6 @@
 // Weekly Challenge Types and Definitions
 import { useUserStore } from '../stores/userStore';
+import { getWeeklyChallengesData, setWeeklyChallengesData, isDemoMode } from '../services/firebase';
 
 export type WeeklyChallengeType =
   | 'review_cards'
@@ -243,20 +244,17 @@ export interface WeeklySessionResults {
   categoriesReviewed: Record<string, number>;
 }
 
-export function updateWeeklyChallenges(results: WeeklySessionResults): WeeklyChallenge[] {
-  const stored = localStorage.getItem('weekly-challenges');
-  if (!stored) return [];
-
-  const { weekStart, challenges, daysStudied = [] } = JSON.parse(stored) as {
-    weekStart: string;
-    challenges: WeeklyChallenge[];
-    daysStudied: string[];
-  };
+export async function updateWeeklyChallenges(results: WeeklySessionResults): Promise<WeeklyChallenge[]> {
+  const userId = useUserStore.getState().user?.uid;
+  if (!userId || isDemoMode) return [];
 
   const currentWeekStart = getWeekStart().toISOString().split('T')[0];
+  const stored = await getWeeklyChallengesData(userId);
 
-  // Don't update if challenges are from a different week
-  if (weekStart !== currentWeekStart) return challenges;
+  const challenges = stored?.weekStart === currentWeekStart
+    ? stored.challenges
+    : generateWeeklyChallenges();
+  const daysStudied = stored?.weekStart === currentWeekStart ? stored.daysStudied : [];
 
   // Track study days
   const today = new Date().toISOString().split('T')[0];
@@ -324,50 +322,41 @@ export function updateWeeklyChallenges(results: WeeklySessionResults): WeeklyCha
     useUserStore.getState().addXP(500);
   }
 
-  // Save updated challenges
-  localStorage.setItem('weekly-challenges', JSON.stringify({
-    weekStart,
+  await setWeeklyChallengesData(userId, {
+    weekStart: currentWeekStart,
     challenges: updatedChallenges,
     daysStudied: updatedDaysStudied,
-  }));
+  });
 
   return updatedChallenges;
 }
 
-export function getWeeklyChallenges(): WeeklyChallenge[] {
-  const stored = localStorage.getItem('weekly-challenges');
-  if (!stored) return [];
-
-  const { weekStart, challenges } = JSON.parse(stored) as {
-    weekStart: string;
-    challenges: WeeklyChallenge[];
-  };
+export async function getWeeklyChallenges(): Promise<WeeklyChallenge[]> {
+  const userId = useUserStore.getState().user?.uid;
+  if (!userId || isDemoMode) return [];
 
   const currentWeekStart = getWeekStart().toISOString().split('T')[0];
+  const stored = await getWeeklyChallengesData(userId);
 
-  // Return empty if challenges are from a different week
-  if (weekStart !== currentWeekStart) return [];
-
-  return challenges.map(c => ({
-    ...c,
-    startsAt: new Date(c.startsAt),
-    expiresAt: new Date(c.expiresAt),
-    completedAt: c.completedAt ? new Date(c.completedAt) : undefined,
-  }));
+  if (stored?.weekStart !== currentWeekStart) return [];
+  return stored.challenges;
 }
 
-export function initializeWeeklyChallenges(): WeeklyChallenge[] {
-  const existing = getWeeklyChallenges();
+export async function initializeWeeklyChallenges(): Promise<WeeklyChallenge[]> {
+  const userId = useUserStore.getState().user?.uid;
+  if (!userId || isDemoMode) return [];
+
+  const existing = await getWeeklyChallenges();
   if (existing.length > 0) return existing;
 
   const newChallenges = generateWeeklyChallenges();
   const weekStart = getWeekStart().toISOString().split('T')[0];
 
-  localStorage.setItem('weekly-challenges', JSON.stringify({
+  await setWeeklyChallengesData(userId, {
     weekStart,
     challenges: newChallenges,
     daysStudied: [],
-  }));
+  });
 
   return newChallenges;
 }

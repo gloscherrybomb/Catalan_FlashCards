@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useUserStore } from '../stores/userStore';
+import { getUiPreferences, updateUiPreferences, isDemoMode } from '../services/firebase';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -11,26 +13,39 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'catalan-theme';
-
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined') return 'light';
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'system';
-    return (localStorage.getItem(STORAGE_KEY) as Theme) || 'system';
-  });
+  const userId = useUserStore((state) => state.user?.uid);
+  const [theme, setThemeState] = useState<Theme>('system');
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
-    const savedTheme = typeof window !== 'undefined'
-      ? localStorage.getItem(STORAGE_KEY) as Theme
-      : null;
-    if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
     return getSystemTheme();
   });
+
+  useEffect(() => {
+    let active = true;
+
+    const loadTheme = async () => {
+      if (!userId || isDemoMode) return;
+      try {
+        const prefs = await getUiPreferences(userId);
+        if (active && prefs?.theme) {
+          setThemeState(prefs.theme);
+        }
+      } catch {
+        // Ignore theme load failures and fall back to system.
+      }
+    };
+
+    void loadTheme();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   // Update document class when theme changes
   useEffect(() => {
@@ -67,7 +82,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem(STORAGE_KEY, newTheme);
+    if (userId && !isDemoMode) {
+      void updateUiPreferences(userId, { theme: newTheme });
+    }
   };
 
   const toggleTheme = () => {

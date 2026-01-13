@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellOff, X, Clock } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { useUserStore } from '../../stores/userStore';
+import { getUiPreferences, updateUiPreferences, isDemoMode } from '../../services/firebase';
 
 interface StudyReminderProps {
   lastStudyDate: Date | null;
@@ -12,24 +14,40 @@ interface StudyReminderProps {
 
 export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyReminderProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(() => {
-    // Check if dismissed today (persists across page refreshes but resets daily)
-    const stored = localStorage.getItem('study-reminder-dismissed');
-    if (stored) {
-      const { date } = JSON.parse(stored);
-      const today = new Date().toISOString().split('T')[0];
-      return date === today;
-    }
-    return false;
-  });
+  const [isDismissed, setIsDismissed] = useState(false);
+  const userId = useUserStore((state) => state.user?.uid);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadDismissedState = async () => {
+      if (!userId || isDemoMode) return;
+      try {
+        const prefs = await getUiPreferences(userId);
+        const today = new Date().toISOString().split('T')[0];
+        const dismissedToday = prefs?.studyReminderDismissedDate === today;
+        if (active) {
+          setIsDismissed(dismissedToday);
+        }
+      } catch {
+        // Ignore failures and keep reminders enabled.
+      }
+    };
+
+    void loadDismissedState();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   const dismissReminder = () => {
     setIsVisible(false);
     setIsDismissed(true);
-    // Persist dismissal with today's date so it resets tomorrow
-    localStorage.setItem('study-reminder-dismissed', JSON.stringify({
-      date: new Date().toISOString().split('T')[0],
-    }));
+    if (userId && !isDemoMode) {
+      void updateUiPreferences(userId, {
+        studyReminderDismissedDate: new Date().toISOString().split('T')[0],
+      });
+    }
   };
 
   useEffect(() => {

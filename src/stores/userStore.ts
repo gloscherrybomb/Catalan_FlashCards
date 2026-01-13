@@ -18,6 +18,10 @@ import {
 import { logger } from '../services/logger';
 import { isSameDay, differenceInDays, startOfDay } from 'date-fns';
 import { useCurriculumStore } from './curriculumStore';
+import { useGrammarStore } from './grammarStore';
+import { useStoryStore } from './storyStore';
+import { getPersistStorage } from '../utils/persistStorage';
+import { notificationService } from '../services/notificationService';
 
 // Module-scoped variable for auth unsubscribe (replaces window.__authUnsubscribe)
 // Exported for potential cleanup usage by the app
@@ -88,7 +92,7 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true });
 
         if (isDemoMode) {
-          // Demo mode - use local storage only
+          // Demo mode - skip Firebase sync
           set({ isLoading: false });
           return;
         }
@@ -117,9 +121,15 @@ export const useUserStore = create<UserState>()(
 
                   // Initialize curriculum progress from Firebase
                   await useCurriculumStore.getState().initializeFromFirebase(user.uid);
+                  await useGrammarStore.getState().initializeFromFirebase(user.uid);
+                  await useStoryStore.getState().initializeFromFirebase(user.uid);
+                  await notificationService.initialize(user.uid);
                 } else {
                   // Clear curriculum user when logged out
                   useCurriculumStore.getState().clearUser();
+                  useGrammarStore.getState().clearUser();
+                  useStoryStore.getState().clearUser();
+                  notificationService.clearUser();
 
                   set({
                     user: null,
@@ -233,7 +243,10 @@ export const useUserStore = create<UserState>()(
 
             // Initialize curriculum progress from Firebase
             await useCurriculumStore.getState().initializeFromFirebase(user.uid);
-            logger.debug('Curriculum progress initialized from Firebase', 'UserStore');
+            await useGrammarStore.getState().initializeFromFirebase(user.uid);
+            await useStoryStore.getState().initializeFromFirebase(user.uid);
+            await notificationService.initialize(user.uid);
+            logger.debug('Progress initialized from Firebase', 'UserStore');
           } catch (firestoreError) {
             logger.error('Firestore fetch failed (using basic profile)', 'UserStore', { error: String(firestoreError) });
           }
@@ -246,6 +259,9 @@ export const useUserStore = create<UserState>()(
       logout: async () => {
         // Clear curriculum user
         useCurriculumStore.getState().clearUser();
+        useGrammarStore.getState().clearUser();
+        useStoryStore.getState().clearUser();
+        notificationService.clearUser();
 
         if (isDemoMode) {
           set({
@@ -440,6 +456,7 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: 'catalan-user-storage',
+      storage: getPersistStorage(),
       partialize: (state) => ({
         progress: state.progress,
         achievements: state.achievements,

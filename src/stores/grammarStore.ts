@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getPersistStorage } from '../utils/persistStorage';
+import { getGrammarProgress, updateGrammarProgress, isDemoMode } from '../services/firebase';
+import { logger } from '../services/logger';
 
 export interface LessonProgress {
   lessonId: string;
@@ -19,8 +22,11 @@ interface PersistedGrammarState {
 interface GrammarState {
   lessonProgress: Map<string, LessonProgress>;
   currentLesson: string | null;
+  currentUserId: string | null;
 
   // Actions
+  initializeFromFirebase: (userId: string) => Promise<void>;
+  clearUser: () => void;
   startLesson: (lessonId: string) => void;
   completeExercise: (lessonId: string, exerciseId: string, correct: boolean) => void;
   completeLesson: (lessonId: string) => void;
@@ -39,14 +45,86 @@ const createInitialProgress = (lessonId: string): LessonProgress => ({
   attempts: 0,
 });
 
+const serializeLessonProgress = (lessonProgress: Map<string, LessonProgress>) => {
+  const result: Record<string, {
+    lessonId: string;
+    completed: boolean;
+    completedAt?: string;
+    exerciseScores: Record<string, boolean>;
+    bestScore: number;
+    attempts: number;
+  }> = {};
+
+  lessonProgress.forEach((progress, lessonId) => {
+    result[lessonId] = {
+      lessonId,
+      completed: progress.completed,
+      completedAt: progress.completedAt ? progress.completedAt.toISOString() : undefined,
+      exerciseScores: progress.exerciseScores,
+      bestScore: progress.bestScore,
+      attempts: progress.attempts,
+    };
+  });
+
+  return result;
+};
+
+async function syncToFirebase(userId: string | null, lessonProgress: Map<string, LessonProgress>) {
+  if (!userId || isDemoMode) return;
+
+  try {
+    await updateGrammarProgress(userId, {
+      lessonProgress: serializeLessonProgress(lessonProgress),
+    });
+  } catch (error) {
+    logger.error('Failed to sync grammar progress to Firebase', 'GrammarStore', { error: String(error) });
+  }
+}
+
 export const useGrammarStore = create<GrammarState>()(
   persist(
     (set, get) => ({
       lessonProgress: new Map(),
       currentLesson: null,
+      currentUserId: null,
+
+      initializeFromFirebase: async (userId: string) => {
+        if (isDemoMode) {
+          set({ currentUserId: userId });
+          return;
+        }
+
+        try {
+          const data = await getGrammarProgress(userId);
+          if (data?.lessonProgress) {
+            const entries: [string, LessonProgress][] = Object.entries(data.lessonProgress).map(
+              ([lessonId, progress]) => [
+                lessonId,
+                {
+                  ...progress,
+                  completedAt: progress.completedAt ? new Date(progress.completedAt) : undefined,
+                },
+              ]
+            );
+            set({
+              currentUserId: userId,
+              lessonProgress: new Map(entries),
+            });
+          } else {
+            set({ currentUserId: userId });
+          }
+        } catch (error) {
+          logger.error('Failed to load grammar progress from Firebase', 'GrammarStore', { error: String(error) });
+          set({ currentUserId: userId });
+        }
+      },
+
+      clearUser: () => {
+        set({ currentUserId: null });
+      },
 
       startLesson: (lessonId: string) => {
-        const { lessonProgress } = get();
+        const { lessonProgress, currentUserId } = get();
         const newProgress = new Map(lessonProgress);
 
         if (!newProgress.has(lessonId)) {
@@ -58,10 +136,11 @@ export const useGrammarStore = create<GrammarState>()(
         newProgress.set(lessonId, progress);
 
         set({ currentLesson: lessonId, lessonProgress: newProgress });
+        syncToFirebase(currentUserId, newProgress);
       },
 
       completeExercise: (lessonId: string, exerciseId: string, correct: boolean) => {
-        const { lessonProgress } = get();
+        const { lessonProgress, currentUserId } = get();
         const newProgress = new Map(lessonProgress);
 
         let progress = newProgress.get(lessonId);
@@ -82,10 +161,11 @@ export const useGrammarStore = create<GrammarState>()(
 
         newProgress.set(lessonId, progress);
         set({ lessonProgress: newProgress });
+        syncToFirebase(currentUserId, newProgress);
       },
 
       completeLesson: (lessonId: string) => {
-        const { lessonProgress } = get();
+        const { lessonProgress, currentUserId } = get();
         const newProgress = new Map(lessonProgress);
 
         let progress = newProgress.get(lessonId);
@@ -98,6 +178,7 @@ export const useGrammarStore = create<GrammarState>()(
 
         newProgress.set(lessonId, progress);
         set({ lessonProgress: newProgress, currentLesson: null });
+        syncToFirebase(currentUserId, newProgress);
       },
 
       getLessonProgress: (lessonId: string) => {
@@ -134,11 +215,15 @@ export const useGrammarStore = create<GrammarState>()(
       },
 
       resetProgress: () => {
-        set({ lessonProgress: new Map(), currentLesson: null });
+        const { currentUserId } = get();
+        const cleared = new Map<string, LessonProgress>();
+        set({ lessonProgress: cleared, currentLesson: null });
+        syncToFirebase(currentUserId, cleared);
       },
     }),
     {
       name: 'catalan-grammar-storage',
+      storage: getPersistStorage(),
       partialize: (state) => ({
         lessonProgress: Array.from(state.lessonProgress.entries()),
         currentLesson: state.currentLesson,
