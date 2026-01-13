@@ -231,27 +231,34 @@ export const useSessionStore = create<SessionState>()(
       }
     }
 
-    // Update daily challenges
-    updateDailyChallenges({
-      cardsReviewed: totalCards,
-      perfectStreak,
-      fastAnswers,
-      accuracy,
-      typedCorrectAnswers,
-      categoriesReviewed,
-    });
+    // Update challenges, but don't block session completion if storage is corrupted.
+    try {
+      updateDailyChallenges({
+        cardsReviewed: totalCards,
+        perfectStreak,
+        fastAnswers,
+        accuracy,
+        typedCorrectAnswers,
+        categoriesReviewed,
+      });
+    } catch (error) {
+      logger.warn('Failed to update daily challenges', 'SessionStore', { error: String(error) });
+    }
 
-    // Update weekly challenges
-    updateWeeklyChallenges({
-      cardsReviewed: totalCards,
-      cardsMastered: 0, // Will be tracked properly if needed
-      studiedToday: true,
-      sessionAccuracy: accuracy,
-      isPerfectSession: accuracy >= 90,
-      fastAnswers,
-      speakingExercises: 0,
-      categoriesReviewed,
-    });
+    try {
+      updateWeeklyChallenges({
+        cardsReviewed: totalCards,
+        cardsMastered: 0, // Will be tracked properly if needed
+        studiedToday: true,
+        sessionAccuracy: accuracy,
+        isPerfectSession: accuracy >= 90,
+        fastAnswers,
+        speakingExercises: 0,
+        categoriesReviewed,
+      });
+    } catch (error) {
+      logger.warn('Failed to update weekly challenges', 'SessionStore', { error: String(error) });
+    }
 
     // Record session in user store
     const userStore = useUserStore.getState();

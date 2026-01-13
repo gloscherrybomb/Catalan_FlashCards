@@ -247,6 +247,12 @@ export function StudyPage() {
           if (accuracy >= 80) {
             setShowConfetti(true);
           }
+          // Mark curriculum lesson as complete if we came from Learning Path
+          // Require at least 60% accuracy to count as completed
+          if (lessonId && accuracy >= 60) {
+            completeLesson(lessonId, accuracy);
+            logger.info('Lesson marked complete (sprint mode)', 'StudyPage', { lessonId, accuracy });
+          }
         }}
         onExit={() => {
           resetSession();
