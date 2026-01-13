@@ -91,16 +91,16 @@ export function LearningPathPage() {
         }
         break;
       case 'conversation':
-        // Navigate to conversation practice
-        navigate('/conversation');
+        // Navigate to conversation practice with lesson tracking
+        navigate(`/conversation?lesson=${lessonId}`);
         break;
       case 'culture':
-        // Navigate to stories/culture content
-        navigate('/stories');
+        // Navigate to stories/culture content with lesson tracking
+        navigate(`/stories?lesson=${lessonId}`);
         break;
       case 'review':
-        // Navigate to study with all learned units
-        navigate('/study?mode=review');
+        // Navigate to study with lesson tracking for reviews
+        navigate(`/study?mode=review&lesson=${lessonId}`);
         break;
       default:
         navigate('/study');
