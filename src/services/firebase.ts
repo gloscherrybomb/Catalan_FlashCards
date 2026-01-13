@@ -269,6 +269,43 @@ export async function saveDailyStats(userId: string, stats: DailyStats): Promise
   await setDoc(doc(db, 'users', userId, 'dailyStats', stats.date), stats);
 }
 
+// Curriculum progress types
+export interface CurriculumProgressData {
+  lessonProgress: Record<string, {
+    lessonId: string;
+    completed: boolean;
+    completedAt?: string;
+    score: number;
+    attempts: number;
+  }>;
+  currentLevel: string;
+  placementResult: {
+    level: string;
+    score: number;
+    totalQuestions: number;
+    correctAnswers: number;
+    takenAt: string;
+    breakdown: {
+      A1: { correct: number; total: number };
+      A2: { correct: number; total: number };
+      B1: { correct: number; total: number };
+      B2: { correct: number; total: number };
+    };
+  } | null;
+}
+
+// Curriculum progress functions
+export async function getCurriculumProgress(userId: string): Promise<CurriculumProgressData | null> {
+  const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'curriculum'));
+  if (!docSnap.exists()) return null;
+  return docSnap.data() as CurriculumProgressData;
+}
+
+export async function updateCurriculumProgress(userId: string, data: Partial<CurriculumProgressData>): Promise<void> {
+  const ref = doc(db, 'users', userId, 'data', 'curriculum');
+  await setDoc(ref, data, { merge: true });
+}
+
 export async function getDailyStats(userId: string, days: number = 30): Promise<DailyStats[]> {
   const q = query(
     collection(db, 'users', userId, 'dailyStats'),

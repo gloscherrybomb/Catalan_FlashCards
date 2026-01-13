@@ -7,6 +7,12 @@ import {
   getUnitForLesson,
   PLACEMENT_QUESTIONS,
 } from '../data/curriculum';
+import {
+  getCurriculumProgress,
+  updateCurriculumProgress,
+  isDemoMode,
+} from '../services/firebase';
+import { logger } from '../services/logger';
 
 export interface LessonProgress {
   lessonId: string;
@@ -42,7 +48,12 @@ interface CurriculumState {
   placementAnswers: Record<string, string>;
   placementInProgress: boolean;
 
+  // User tracking for Firebase sync
+  currentUserId: string | null;
+
   // Actions
+  initializeFromFirebase: (userId: string) => Promise<void>;
+  clearUser: () => void;
   startLesson: (lessonId: string) => void;
   completeLesson: (lessonId: string, score: number) => void;
   getLessonProgress: (lessonId: string) => LessonProgress | undefined;
@@ -76,6 +87,21 @@ const calculateLevel = (breakdown: PlacementResult['breakdown']): CEFRLevel => {
   return 'A1';
 };
 
+// Helper to sync curriculum progress to Firebase
+async function syncToFirebase(userId: string | null, state: Partial<{
+  lessonProgress: Record<string, LessonProgress>;
+  currentLevel: CEFRLevel;
+  placementResult: PlacementResult | null;
+}>) {
+  if (!userId || isDemoMode) return;
+
+  try {
+    await updateCurriculumProgress(userId, state);
+  } catch (error) {
+    logger.error('Failed to sync curriculum progress to Firebase', 'CurriculumStore', { error: String(error) });
+  }
+}
+
 export const useCurriculumStore = create<CurriculumState>()(
   persist(
     (set, get) => ({
@@ -86,6 +112,64 @@ export const useCurriculumStore = create<CurriculumState>()(
       currentLessonId: null,
       placementAnswers: {},
       placementInProgress: false,
+      currentUserId: null,
+
+      initializeFromFirebase: async (userId: string) => {
+        if (isDemoMode) {
+          set({ currentUserId: userId });
+          return;
+        }
+
+        try {
+          logger.debug('Loading curriculum progress from Firebase', 'CurriculumStore', { userId });
+          const firebaseData = await getCurriculumProgress(userId);
+
+          if (firebaseData) {
+            const { lessonProgress: localProgress, currentLevel: localLevel, placementResult: localPlacement } = get();
+
+            // Merge Firebase data with local data (Firebase takes priority, but keep local data that might be newer)
+            const mergedLessonProgress = { ...localProgress };
+
+            // Firebase data overwrites local for completed lessons
+            if (firebaseData.lessonProgress) {
+              for (const [lessonId, fbProgress] of Object.entries(firebaseData.lessonProgress)) {
+                const localLesson = mergedLessonProgress[lessonId];
+                // Use Firebase data if it exists and is completed, or if local doesn't have it
+                if (fbProgress.completed || !localLesson) {
+                  mergedLessonProgress[lessonId] = fbProgress;
+                }
+              }
+            }
+
+            set({
+              currentUserId: userId,
+              lessonProgress: mergedLessonProgress,
+              currentLevel: (firebaseData.currentLevel as CEFRLevel) || localLevel,
+              placementResult: firebaseData.placementResult || localPlacement,
+            });
+
+            logger.debug('Curriculum progress loaded from Firebase', 'CurriculumStore', {
+              lessonsLoaded: Object.keys(mergedLessonProgress).length,
+            });
+          } else {
+            // No Firebase data, sync local data to Firebase
+            const { lessonProgress, currentLevel, placementResult } = get();
+            set({ currentUserId: userId });
+
+            if (Object.keys(lessonProgress).length > 0) {
+              logger.debug('Syncing local curriculum progress to Firebase', 'CurriculumStore');
+              await syncToFirebase(userId, { lessonProgress, currentLevel, placementResult });
+            }
+          }
+        } catch (error) {
+          logger.error('Failed to load curriculum progress from Firebase', 'CurriculumStore', { error: String(error) });
+          set({ currentUserId: userId });
+        }
+      },
+
+      clearUser: () => {
+        set({ currentUserId: null });
+      },
 
       startLesson: (lessonId: string) => {
         const { lessonProgress } = get();
@@ -109,22 +193,27 @@ export const useCurriculumStore = create<CurriculumState>()(
       },
 
       completeLesson: (lessonId: string, score: number) => {
-        const { lessonProgress } = get();
+        const { lessonProgress, currentUserId } = get();
         const existing = lessonProgress[lessonId];
 
-        set({
-          lessonProgress: {
-            ...lessonProgress,
-            [lessonId]: {
-              lessonId,
-              completed: true,
-              completedAt: new Date().toISOString(),
-              score: Math.max(existing?.score || 0, score),
-              attempts: existing?.attempts || 1,
-            },
+        const updatedLessonProgress = {
+          ...lessonProgress,
+          [lessonId]: {
+            lessonId,
+            completed: true,
+            completedAt: new Date().toISOString(),
+            score: Math.max(existing?.score || 0, score),
+            attempts: existing?.attempts || 1,
           },
+        };
+
+        set({
+          lessonProgress: updatedLessonProgress,
           currentLessonId: null,
         });
+
+        // Sync to Firebase
+        syncToFirebase(currentUserId, { lessonProgress: updatedLessonProgress });
       },
 
       getLessonProgress: (lessonId: string) => {
@@ -246,7 +335,7 @@ export const useCurriculumStore = create<CurriculumState>()(
       },
 
       completePlacementTest: () => {
-        const { placementAnswers } = get();
+        const { placementAnswers, currentUserId } = get();
 
         const breakdown: PlacementResult['breakdown'] = {
           A1: { correct: 0, total: 0 },
@@ -283,6 +372,9 @@ export const useCurriculumStore = create<CurriculumState>()(
           placementAnswers: {},
         });
 
+        // Sync to Firebase
+        syncToFirebase(currentUserId, { placementResult: result, currentLevel: level });
+
         return result;
       },
 
@@ -295,7 +387,11 @@ export const useCurriculumStore = create<CurriculumState>()(
       },
 
       setCurrentLevel: (level: CEFRLevel) => {
+        const { currentUserId } = get();
         set({ currentLevel: level });
+
+        // Sync to Firebase
+        syncToFirebase(currentUserId, { currentLevel: level });
       },
 
       resetProgress: () => {

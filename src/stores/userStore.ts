@@ -17,6 +17,7 @@ import {
 } from '../services/firebase';
 import { logger } from '../services/logger';
 import { isSameDay, differenceInDays, startOfDay } from 'date-fns';
+import { useCurriculumStore } from './curriculumStore';
 
 // Module-scoped variable for auth unsubscribe (replaces window.__authUnsubscribe)
 // Exported for potential cleanup usage by the app
@@ -113,7 +114,13 @@ export const useUserStore = create<UserState>()(
                     isAuthenticated: true,
                     isLoading: false,
                   });
+
+                  // Initialize curriculum progress from Firebase
+                  await useCurriculumStore.getState().initializeFromFirebase(user.uid);
                 } else {
+                  // Clear curriculum user when logged out
+                  useCurriculumStore.getState().clearUser();
+
                   set({
                     user: null,
                     profile: null,
@@ -223,6 +230,10 @@ export const useUserStore = create<UserState>()(
               achievements,
             });
             logger.debug('Updated with Firestore data', 'UserStore');
+
+            // Initialize curriculum progress from Firebase
+            await useCurriculumStore.getState().initializeFromFirebase(user.uid);
+            logger.debug('Curriculum progress initialized from Firebase', 'UserStore');
           } catch (firestoreError) {
             logger.error('Firestore fetch failed (using basic profile)', 'UserStore', { error: String(firestoreError) });
           }
@@ -233,6 +244,9 @@ export const useUserStore = create<UserState>()(
       },
 
       logout: async () => {
+        // Clear curriculum user
+        useCurriculumStore.getState().clearUser();
+
         if (isDemoMode) {
           set({
             isAuthenticated: false,
