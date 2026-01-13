@@ -14,7 +14,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { audioService } from '../../services/audioService';
 import type { StudyCard } from '../../types/flashcard';
-import { stripBracketedContent, extractAllForms } from '../../utils/textUtils';
+import { stripBracketedContent, extractAllForms, stripPunctuation } from '../../utils/textUtils';
 
 interface DictationModeProps {
   studyCard: StudyCard;
@@ -135,12 +135,18 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
   const handleSubmit = () => {
     if (!userInput.trim() || isSubmitted) return;
 
+    // Normalize user input (strip punctuation for relaxed matching)
+    const normalizedInput = stripPunctuation(userInput.trim());
+
     // Try all valid forms and use the best match
-    let bestComparison = compareStrings(userInput.trim(), correctAnswer);
+    // Strip punctuation from expected answers too (e.g., "em dic..." -> "em dic")
+    const normalizedCorrect = stripPunctuation(correctAnswer);
+    let bestComparison = compareStrings(normalizedInput, normalizedCorrect);
     let bestAccuracy = calculateAccuracy(bestComparison);
 
     for (const form of validForms) {
-      const comp = compareStrings(userInput.trim(), form);
+      const normalizedForm = stripPunctuation(form);
+      const comp = compareStrings(normalizedInput, normalizedForm);
       const acc = calculateAccuracy(comp);
       if (acc > bestAccuracy) {
         bestAccuracy = acc;
