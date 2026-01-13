@@ -37,6 +37,7 @@ export function HomePage() {
 
   // Curriculum state
   const currentLevel = useCurriculumStore((state) => state.currentLevel);
+  const lessonProgress = useCurriculumStore((state) => state.lessonProgress);
   const getNextLesson = useCurriculumStore((state) => state.getNextLesson);
   const getLevelProgress = useCurriculumStore((state) => state.getLevelProgress);
   const getUnitProgress = useCurriculumStore((state) => state.getUnitProgress);
@@ -65,7 +66,7 @@ export function HomePage() {
       total += p.total;
     });
     return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
-  }, [getLevelProgress]);
+  }, [getLevelProgress, lessonProgress]);
 
   // Find current unit info
   const currentUnitInfo = useMemo(() => {
