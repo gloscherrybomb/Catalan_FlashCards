@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check,
@@ -79,9 +79,10 @@ export function GrammarExercises({
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
-  // State for sentence-build exercise
-  const [selectedWords, setSelectedWords] = useState<string[]>([]);
-  const [availableWords, setAvailableWords] = useState<string[]>([]);
+  // State for sentence-build exercise - track words with their color indices
+  type WordWithColor = { word: string; colorIndex: number };
+  const [selectedWords, setSelectedWords] = useState<WordWithColor[]>([]);
+  const [availableWords, setAvailableWords] = useState<WordWithColor[]>([]);
 
   // State for match exercise
   const [matchSelections, setMatchSelections] = useState<{ left: string | null; right: string | null }>({ left: null, right: null });
@@ -90,11 +91,6 @@ export function GrammarExercises({
   // State for animations
   const [showSuccessBurst, setShowSuccessBurst] = useState(false);
   const [recentlyMatched, setRecentlyMatched] = useState<string[]>([]);
-  const [wordColorMap, setWordColorMap] = useState<Map<string, number>>(new Map());
-
-  // Refs for match exercise connection lines
-  const leftRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const rightRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const currentExercise = exercises[currentIndex];
   const progress = ((currentIndex + 1) / exercises.length) * 100;
@@ -102,24 +98,21 @@ export function GrammarExercises({
   // Initialize available words for sentence-build when exercise changes
   const initializeSentenceBuild = useCallback(() => {
     if (currentExercise?.type === 'sentence-build' && currentExercise.words) {
-      // Shuffle the words
-      const shuffled = [...currentExercise.words].sort(() => Math.random() - 0.5);
+      // Create word objects with colors, then shuffle
+      const wordsWithColors: WordWithColor[] = currentExercise.words.map((word, i) => ({
+        word,
+        colorIndex: i % WORD_COLORS.length,
+      }));
+      const shuffled = [...wordsWithColors].sort(() => Math.random() - 0.5);
       setAvailableWords(shuffled);
       setSelectedWords([]);
-
-      // Assign colors to words
-      const colorMap = new Map<string, number>();
-      currentExercise.words.forEach((word, index) => {
-        colorMap.set(word, index % WORD_COLORS.length);
-      });
-      setWordColorMap(colorMap);
     }
   }, [currentExercise]);
 
   // Initialize when current exercise changes
-  useState(() => {
+  useEffect(() => {
     initializeSentenceBuild();
-  });
+  }, [initializeSentenceBuild]);
 
   const checkAnswer = () => {
     let userAnswer: string | null = null;
@@ -135,7 +128,7 @@ export function GrammarExercises({
         correct = userAnswer?.toLowerCase() === currentExercise.correctAnswer.toLowerCase();
         break;
       case 'sentence-build':
-        userAnswer = selectedWords.join(' ');
+        userAnswer = selectedWords.map(w => w.word).join(' ');
         correct = userAnswer.toLowerCase() === currentExercise.correctAnswer.toLowerCase();
         break;
       case 'translate':
@@ -184,15 +177,12 @@ export function GrammarExercises({
       // Reset sentence-build state
       setSelectedWords([]);
       if (nextExercise?.type === 'sentence-build' && nextExercise.words) {
-        const shuffled = [...nextExercise.words].sort(() => Math.random() - 0.5);
+        const wordsWithColors: WordWithColor[] = nextExercise.words.map((word, i) => ({
+          word,
+          colorIndex: i % WORD_COLORS.length,
+        }));
+        const shuffled = [...wordsWithColors].sort(() => Math.random() - 0.5);
         setAvailableWords(shuffled);
-
-        // Set up color map for next exercise
-        const colorMap = new Map<string, number>();
-        nextExercise.words.forEach((word, index) => {
-          colorMap.set(word, index % WORD_COLORS.length);
-        });
-        setWordColorMap(colorMap);
       }
 
       // Reset match state
@@ -219,7 +209,11 @@ export function GrammarExercises({
     // Reset sentence-build state
     setSelectedWords([]);
     if (exercises[0]?.type === 'sentence-build' && exercises[0].words) {
-      const shuffled = [...exercises[0].words].sort(() => Math.random() - 0.5);
+      const wordsWithColors: WordWithColor[] = exercises[0].words.map((word, i) => ({
+        word,
+        colorIndex: i % WORD_COLORS.length,
+      }));
+      const shuffled = [...wordsWithColors].sort(() => Math.random() - 0.5);
       setAvailableWords(shuffled);
     }
 
@@ -229,23 +223,23 @@ export function GrammarExercises({
   };
 
   // Sentence-build helpers
-  const handleSelectWord = (word: string, index: number) => {
+  const handleSelectWord = (wordObj: WordWithColor, index: number) => {
     if (isAnswered) return;
-    setSelectedWords([...selectedWords, word]);
+    setSelectedWords([...selectedWords, wordObj]);
     setAvailableWords(availableWords.filter((_, i) => i !== index));
   };
 
-  const handleRemoveWord = (word: string, index: number) => {
+  const handleRemoveWord = (wordObj: WordWithColor, index: number) => {
     if (isAnswered) return;
-    setAvailableWords([...availableWords, word]);
+    setAvailableWords([...availableWords, wordObj]);
     setSelectedWords(selectedWords.filter((_, i) => i !== index));
   };
 
   const handleShuffleWords = () => {
     if (isAnswered) return;
     // Reset: put all words back and shuffle
-    const allWords = [...selectedWords, ...availableWords];
-    const shuffled = allWords.sort(() => Math.random() - 0.5);
+    const allWords: WordWithColor[] = [...selectedWords, ...availableWords];
+    const shuffled = [...allWords].sort(() => Math.random() - 0.5);
     setAvailableWords(shuffled);
     setSelectedWords([]);
   };
@@ -587,19 +581,18 @@ export function GrammarExercises({
                             Tap the colorful words below to build your sentence...
                           </motion.span>
                         ) : (
-                          selectedWords.map((word, index) => {
-                            const colorIndex = wordColorMap.get(word) ?? 0;
-                            const colors = WORD_COLORS[colorIndex];
+                          selectedWords.map((wordObj, index) => {
+                            const colors = WORD_COLORS[wordObj.colorIndex];
                             return (
                               <motion.button
-                                key={`selected-${word}-${index}`}
+                                key={`selected-${wordObj.word}-${index}`}
                                 initial={{ scale: 0.5, opacity: 0, y: 20 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 0.8, opacity: 0, y: -10 }}
                                 whileHover={!isAnswered ? { scale: 1.05, y: -2 } : {}}
                                 whileTap={!isAnswered ? { scale: 0.95 } : {}}
                                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                                onClick={() => handleRemoveWord(word, index)}
+                                onClick={() => handleRemoveWord(wordObj, index)}
                                 disabled={isAnswered}
                                 className={`px-4 py-2 rounded-xl font-semibold shadow-md transition-shadow ${
                                   isAnswered
@@ -607,7 +600,7 @@ export function GrammarExercises({
                                     : `${colors.bg} ${colors.text} ${colors.shadow} cursor-pointer hover:shadow-lg`
                                 }`}
                               >
-                                {word}
+                                {wordObj.word}
                               </motion.button>
                             );
                           })
@@ -641,12 +634,11 @@ export function GrammarExercises({
 
                   <div className="flex flex-wrap gap-2">
                     <AnimatePresence mode="popLayout">
-                      {availableWords.map((word, index) => {
-                        const colorIndex = wordColorMap.get(word) ?? 0;
-                        const colors = WORD_COLORS[colorIndex];
+                      {availableWords.map((wordObj, index) => {
+                        const colors = WORD_COLORS[wordObj.colorIndex];
                         return (
                           <motion.button
-                            key={`available-${word}-${index}`}
+                            key={`available-${wordObj.word}-${index}`}
                             layout
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -654,7 +646,7 @@ export function GrammarExercises({
                             whileHover={!isAnswered ? { scale: 1.08, y: -3 } : {}}
                             whileTap={!isAnswered ? { scale: 0.92 } : {}}
                             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                            onClick={() => handleSelectWord(word, index)}
+                            onClick={() => handleSelectWord(wordObj, index)}
                             disabled={isAnswered}
                             className={`px-4 py-2 rounded-xl font-semibold shadow-md transition-all ${
                               isAnswered
@@ -662,7 +654,7 @@ export function GrammarExercises({
                                 : `${colors.bg} ${colors.text} ${colors.shadow} cursor-pointer hover:shadow-lg`
                             }`}
                           >
-                            {word}
+                            {wordObj.word}
                           </motion.button>
                         );
                       })}
@@ -820,7 +812,6 @@ export function GrammarExercises({
                       return (
                         <motion.button
                           key={`left-${pair.left}`}
-                          ref={(el) => el && leftRefs.current.set(pair.left, el)}
                           onClick={() => handleMatchSelect('left', pair.left)}
                           disabled={isMatched || isAnswered}
                           initial={{ opacity: 0, x: -20 }}
@@ -884,7 +875,6 @@ export function GrammarExercises({
                       return (
                         <motion.button
                           key={`right-${pair.right}`}
-                          ref={(el) => el && rightRefs.current.set(pair.right, el)}
                           onClick={() => handleMatchSelect('right', pair.right)}
                           disabled={isMatched || isAnswered}
                           initial={{ opacity: 0, x: 20 }}
