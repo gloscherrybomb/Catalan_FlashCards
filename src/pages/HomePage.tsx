@@ -1,57 +1,34 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Play,
-  Upload,
   BookOpen,
   Sparkles,
-  Zap,
-  ArrowRight,
   Gamepad2,
-  Dumbbell,
+  Trophy,
+  BarChart3,
 } from 'lucide-react';
 import { useCardStore } from '../stores/cardStore';
 import { useUserStore } from '../stores/userStore';
 import { useAdaptiveLearningStore } from '../stores/adaptiveLearningStore';
 import { Button } from '../components/ui/Button';
-import { Card, CardTitle, DecorativeCard } from '../components/ui/Card';
-import { ProgressRing } from '../components/ui/ProgressRing';
-import { XPBar } from '../components/gamification/XPBar';
-import { StreakCard } from '../components/gamification/StreakCounter';
-import { WordOfTheDay } from '../components/gamification/WordOfTheDay';
-import { DailyChallenges } from '../components/gamification/DailyChallenges';
+import { Tabs, type Tab } from '../components/ui/Tabs';
 import { StudyReminder, StreakWarning } from '../components/gamification/StudyReminder';
-import { DailyRecommendations, AdaptiveInsightsCard, WeakSpotAlerts } from '../components/adaptive';
+import { AdaptiveInsightsCard } from '../components/adaptive';
+import { HeroSection, LearnTab, PracticeTab, ChallengesTab, ProgressTab } from '../components/home';
 import { generateDailyChallenges, getDailyChallenges, type DailyChallenge } from '../types/challenges';
 import { initializeWeeklyChallenges, getWeeklyChallenges, type WeeklyChallenge } from '../types/weeklyChallenges';
-import { WeeklyChallenges } from '../components/gamification/WeeklyChallenges';
 import { format, isSameDay } from 'date-fns';
 
-// Stagger animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
+// Tab configuration
+const HOME_TABS: Tab[] = [
+  { id: 'learn', label: 'Learn', icon: <BookOpen className="w-4 h-4" /> },
+  { id: 'practice', label: 'Practice', icon: <Gamepad2 className="w-4 h-4" /> },
+  { id: 'challenges', label: 'Challenges', icon: <Trophy className="w-4 h-4" /> },
+  { id: 'progress', label: 'Progress', icon: <BarChart3 className="w-4 h-4" /> },
+];
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 12,
-    },
-  },
-};
+type TabId = 'learn' | 'practice' | 'challenges' | 'progress';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -59,6 +36,9 @@ export function HomePage() {
   const cardProgress = useCardStore((state) => state.cardProgress);
   const mistakeHistory = useCardStore((state) => state.mistakeHistory);
   const progress = useUserStore((state) => state.progress);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabId>('learn');
 
   // Adaptive learning state
   const currentRecommendations = useAdaptiveLearningStore((state) => state.currentRecommendations);
@@ -76,7 +56,6 @@ export function HomePage() {
   const getUniqueCardsDueCount = useCardStore((state) => state.getUniqueCardsDueCount);
 
   // Use useMemo to compute derived values only when dependencies change
-  // This prevents infinite re-renders while ensuring updates when card progress changes
   const categoryStats = useMemo(() => getCategoryStats(), [flashcards, cardProgress, getCategoryStats]);
   const dueCount = useMemo(() => getDueCount(), [flashcards, cardProgress, getDueCount]);
   const uniqueCardsDue = useMemo(() => getUniqueCardsDueCount(), [flashcards, cardProgress, getUniqueCardsDueCount]);
@@ -143,7 +122,6 @@ export function HomePage() {
   }, [navigate]);
 
   const handlePracticeWeakSpot = useCallback((_weakSpot: { affectedCardIds: string[] }) => {
-    // Navigate to drills with the weak spot category
     navigate('/drills');
   }, [navigate]);
 
@@ -153,10 +131,9 @@ export function HomePage() {
 
   return (
     <motion.div
-      className="max-w-5xl mx-auto px-4 py-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+      className="max-w-5xl mx-auto px-4 py-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
     >
       {/* Study Reminder */}
       <StudyReminder
@@ -167,330 +144,99 @@ export function HomePage() {
 
       {/* Streak Warning */}
       {hasCards && (
-        <motion.div variants={itemVariants} className="mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4"
+        >
           <StreakWarning currentStreak={progress.currentStreak} hasStudiedToday={hasStudiedToday} />
         </motion.div>
       )}
 
-      {/* Adaptive Insights - Critical alerts */}
+      {/* Adaptive Insights - Critical alerts (max 1 to keep compact) */}
       {hasCards && insights.length > 0 && (
-        <motion.div variants={itemVariants} className="mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
           <AdaptiveInsightsCard
             insights={insights}
             onDismiss={dismissInsight}
-            maxDisplay={2}
+            maxDisplay={1}
           />
         </motion.div>
       )}
 
-      {/* Hero Welcome Section */}
-      <motion.div variants={itemVariants} className="text-center mb-12 relative">
-        {/* Decorative elements */}
-        <motion.span
-          className="absolute -top-4 left-1/4 text-4xl text-miro-yellow"
-          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 4, repeat: Infinity }}
-        >
-          ✦
-        </motion.span>
-        <motion.span
-          className="absolute top-8 right-1/4 text-3xl text-miro-red"
-          animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.2, 1] }}
-          transition={{ duration: 5, repeat: Infinity, delay: 1 }}
-        >
-          ✦
-        </motion.span>
+      {/* Hero Section - Always visible */}
+      <HeroSection
+        cardsDue={uniqueCardsDue}
+        hasCards={hasCards}
+      />
 
-        <motion.h1
-          className="text-5xl md:text-7xl font-display font-bold text-miro-blue dark:text-ink-light mb-4"
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-        >
-          Hola!
-        </motion.h1>
-        <p className="text-xl md:text-2xl text-miro-blue/70 dark:text-ink-light/70 font-medium">
-          {hasCards
-            ? `You have ${uniqueCardsDue} cards waiting for review`
-            : 'Ready to start your Catalan journey?'}
-        </p>
-
-        {/* Decorative blob */}
-        <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-miro-yellow/10 blob animate-pulse-blob" />
-      </motion.div>
-
-      {/* Quick Actions - Main CTA cards */}
-      <motion.div
-        variants={itemVariants}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
-      >
-        {/* Primary Action */}
-        {hasCards ? (
-          <Link to="/study" className="block md:col-span-2 lg:col-span-1">
-            <DecorativeCard colors={{ topLeft: 'bg-miro-yellow', bottomRight: 'bg-miro-blue' }}>
-              <Card variant="playful" hover className="h-full">
-                <div className="flex items-center gap-5">
-                  <motion.div
-                    className="w-16 h-16 bg-miro-red blob flex items-center justify-center"
-                    whileHover={{ rotate: [0, -5, 5, 0] }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <Play size={28} className="text-white ml-1" />
-                  </motion.div>
-                  <div className="flex-1">
-                    <CardTitle className="text-2xl">Start Studying</CardTitle>
-                    <p className="text-miro-blue/60 dark:text-ink-light/60 mt-1 font-medium">
-                      {uniqueCardsDue} cards due ({dueCount} reviews)
-                    </p>
-                  </div>
-                  <ArrowRight className="text-miro-blue/40" />
-                </div>
-              </Card>
-            </DecorativeCard>
-          </Link>
-        ) : (
-          <Link to="/import" className="block md:col-span-2 lg:col-span-1">
-            <DecorativeCard colors={{ topLeft: 'bg-miro-red', bottomRight: 'bg-miro-yellow' }}>
-              <Card variant="playful" hover className="h-full">
-                <div className="flex items-center gap-5">
-                  <motion.div
-                    className="w-16 h-16 bg-miro-green blob-2 flex items-center justify-center"
-                    whileHover={{ rotate: [0, -5, 5, 0] }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <Upload size={28} className="text-white" />
-                  </motion.div>
-                  <div className="flex-1">
-                    <CardTitle className="text-2xl">Import Cards</CardTitle>
-                    <p className="text-miro-blue/60 dark:text-ink-light/60 mt-1 font-medium">
-                      Upload your CSV flashcard file
-                    </p>
-                  </div>
-                  <ArrowRight className="text-miro-blue/40" />
-                </div>
-              </Card>
-            </DecorativeCard>
-          </Link>
-        )}
-
-        {/* Sprint Mode */}
-        {hasCards && (
-          <Link to="/study?mode=sprint" className="block">
-            <Card variant="playful" hover className="h-full bg-gradient-to-br from-miro-orange/10 to-miro-yellow/10">
-              <div className="flex items-center gap-4">
-                <motion.div
-                  className="w-14 h-14 bg-miro-orange blob-2 flex items-center justify-center"
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <Zap size={24} className="text-white" />
-                </motion.div>
-                <div>
-                  <CardTitle>Sprint Mode</CardTitle>
-                  <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
-                    Fast-paced timed review
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </Link>
-        )}
-
-        {/* Browse Cards */}
-        <Link to="/browse" className="block">
-          <Card variant="playful" hover className="h-full">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-miro-yellow blob flex items-center justify-center">
-                <BookOpen size={24} className="text-miro-blue" />
-              </div>
-              <div>
-                <CardTitle>Browse Cards</CardTitle>
-                <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
-                  {flashcards.length} cards in collection
-                </p>
-              </div>
-            </div>
-          </Card>
-        </Link>
-      </motion.div>
-
-      {/* Practice & Games Section */}
+      {/* Tabbed Content - Only show if hasCards */}
       {hasCards && (
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
-        >
-          {/* Mini Games */}
-          <Link to="/games" className="block">
-            <Card variant="playful" hover className="h-full bg-gradient-to-br from-miro-yellow/10 to-miro-orange/10">
-              <div className="flex items-center gap-4">
-                <motion.div
-                  className="w-14 h-14 bg-gradient-to-br from-miro-yellow to-miro-orange blob flex items-center justify-center"
-                  whileHover={{ rotate: [0, -5, 5, 0] }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Gamepad2 size={24} className="text-white" />
-                </motion.div>
-                <div className="flex-1">
-                  <CardTitle>Mini Games</CardTitle>
-                  <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
-                    Word scramble, memory match & more
-                  </p>
-                </div>
-                <ArrowRight className="text-miro-blue/40" />
-              </div>
-            </Card>
-          </Link>
-
-          {/* Practice Drills */}
-          <Link to="/drills" className="block">
-            <Card variant="playful" hover className="h-full bg-gradient-to-br from-miro-red/10 to-miro-orange/10">
-              <div className="flex items-center gap-4">
-                <motion.div
-                  className="w-14 h-14 bg-gradient-to-br from-miro-red to-miro-orange blob-2 flex items-center justify-center"
-                  whileHover={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Dumbbell size={24} className="text-white" />
-                </motion.div>
-                <div className="flex-1">
-                  <CardTitle>Practice Drills</CardTitle>
-                  <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
-                    Category boot camps & weakness training
-                  </p>
-                </div>
-                <ArrowRight className="text-miro-blue/40" />
-              </div>
-            </Card>
-          </Link>
-        </motion.div>
-      )}
-
-      {/* Word of the Day & Daily Challenges */}
-      {hasCards && (
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
-        >
-          <WordOfTheDay />
-          <DailyChallenges challenges={dailyChallenges} />
-        </motion.div>
-      )}
-
-      {/* Weekly Challenges */}
-      {hasCards && weeklyChallenges.length > 0 && (
-        <motion.div variants={itemVariants} className="mb-10">
-          <WeeklyChallenges challenges={weeklyChallenges} />
-        </motion.div>
-      )}
-
-      {/* Adaptive Daily Recommendations */}
-      {hasCards && (
-        <motion.div variants={itemVariants} className="mb-10">
-          <DailyRecommendations
-            recommendations={currentRecommendations}
-            onStartSession={handleStartSession}
+        <>
+          {/* Tab Navigation */}
+          <Tabs
+            tabs={HOME_TABS}
+            activeTab={activeTab}
+            onChange={(tabId) => setActiveTab(tabId as TabId)}
+            className="mb-6"
           />
-        </motion.div>
-      )}
 
-      {/* Critical Weak Spots */}
-      {hasCards && criticalWeakSpots.length > 0 && (
-        <motion.div variants={itemVariants} className="mb-10">
-          <WeakSpotAlerts
-            weakSpots={criticalWeakSpots}
-            onPractice={handlePracticeWeakSpot}
-            maxDisplay={3}
-          />
-        </motion.div>
-      )}
-
-      {/* Stats Grid */}
-      <motion.div
-        variants={itemVariants}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {/* XP & Level */}
-        <XPBar />
-
-        {/* Streak */}
-        <StreakCard />
-
-        {/* Mastery Progress */}
-        <Card variant="bordered">
-          <CardTitle>Overall Progress</CardTitle>
-          <div className="flex items-center justify-center mt-4">
-            <ProgressRing
-              progress={masteryProgress}
-              size={120}
-              color="#2A9D8F"
+          {/* Tab Content with Animations */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
-              <div className="text-center">
-                <p className="text-3xl font-display font-bold text-miro-blue dark:text-ink-light">
-                  {masteryProgress}%
-                </p>
-                <p className="text-xs text-miro-blue/60 dark:text-ink-light/60 font-medium">
-                  Mastered
-                </p>
-              </div>
-            </ProgressRing>
-          </div>
-          <div className="mt-4 flex justify-between text-sm text-miro-blue/60 dark:text-ink-light/60">
-            <span>{masteredCards} mastered</span>
-            <span>{totalCards} total</span>
-          </div>
-        </Card>
-      </motion.div>
+              {activeTab === 'learn' && (
+                <LearnTab
+                  hasCards={hasCards}
+                  uniqueCardsDue={uniqueCardsDue}
+                  dueCount={dueCount}
+                  totalCards={totalCards}
+                  recommendations={currentRecommendations}
+                  onStartSession={handleStartSession}
+                />
+              )}
 
-      {/* Categories Breakdown */}
-      {hasCards && Object.keys(categoryStats).length > 0 && (
-        <motion.div variants={itemVariants} className="mt-8">
-          <Card variant="bordered">
-            <CardTitle>Categories</CardTitle>
-            <div className="mt-5 space-y-4">
-              {Object.entries(categoryStats).map(([category, stats], index) => {
-                const categoryProgress = stats.total > 0
-                  ? Math.round((stats.mastered / stats.total) * 100)
-                  : 0;
+              {activeTab === 'practice' && (
+                <PracticeTab
+                  weakSpots={criticalWeakSpots}
+                  onPracticeWeakSpot={handlePracticeWeakSpot}
+                />
+              )}
 
-                const colors = [
-                  'from-miro-red to-miro-orange',
-                  'from-miro-orange to-miro-yellow',
-                  'from-miro-green to-miro-blue',
-                  'from-miro-blue to-miro-green',
-                  'from-miro-yellow to-miro-red',
-                ];
+              {activeTab === 'challenges' && (
+                <ChallengesTab
+                  dailyChallenges={dailyChallenges}
+                  weeklyChallenges={weeklyChallenges}
+                />
+              )}
 
-                return (
-                  <div key={category}>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="font-semibold text-miro-blue dark:text-ink-light">
-                        {category}
-                      </span>
-                      <span className="text-miro-blue/60 dark:text-ink-light/60">
-                        {stats.mastered}/{stats.total} mastered
-                      </span>
-                    </div>
-                    <div className="h-3 bg-miro-blue/10 dark:bg-ink-light/10 rounded-full overflow-hidden">
-                      <motion.div
-                        className={`h-full bg-gradient-to-r ${colors[index % colors.length]} rounded-full`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${categoryProgress}%` }}
-                        transition={{ duration: 0.8, delay: 0.1 * index, ease: 'easeOut' }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        </motion.div>
+              {activeTab === 'progress' && (
+                <ProgressTab
+                  masteryProgress={masteryProgress}
+                  masteredCards={masteredCards}
+                  totalCards={totalCards}
+                  categoryStats={categoryStats}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </>
       )}
 
-      {/* Empty State */}
+      {/* Empty State - No cards */}
       {!hasCards && (
         <motion.div
-          variants={itemVariants}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           className="mt-12 text-center py-16 relative"
         >
           {/* Decorative background */}
@@ -515,7 +261,7 @@ export function HomePage() {
             We'll help you master them with spaced repetition!
           </p>
           <Link to="/import">
-            <Button size="lg" leftIcon={<Upload size={22} />}>
+            <Button size="lg" leftIcon={<Sparkles size={22} />}>
               Import Your First Cards
             </Button>
           </Link>
