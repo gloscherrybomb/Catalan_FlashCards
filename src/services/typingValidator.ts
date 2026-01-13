@@ -34,7 +34,10 @@ export function normalizeForComparison(text: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
     .replace(/·/g, '') // Remove middle dot
-    .replace(/\s+/g, ' '); // Normalize whitespace
+    .replace(/[.,!?;:'"¿¡…]+/g, '') // Remove punctuation (including ellipsis)
+    .replace(/\.{2,}/g, '') // Remove multiple dots (ellipsis as ...)
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim(); // Trim again after punctuation removal
 }
 
 // Normalize for loose comparison (ignores spaces entirely)
@@ -46,6 +49,8 @@ export function normalizeLooseComparison(text: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
     .replace(/·/g, '') // Remove middle dot
+    .replace(/[.,!?;:'"¿¡…]+/g, '') // Remove punctuation (including ellipsis)
+    .replace(/\.{2,}/g, '') // Remove multiple dots (ellipsis as ...)
     .replace(/[-\s]+/g, ''); // Remove all spaces and hyphens
 }
 

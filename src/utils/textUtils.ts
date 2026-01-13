@@ -1,4 +1,21 @@
 /**
+ * Strips common punctuation from text for answer comparison.
+ * Removes periods, commas, ellipsis, question marks, exclamation points,
+ * quotes, colons, semicolons, and Spanish/Catalan inverted punctuation.
+ *
+ * @example
+ * stripPunctuation("Soc...") // "Soc"
+ * stripPunctuation("Hola!") // "Hola"
+ * stripPunctuation("¿Què?") // "Què"
+ */
+export function stripPunctuation(text: string): string {
+  return text
+    .replace(/[.,!?;:'"¿¡…]+/g, '') // Remove common punctuation
+    .replace(/\.{2,}/g, '') // Remove multiple dots (ellipsis as ...)
+    .trim();
+}
+
+/**
  * Strips bracketed content from text.
  * Removes gender markers like (M), (F), (M Pl), (feminine), etc.
  * Also removes any other parenthetical notes.

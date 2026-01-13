@@ -170,14 +170,17 @@ export function validateFillInBlank(
 }
 
 /**
- * Normalize answer for comparison (lowercase, trim, remove extra accents)
+ * Normalize answer for comparison (lowercase, trim, remove punctuation and accents)
  */
 function normalizeAnswer(answer: string): string {
   return answer
     .toLowerCase()
     .trim()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics for comparison
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics for comparison
+    .replace(/[.,!?;:'"¿¡…]+/g, '') // Remove punctuation (including ellipsis)
+    .replace(/\.{2,}/g, '') // Remove multiple dots (ellipsis as ...)
+    .trim(); // Trim again after punctuation removal
 }
 
 /**
