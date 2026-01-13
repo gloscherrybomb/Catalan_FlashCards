@@ -19,7 +19,7 @@ import { StreakCard } from '../components/gamification/StreakCounter';
 import { WordOfTheDay } from '../components/gamification/WordOfTheDay';
 import { DailyChallenges } from '../components/gamification/DailyChallenges';
 import { StudyReminder, StreakWarning } from '../components/gamification/StudyReminder';
-import { generateDailyChallenges, type DailyChallenge } from '../types/challenges';
+import { generateDailyChallenges, getDailyChallenges, type DailyChallenge } from '../types/challenges';
 import { format, isSameDay } from 'date-fns';
 
 // Stagger animation variants
@@ -49,14 +49,16 @@ const itemVariants = {
 
 export function HomePage() {
   const flashcards = useCardStore((state) => state.flashcards);
-  const getDueCount = useCardStore((state) => state.getDueCount);
-  const getCategoryStats = useCardStore((state) => state.getCategoryStats);
-  const getUniqueCardsDueCount = useCardStore((state) => state.getUniqueCardsDueCount);
   const progress = useUserStore((state) => state.progress);
 
-  const dueCount = getDueCount(); // Total review items (cards × 2 directions)
-  const uniqueCardsDue = getUniqueCardsDueCount(); // Unique cards that have at least one direction due
-  const categoryStats = getCategoryStats();
+  // Subscribe to cardProgress size to trigger re-renders when card progress changes
+  // This ensures category stats, due counts, etc. update properly after study sessions
+  const cardProgressSize = useCardStore((state) => state.cardProgress.size);
+  const categoryStats = useCardStore((state) => state.getCategoryStats());
+  const dueCount = useCardStore((state) => state.getDueCount());
+  const uniqueCardsDue = useCardStore((state) => state.getUniqueCardsDueCount());
+  // cardProgressSize is used for subscription reactivity
+  void cardProgressSize;
 
   const hasCards = flashcards.length > 0;
   const totalCards = flashcards.length * 2;
@@ -65,24 +67,36 @@ export function HomePage() {
 
   const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([]);
 
-  useEffect(() => {
-    const storedChallenges = localStorage.getItem('daily-challenges');
+  // Function to load or generate daily challenges
+  const loadDailyChallenges = () => {
     const today = format(new Date(), 'yyyy-MM-dd');
+    const existingChallenges = getDailyChallenges();
 
-    if (storedChallenges) {
-      const parsed = JSON.parse(storedChallenges);
-      if (parsed.date === today) {
-        setDailyChallenges(parsed.challenges);
-        return;
-      }
+    if (existingChallenges.length > 0) {
+      setDailyChallenges(existingChallenges);
+      return;
     }
 
+    // Generate new challenges for today
     const newChallenges = generateDailyChallenges();
     setDailyChallenges(newChallenges);
     localStorage.setItem('daily-challenges', JSON.stringify({
       date: today,
       challenges: newChallenges,
     }));
+  };
+
+  useEffect(() => {
+    // Load challenges on mount
+    loadDailyChallenges();
+
+    // Reload challenges when window gains focus (after returning from study session)
+    const handleFocus = () => {
+      loadDailyChallenges();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const hasStudiedToday = progress.lastStudyDate

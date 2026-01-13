@@ -5,6 +5,7 @@ import { XP_VALUES } from '../types/gamification';
 import { useUserStore } from './userStore';
 import { useCardStore } from './cardStore';
 import { checkAchievements } from '../services/achievementService';
+import { updateDailyChallenges } from '../types/challenges';
 
 interface SessionState {
   isActive: boolean;
@@ -185,7 +186,7 @@ export const useSessionStore = create<SessionState>()(
   },
 
   endSession: async () => {
-    const { results, sessionStartTime, perfectStreak } = get();
+    const { results, sessionStartTime, perfectStreak, cards } = get();
     const timeSpentMs = Date.now() - sessionStartTime;
 
     const totalCards = results.length;
@@ -199,6 +200,32 @@ export const useSessionStore = create<SessionState>()(
       if (r.quality >= 3) return sum + XP_VALUES.CARD_DIFFICULT;
       return sum + XP_VALUES.CARD_WRONG;
     }, 0);
+
+    // Calculate daily challenge metrics
+    const fastAnswers = results.filter(r => r.timeSpentMs < 3000 && r.isCorrect).length;
+    const typedCorrectAnswers = results.filter(r =>
+      (r.mode === 'type-answer' || r.mode === 'dictation') && r.isCorrect
+    ).length;
+
+    // Build category counts from the cards that were reviewed
+    const categoriesReviewed: Record<string, number> = {};
+    for (const result of results) {
+      const card = cards.find(c => c.flashcard.id === result.cardId);
+      if (card) {
+        const category = card.flashcard.category;
+        categoriesReviewed[category] = (categoriesReviewed[category] || 0) + 1;
+      }
+    }
+
+    // Update daily challenges
+    updateDailyChallenges({
+      cardsReviewed: totalCards,
+      perfectStreak,
+      fastAnswers,
+      accuracy,
+      typedCorrectAnswers,
+      categoriesReviewed,
+    });
 
     // Record session in user store
     const userStore = useUserStore.getState();

@@ -143,3 +143,84 @@ export function isChallengeComplete(challenge: DailyChallenge): boolean {
 export function getChallengeProgress(challenge: DailyChallenge): number {
   return Math.min(100, Math.round((challenge.current / challenge.target) * 100));
 }
+
+export interface SessionResultsForChallenges {
+  cardsReviewed: number;
+  perfectStreak: number;
+  fastAnswers: number; // Answers under 3 seconds
+  accuracy: number; // Percentage 0-100
+  typedCorrectAnswers: number;
+  categoriesReviewed: Record<string, number>; // category -> count
+}
+
+export function updateDailyChallenges(results: SessionResultsForChallenges): DailyChallenge[] {
+  const stored = localStorage.getItem('daily-challenges');
+  if (!stored) return [];
+
+  const { date, challenges } = JSON.parse(stored) as { date: string; challenges: DailyChallenge[] };
+  const today = new Date().toISOString().split('T')[0];
+
+  // Don't update if challenges are from a different day
+  if (date !== today) return challenges;
+
+  const updatedChallenges = challenges.map((challenge) => {
+    // Skip already completed challenges
+    if (challenge.current >= challenge.target) return challenge;
+
+    let newCurrent = challenge.current;
+
+    switch (challenge.type) {
+      case 'review_cards':
+        newCurrent += results.cardsReviewed;
+        break;
+      case 'perfect_streak':
+        // Perfect streak tracks max consecutive perfect answers
+        newCurrent = Math.max(challenge.current, results.perfectStreak);
+        break;
+      case 'speed_round':
+        newCurrent += results.fastAnswers;
+        break;
+      case 'accuracy_goal':
+        // Accuracy goal: if accuracy meets target, mark as complete
+        if (results.accuracy >= challenge.target && results.cardsReviewed >= 5) {
+          newCurrent = challenge.target;
+        }
+        break;
+      case 'typing_practice':
+        newCurrent += results.typedCorrectAnswers;
+        break;
+      case 'category_focus':
+        if (challenge.category && results.categoriesReviewed[challenge.category]) {
+          newCurrent += results.categoriesReviewed[challenge.category];
+        }
+        break;
+    }
+
+    return {
+      ...challenge,
+      current: Math.min(newCurrent, challenge.target),
+      completedAt: newCurrent >= challenge.target ? new Date() : challenge.completedAt,
+    };
+  });
+
+  // Save updated challenges
+  localStorage.setItem('daily-challenges', JSON.stringify({
+    date,
+    challenges: updatedChallenges,
+  }));
+
+  return updatedChallenges;
+}
+
+export function getDailyChallenges(): DailyChallenge[] {
+  const stored = localStorage.getItem('daily-challenges');
+  if (!stored) return [];
+
+  const { date, challenges } = JSON.parse(stored) as { date: string; challenges: DailyChallenge[] };
+  const today = new Date().toISOString().split('T')[0];
+
+  // Return empty if challenges are from a different day (they'll be regenerated)
+  if (date !== today) return [];
+
+  return challenges;
+}

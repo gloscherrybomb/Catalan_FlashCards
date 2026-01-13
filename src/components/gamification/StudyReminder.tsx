@@ -12,7 +12,25 @@ interface StudyReminderProps {
 
 export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyReminderProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(() => {
+    // Check if dismissed today (persists across page refreshes but resets daily)
+    const stored = localStorage.getItem('study-reminder-dismissed');
+    if (stored) {
+      const { date } = JSON.parse(stored);
+      const today = new Date().toISOString().split('T')[0];
+      return date === today;
+    }
+    return false;
+  });
+
+  const dismissReminder = () => {
+    setIsVisible(false);
+    setIsDismissed(true);
+    // Persist dismissal with today's date so it resets tomorrow
+    localStorage.setItem('study-reminder-dismissed', JSON.stringify({
+      date: new Date().toISOString().split('T')[0],
+    }));
+  };
 
   useEffect(() => {
     // Check if user hasn't studied today
@@ -78,10 +96,7 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
               : 'border-l-gray-300 dark:border-l-gray-600'
           }`}>
             <button
-              onClick={() => {
-                setIsVisible(false);
-                setIsDismissed(true);
-              }}
+              onClick={dismissReminder}
               className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <X className="w-4 h-4" />
@@ -109,10 +124,7 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => {
-                      setIsVisible(false);
-                      setIsDismissed(true);
-                    }}
+                    onClick={dismissReminder}
                   >
                     Later
                   </Button>
