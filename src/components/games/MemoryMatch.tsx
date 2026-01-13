@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Grid3X3, Trophy, Clock, RotateCcw } from 'lucide-react';
-import { Card, CardTitle } from '../ui/Card';
+import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import type { Flashcard } from '../../types/flashcard';
 import confetti from 'canvas-confetti';

@@ -10,7 +10,6 @@ import {
   CreditCard,
   Zap,
 } from 'lucide-react';
-import { Card, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import {
   Reward,
@@ -21,8 +20,6 @@ import {
   POWER_UPS,
   getRarityColor,
   getRarityGradient,
-  canPurchaseReward,
-  getRewardById,
 } from '../../types/rewards';
 import { useUserStore } from '../../stores/userStore';
 import confetti from 'canvas-confetti';
@@ -52,7 +49,6 @@ function RewardCard({
   isEquipped,
   canAfford,
   canUnlock,
-  userLevel,
   onPurchase,
   onEquip,
 }: {
@@ -61,7 +57,6 @@ function RewardCard({
   isEquipped: boolean;
   canAfford: boolean;
   canUnlock: boolean;
-  userLevel: number;
   onPurchase: () => void;
   onEquip: () => void;
 }) {
@@ -291,7 +286,6 @@ export function XPShop({ userRewards, onPurchase, onEquip }: XPShopProps) {
                 isEquipped={isEquipped(reward)}
                 canAfford={progress.xp >= reward.xpCost}
                 canUnlock={!reward.unlockLevel || progress.level >= reward.unlockLevel}
-                userLevel={progress.level}
                 onPurchase={() => onPurchase(reward)}
                 onEquip={() => onEquip(reward)}
               />

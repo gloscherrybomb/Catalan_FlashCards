@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -9,11 +9,9 @@ import {
   AlertCircle,
   BookOpen,
   Flame,
-  Play,
   ChevronRight,
 } from 'lucide-react';
 import { Card, CardTitle } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
 import { useCardStore } from '../stores/cardStore';
 
 interface DrillConfig {

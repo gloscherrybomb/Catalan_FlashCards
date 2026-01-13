@@ -68,16 +68,14 @@ const itemVariants = {
 
 export function GamesPage() {
   const [activeGame, setActiveGame] = useState<GameType>('menu');
-  const [score, setScore] = useState(0);
   const flashcards = useCardStore((state) => state.flashcards);
 
-  const handleGameComplete = (finalScore: number) => {
-    setScore(finalScore);
+  const handleGameComplete = (_finalScore: number) => {
+    // Score is tracked internally by each game component
   };
 
   const handleBackToMenu = () => {
     setActiveGame('menu');
-    setScore(0);
   };
 
   return (

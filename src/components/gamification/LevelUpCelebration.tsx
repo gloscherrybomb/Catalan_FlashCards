@@ -17,7 +17,7 @@ export function LevelUpCelebration({
   newLevel,
   onClose,
 }: LevelUpCelebrationProps) {
-  const [stage, setStage] = useState<'entering' | 'revealed' | 'closing'>('entering');
+  const [, setStage] = useState<'entering' | 'revealed' | 'closing'>('entering');
 
   useEffect(() => {
     if (show) {

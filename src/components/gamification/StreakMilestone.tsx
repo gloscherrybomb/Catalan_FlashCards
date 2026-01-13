@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Zap, Shield } from 'lucide-react';
 import confetti from 'canvas-confetti';

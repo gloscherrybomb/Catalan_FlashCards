@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Trophy, Heart, RotateCcw, Volume2 } from 'lucide-react';
-import { Card, CardTitle } from '../ui/Card';
+import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import type { Flashcard } from '../../types/flashcard';
 import { audioService } from '../../services/audioService';
