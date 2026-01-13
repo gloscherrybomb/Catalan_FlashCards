@@ -43,6 +43,8 @@ interface CardState {
   loadCards: () => Promise<void>;
   importCSV: (csvContent: string) => Promise<number>;
   loadStarterVocabulary: () => Promise<number>;
+  addFlashcards: (newCards: Flashcard[]) => Promise<number>;
+  addUnitVocabulary: (unitNumber: number) => Promise<number>;
   deleteCard: (cardId: string) => Promise<void>;
   getStudyDeck: (limit?: number, categoryFilter?: string[], unitNumber?: number) => StudyCard[];
   reviewCard: (cardId: string, direction: StudyDirection, quality: number) => Promise<void>;
@@ -173,6 +175,57 @@ export const useCardStore = create<CardState>()(
           logger.error('Starter vocabulary import error', 'CardStore', { error: String(error) });
           throw error;
         }
+      },
+
+      addFlashcards: async (newCards: Flashcard[]) => {
+        const { flashcards } = get();
+
+        if (newCards.length === 0) {
+          return 0;
+        }
+
+        try {
+          const normalizeText = (text: string) =>
+            text.toLowerCase().trim().replace(/\s+/g, ' ');
+
+          const existingFronts = new Set(flashcards.map(c => normalizeText(c.front)));
+          const existingBacks = new Set(flashcards.map(c => normalizeText(c.back)));
+
+          const uniqueNewCards = newCards.filter(card => {
+            const normFront = normalizeText(card.front);
+            const normBack = normalizeText(card.back);
+            return !existingFronts.has(normFront) && !existingBacks.has(normBack);
+          });
+
+          if (uniqueNewCards.length === 0) {
+            return 0;
+          }
+
+          const allCards = [...flashcards, ...uniqueNewCards];
+          set({ flashcards: allCards });
+
+          const userStore = useUserStore.getState();
+          const userId = userStore.user?.uid;
+          if (userId && !isDemoMode) {
+            await saveFlashcards(userId, uniqueNewCards);
+          }
+
+          return uniqueNewCards.length;
+        } catch (error) {
+          logger.error('Add flashcards error', 'CardStore', { error: String(error) });
+          return 0;
+        }
+      },
+
+      addUnitVocabulary: async (unitNumber: number) => {
+        const unitVocab = getUnitVocabulary(unitNumber);
+        if (!unitVocab) {
+          logger.warn('Unit vocabulary not found', 'CardStore', { unitNumber });
+          return 0;
+        }
+
+        const cards = createFlashcardsFromUnit(unitVocab);
+        return get().addFlashcards(cards);
       },
 
       deleteCard: async (cardId: string) => {

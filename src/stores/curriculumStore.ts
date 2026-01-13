@@ -14,6 +14,7 @@ import {
   isDemoMode,
 } from '../services/firebase';
 import { logger } from '../services/logger';
+import { useCardStore } from './cardStore';
 
 export interface LessonProgress {
   lessonId: string;
@@ -72,6 +73,14 @@ const calculateLevel = (breakdown: PlacementResult['breakdown']): CEFRLevel => {
   if (breakdown.A2.correct >= 3) return 'A2';
   // Default to A1
   return 'A1';
+};
+
+const findLessonById = (lessonId: string) => {
+  for (const unit of CURRICULUM_UNITS) {
+    const lesson = unit.lessons.find(candidate => candidate.id === lessonId);
+    if (lesson) return lesson;
+  }
+  return undefined;
 };
 
 const CEFR_LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
@@ -246,6 +255,11 @@ export const useCurriculumStore = create<CurriculumState>()(
 
         // Sync to Firebase
         syncToFirebase(currentUserId, { lessonProgress: updatedLessonProgress });
+
+        const lesson = findLessonById(lessonId);
+        if (lesson?.content.type === 'vocabulary' && lesson.content.unitNumber) {
+          void useCardStore.getState().addUnitVocabulary(lesson.content.unitNumber);
+        }
       },
 
       getLessonProgress: (lessonId: string) => {
