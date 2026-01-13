@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { logger } from './services/logger';
 import { Layout } from './components/layout/Layout';
 import {
   HomePage,
@@ -14,6 +15,8 @@ import {
   LearningPathPage,
   StoriesPage,
   ConversationPage,
+  GamesPage,
+  PracticeDrillsPage,
 } from './pages';
 import { useUserStore } from './stores/userStore';
 import { useCardStore } from './stores/cardStore';
@@ -34,7 +37,7 @@ function AppContent() {
         // Set a timeout to prevent infinite loading
         const timeout = setTimeout(() => {
           if (mounted) {
-            console.warn('Initialization timeout - forcing load');
+            logger.warn('Initialization timeout - forcing load', 'App');
             useUserStore.setState({ isLoading: false });
           }
         }, 5000);
@@ -46,7 +49,7 @@ function AppContent() {
           await loadCards();
         }
       } catch (error) {
-        console.error('Initialization error:', error);
+        logger.error('Initialization error', 'App', { error: String(error) });
         if (mounted) {
           useUserStore.setState({ isLoading: false });
         }
@@ -105,6 +108,8 @@ function AppContent() {
         <Route path="/learn" element={<LearningPathPage />} />
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/conversation" element={<ConversationPage />} />
+        <Route path="/games" element={<GamesPage />} />
+        <Route path="/drills" element={<PracticeDrillsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>

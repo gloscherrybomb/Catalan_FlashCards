@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { logger } from '../../services/logger';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from './Button';
 
@@ -23,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught an error', 'ErrorBoundary', { error: String(error), componentStack: errorInfo.componentStack || '' });
   }
 
   handleReset = (): void => {

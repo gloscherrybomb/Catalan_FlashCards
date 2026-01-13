@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { logger } from '../../services/logger';
 import { Lightbulb, Volume2, ImageOff } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge, CardDecoration } from './CategoryIcon';
@@ -64,7 +65,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
           }
         }
       } catch (error) {
-        console.error('Failed to fetch image:', error);
+        logger.error('Failed to fetch image', 'FlashCard', { error: String(error) });
         if (mounted) {
           setImageFailed(true);
         }

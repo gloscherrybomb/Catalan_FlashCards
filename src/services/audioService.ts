@@ -3,6 +3,7 @@
 // Falls back to Web Speech API if cloud fails
 
 import { generateAudioFunction, isDemoMode } from './firebase';
+import { logger } from './logger';
 
 /**
  * Cleans text for speech by removing auxiliary notation.
@@ -131,7 +132,7 @@ class AudioService {
         await this.speakWithCloudTTS(cleanText, language, options.playbackRate);
         return;
       } catch (error) {
-        console.warn('Cloud TTS failed, falling back to Web Speech API:', error);
+        logger.warn('Cloud TTS failed, falling back to Web Speech API', 'AudioService');
       }
     }
 
@@ -190,7 +191,7 @@ class AudioService {
    */
   private async speakWithWebSpeech(text: string, language: Language, options: AudioOptions): Promise<void> {
     if (!this.synthesis) {
-      console.warn('Speech synthesis not supported');
+      logger.warn('Speech synthesis not supported', 'AudioService');
       return;
     }
 
@@ -233,7 +234,7 @@ class AudioService {
     return new Promise((resolve) => {
       utterance.onend = () => resolve();
       utterance.onerror = (event) => {
-        console.error('Speech error:', event);
+        logger.error('Speech error', 'AudioService', { error: event });
         resolve(); // Don't reject, just log
       };
       this.synthesis!.speak(utterance);
@@ -311,7 +312,7 @@ class AudioService {
           const result = await generateAudioFunction({ text: cleanText, language: langCode });
           this.audioUrlCache.set(cacheKey, result.data.url);
         } catch (error) {
-          console.warn('Failed to preload audio:', text, error);
+          logger.warn(`Failed to preload audio: ${text}`, 'AudioService');
         }
       }
     });

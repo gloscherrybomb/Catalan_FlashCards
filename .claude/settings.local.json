@@ -24,7 +24,8 @@
       "Bash(npm test)",
       "Bash(ls:*)",
       "Bash(grep:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

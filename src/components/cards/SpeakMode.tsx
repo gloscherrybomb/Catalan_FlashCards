@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { logger } from '../../services/logger';
 import { Mic, Volume2, StopCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -85,7 +86,7 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
     try {
       await audioService.speakCatalan(textToSpeak);
     } catch (err) {
-      console.error('Audio playback error:', err);
+      logger.error('Audio playback error', 'SpeakMode', { error: String(err) });
     } finally {
       setIsPlaying(false);
     }

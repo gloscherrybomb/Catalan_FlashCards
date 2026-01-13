@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
 const CACHE_DB_NAME = 'catalan-flashcards-images';
 const CACHE_STORE_NAME = 'images';
@@ -37,7 +39,7 @@ class ImageService {
       const request = indexedDB.open(CACHE_DB_NAME, 1);
 
       request.onerror = () => {
-        console.error('Failed to open IndexedDB:', request.error);
+        logger.error('Failed to open IndexedDB', 'ImageService', { error: request.error });
         reject(request.error);
       };
 
@@ -68,7 +70,7 @@ class ImageService {
         const request = store.get(word.toLowerCase());
 
         request.onerror = () => {
-          console.error('Failed to get cached image:', request.error);
+          logger.error('Failed to get cached image', 'ImageService', { error: request.error });
           resolve(null);
         };
 
@@ -98,7 +100,7 @@ class ImageService {
         const request = store.put({ ...image, word: image.word.toLowerCase() });
 
         request.onerror = () => {
-          console.error('Failed to cache image:', request.error);
+          logger.error('Failed to cache image', 'ImageService', { error: request.error });
           resolve();
         };
 
@@ -113,17 +115,17 @@ class ImageService {
     // Check cache first
     const cached = await this.getCachedImage(word);
     if (cached) {
-      console.log(`[ImageService] Cache hit for "${word}"`);
+      logger.debug(`Cache hit for "${word}"`, 'ImageService', { word });
       return cached;
     }
 
     // Skip if no API key configured
     if (!UNSPLASH_ACCESS_KEY) {
-      console.warn('[ImageService] Unsplash API key not configured. Set VITE_UNSPLASH_ACCESS_KEY in your .env file.');
+      logger.warn('Unsplash API key not configured. Set VITE_UNSPLASH_ACCESS_KEY in your .env file.', 'ImageService', {});
       return null;
     }
 
-    console.log(`[ImageService] Fetching image for "${word}"...`);
+    logger.debug(`Fetching image for "${word}"...`, 'ImageService', { word });
 
     try {
       // Clean the search term
@@ -140,16 +142,16 @@ class ImageService {
 
       if (!response.ok) {
         if (response.status === 403) {
-          console.error('[ImageService] Unsplash API rate limit exceeded');
+          logger.error('Unsplash API rate limit exceeded', 'ImageService', { error: response.status });
         } else {
-          console.error(`[ImageService] Unsplash API error: ${response.status}`);
+          logger.error(`Unsplash API error: ${response.status}`, 'ImageService', { error: response.status });
         }
         return null;
       }
 
       const data = await response.json();
       const results = data.results as UnsplashImage[];
-      console.log(`[ImageService] Found ${results.length} results for "${word}"`);
+      logger.debug(`Found ${results.length} results for "${word}"`, 'ImageService', { word, resultCount: results.length });
 
       if (results.length === 0) {
         // Try with fallback if available
@@ -173,7 +175,7 @@ class ImageService {
 
       return cachedImage;
     } catch (error) {
-      console.error('Failed to fetch image:', error);
+      logger.error('Failed to fetch image', 'ImageService', { error });
       return null;
     }
   }
@@ -246,7 +248,7 @@ class ImageService {
         const request = store.clear();
 
         request.onerror = () => {
-          console.error('Failed to clear cache:', request.error);
+          logger.error('Failed to clear cache', 'ImageService', { error: request.error });
           resolve();
         };
 

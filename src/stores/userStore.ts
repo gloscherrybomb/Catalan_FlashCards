@@ -15,7 +15,23 @@ import {
   signOut,
   isDemoMode,
 } from '../services/firebase';
+import { logger } from '../services/logger';
 import { isSameDay, differenceInDays, startOfDay } from 'date-fns';
+
+// Module-scoped variable for auth unsubscribe (replaces window.__authUnsubscribe)
+// Exported for potential cleanup usage by the app
+export let authUnsubscribe: (() => void) | null = null;
+
+// Type for persisted state deserialization
+interface PersistedUserState {
+  progress?: UserProgress & {
+    lastStudyDate?: string | null;
+    lastStreakFreezeUsed?: string;
+  };
+  achievements?: Array<Omit<UnlockedAchievement, 'unlockedAt'> & { unlockedAt: string }>;
+  profile?: Omit<UserProfile, 'createdAt'> & { createdAt: string };
+  isAuthenticated?: boolean;
+}
 
 interface UserState {
   user: User | null;
@@ -101,16 +117,16 @@ export const useUserStore = create<UserState>()(
                   });
                 }
               } catch (error) {
-                console.error('Auth state change error:', error);
+                logger.error('Auth state change error', 'UserStore', { error: String(error) });
                 set({ isLoading: false, isAuthenticated: false });
               }
               resolve();
             });
 
             // Store unsubscribe for cleanup
-            (window as any).__authUnsubscribe = unsubscribe;
+            authUnsubscribe = unsubscribe;
           } catch (error) {
-            console.error('Initialize error:', error);
+            logger.error('Initialize error', 'UserStore', { error: String(error) });
             set({ isLoading: false });
             resolve();
           }
@@ -141,10 +157,10 @@ export const useUserStore = create<UserState>()(
 
         try {
           const user = await signInWithGoogle();
-          console.log('Google sign-in successful:', user.email);
+          logger.info('Google sign-in successful', 'UserStore', { email: user.email });
 
           // Manually update state after successful login
-          console.log('Fetching user profile for:', user.uid);
+          logger.debug('Fetching user profile', 'UserStore', { uid: user.uid });
 
           // Skip Firestore for now and just use basic profile
           // This ensures login works even if Firestore has issues
@@ -171,27 +187,27 @@ export const useUserStore = create<UserState>()(
             isAuthenticated: true,
             isLoading: false,
           });
-          console.log('User authenticated with basic profile');
+          logger.debug('User authenticated with basic profile', 'UserStore');
 
           // Try to fetch Firestore data in background (non-blocking)
           try {
-            console.log('Attempting to fetch Firestore profile...');
+            logger.debug('Attempting to fetch Firestore profile', 'UserStore');
             let firestoreProfile = await getUserProfile(user.uid);
-            console.log('Firestore profile result:', firestoreProfile);
+            logger.debug('Firestore profile fetched', 'UserStore', { hasProfile: !!firestoreProfile });
 
             if (!firestoreProfile) {
-              console.log('Creating new user profile in Firestore...');
+              logger.debug('Creating new user profile in Firestore', 'UserStore');
               firestoreProfile = await createUserProfile(user);
-              console.log('Profile created:', firestoreProfile);
+              logger.debug('Profile created', 'UserStore');
             }
 
-            console.log('Fetching progress...');
+            logger.debug('Fetching progress', 'UserStore');
             const progress = await getUserProgress(user.uid);
-            console.log('Progress:', progress);
+            logger.debug('Progress fetched', 'UserStore');
 
-            console.log('Fetching achievements...');
+            logger.debug('Fetching achievements', 'UserStore');
             const achievements = await getUnlockedAchievements(user.uid);
-            console.log('Achievements:', achievements);
+            logger.debug('Achievements fetched', 'UserStore', { count: achievements.length });
 
             // Update with full Firestore data
             set({
@@ -199,12 +215,12 @@ export const useUserStore = create<UserState>()(
               progress: progress || DEFAULT_PROGRESS,
               achievements,
             });
-            console.log('Updated with Firestore data');
+            logger.debug('Updated with Firestore data', 'UserStore');
           } catch (firestoreError) {
-            console.error('Firestore fetch failed (using basic profile):', firestoreError);
+            logger.error('Firestore fetch failed (using basic profile)', 'UserStore', { error: String(firestoreError) });
           }
         } catch (error) {
-          console.error('Login failed:', error);
+          logger.error('Login failed', 'UserStore', { error: String(error) });
           throw error;
         }
       },
@@ -223,7 +239,7 @@ export const useUserStore = create<UserState>()(
         try {
           await signOut();
         } catch (error) {
-          console.error('Logout failed:', error);
+          logger.error('Logout failed', 'UserStore', { error: String(error) });
           throw error;
         }
       },
@@ -369,7 +385,8 @@ export const useUserStore = create<UserState>()(
         profile: state.profile,
         isAuthenticated: state.isAuthenticated,
       }),
-      merge: (persisted: any, current) => {
+      merge: (persistedState, current) => {
+        const persisted = persistedState as PersistedUserState | undefined;
         // Restore progress with proper date deserialization
         const progress = persisted?.progress ? {
           ...persisted.progress,
@@ -385,10 +402,10 @@ export const useUserStore = create<UserState>()(
         const profile = persisted?.profile ? {
           ...persisted.profile,
           createdAt: new Date(persisted.profile.createdAt),
-        } : current.profile;
+        } as UserProfile : current.profile;
 
         // Restore achievements with proper date deserialization
-        const achievements = (persisted?.achievements || []).map((a: any) => ({
+        const achievements: UnlockedAchievement[] = (persisted?.achievements || []).map((a) => ({
           ...a,
           unlockedAt: new Date(a.unlockedAt),
         }));

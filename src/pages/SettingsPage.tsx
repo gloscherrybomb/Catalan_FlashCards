@@ -125,7 +125,7 @@ export function SettingsPage() {
               </div>
               <select
                 value={profile?.settings.preferredMode || 'mixed'}
-                onChange={(e) => updateSettings({ preferredMode: e.target.value as any })}
+                onChange={(e) => updateSettings({ preferredMode: e.target.value as 'mixed' | 'flip' | 'multiple-choice' | 'type-answer' })}
                 className="px-3 py-2 rounded-lg border border-gray-200 focus:border-primary focus:outline-none"
               >
                 <option value="mixed">Mixed</option>

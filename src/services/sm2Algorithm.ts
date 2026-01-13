@@ -1,5 +1,6 @@
 import { addDays } from 'date-fns';
 import type { CardProgress, StudyDirection } from '../types/flashcard';
+import { SM2_CONFIG, MASTERY_CONFIG, SPEED_THRESHOLDS } from '../config/constants';
 
 /**
  * SM-2 Spaced Repetition Algorithm
@@ -17,7 +18,7 @@ export function createInitialProgress(cardId: string, direction: StudyDirection)
   return {
     cardId,
     direction,
-    easeFactor: 2.5,
+    easeFactor: SM2_CONFIG.DEFAULT_EASE_FACTOR,
     interval: 0,
     repetitions: 0,
     nextReviewDate: new Date(),
@@ -47,7 +48,7 @@ export function calculateSM2(
   } else {
     // Success - update ease factor
     newEF = Math.max(
-      1.3,
+      SM2_CONFIG.MIN_EASE_FACTOR,
       progress.easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
     );
 
@@ -62,8 +63,8 @@ export function calculateSM2(
     newReps++;
   }
 
-  // Cap maximum interval at 365 days
-  newInterval = Math.min(newInterval, 365);
+  // Cap maximum interval at configured max days
+  newInterval = Math.min(newInterval, SM2_CONFIG.MAX_INTERVAL_DAYS);
 
   return {
     ...progress,
@@ -87,11 +88,11 @@ export function isDueForReview(progress: CardProgress): boolean {
 }
 
 export function isNewCard(progress: CardProgress): boolean {
-  return progress.repetitions < 2;
+  return progress.repetitions < SM2_CONFIG.NEW_CARD_REPETITIONS_THRESHOLD;
 }
 
 export function isStrugglingCard(progress: CardProgress): boolean {
-  return progress.easeFactor < 2.0;
+  return progress.easeFactor < SM2_CONFIG.STRUGGLING_EASE_THRESHOLD;
 }
 
 export function requiresTyping(progress: CardProgress): boolean {
@@ -100,8 +101,8 @@ export function requiresTyping(progress: CardProgress): boolean {
 
 export function getMasteryLevel(progress: CardProgress): 'new' | 'learning' | 'reviewing' | 'mastered' {
   if (progress.repetitions === 0) return 'new';
-  if (progress.interval < 7) return 'learning';
-  if (progress.interval < 21) return 'reviewing';
+  if (progress.interval < MASTERY_CONFIG.LEARNING_INTERVAL_DAYS) return 'learning';
+  if (progress.interval < MASTERY_CONFIG.REVIEWING_INTERVAL_DAYS) return 'reviewing';
   return 'mastered';
 }
 
@@ -121,8 +122,8 @@ export function qualityFromTypingResult(
   // Correct answer - rate based on speed
   const seconds = timeSpentMs / 1000;
 
-  if (seconds < 3) return 5; // Very fast
-  if (seconds < 6) return 4; // Normal
+  if (seconds < SPEED_THRESHOLDS.TYPING_VERY_FAST_SECONDS) return 5; // Very fast
+  if (seconds < SPEED_THRESHOLDS.TYPING_NORMAL_SECONDS) return 4; // Normal
   return 3; // Slow but correct
 }
 
@@ -134,7 +135,7 @@ export function qualityFromMultipleChoice(
 
   const seconds = timeSpentMs / 1000;
 
-  if (seconds < 2) return 5;
-  if (seconds < 4) return 4;
+  if (seconds < SPEED_THRESHOLDS.MULTIPLE_CHOICE_FAST_SECONDS) return 5;
+  if (seconds < SPEED_THRESHOLDS.MULTIPLE_CHOICE_NORMAL_SECONDS) return 4;
   return 3;
 }

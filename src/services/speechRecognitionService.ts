@@ -1,6 +1,13 @@
 // Speech Recognition Service for Pronunciation Practice
 // Uses Web Speech API for speech-to-text recognition
 
+import type {
+  SpeechRecognition,
+  SpeechRecognitionEvent,
+  SpeechRecognitionErrorEvent,
+} from '../types/webSpeech';
+import { logger } from './logger';
+
 export interface SpeechResult {
   transcript: string;
   confidence: number;
@@ -14,12 +21,8 @@ export interface RecognitionOptions {
   maxAlternatives?: number;
 }
 
-// Use any for the recognition instance since Web Speech API types vary by browser
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SpeechRecognitionInstance = any;
-
 class SpeechRecognitionService {
-  private recognition: SpeechRecognitionInstance = null;
+  private recognition: SpeechRecognition | null = null;
   private isListening = false;
   private onResultCallback: ((result: SpeechResult) => void) | null = null;
   private onErrorCallback: ((error: string) => void) | null = null;
@@ -33,11 +36,8 @@ class SpeechRecognitionService {
     if (typeof window === 'undefined') return;
 
     // Access Web Speech API with proper browser prefixes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const windowWithSpeech = window as any;
     const SpeechRecognitionAPI =
-      windowWithSpeech.SpeechRecognition ||
-      windowWithSpeech.webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (SpeechRecognitionAPI) {
       this.recognition = new SpeechRecognitionAPI();
@@ -82,8 +82,7 @@ class SpeechRecognitionService {
       this.recognition.maxAlternatives = options.maxAlternatives ?? 3;
 
       // Set up event handlers
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.recognition.onresult = (event: any) => {
+      this.recognition.onresult = (event: SpeechRecognitionEvent) => {
         const result = event.results[event.results.length - 1];
         const alternative = result[0];
 
@@ -98,8 +97,7 @@ class SpeechRecognitionService {
         }
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.recognition.onerror = (event: any) => {
+      this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         let errorMessage = 'Speech recognition error';
 
         switch (event.error) {
@@ -208,7 +206,7 @@ class SpeechRecognitionService {
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (error) {
-      console.error('Microphone permission denied:', error);
+      logger.error('Microphone permission denied', 'SpeechRecognition', { error: String(error) });
       return false;
     }
   }

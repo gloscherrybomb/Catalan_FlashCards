@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { logger } from '../../services/logger';
 
 interface WaveformVisualizerProps {
   isActive: boolean;
@@ -62,7 +63,7 @@ export function WaveformVisualizer({
       setAnalyser(analyserNode);
       setDataArray(data);
     } catch (error) {
-      console.error('Error initializing audio:', error);
+      logger.error('Error initializing audio', 'WaveformVisualizer', { error: String(error) });
     }
   };
 

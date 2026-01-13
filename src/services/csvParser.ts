@@ -1,9 +1,30 @@
 import type { Flashcard } from '../types/flashcard';
+import { CSV_CONFIG } from '../config/constants';
+import { logger } from './logger';
 
 interface ParsedCategory {
   category: string;
   subcategory?: string;
   gender?: 'masculine' | 'feminine';
+}
+
+// CSV validation types
+export interface CSVWarning {
+  line: number;
+  type: 'skipped_row' | 'invalid_gender' | 'duplicate';
+  message: string;
+}
+
+export interface CSVError {
+  line?: number;
+  type: 'file_too_large' | 'malformed' | 'missing_columns' | 'empty_file' | 'too_many_rows';
+  message: string;
+}
+
+export interface CSVParseResult {
+  cards: Flashcard[];
+  warnings: CSVWarning[];
+  errors: CSVError[];
 }
 
 const CATEGORY_PATTERNS: [RegExp, string, string?][] = [
@@ -64,16 +85,55 @@ export function generateIconKey(category: string, front: string): string {
   return `${categoryKey}__${wordKey}`;
 }
 
-export function parseCSV(csvContent: string): Flashcard[] {
+/**
+ * Parse CSV with comprehensive validation.
+ * Returns cards along with any warnings and errors encountered.
+ */
+export function parseCSVWithValidation(csvContent: string): CSVParseResult {
+  const result: CSVParseResult = { cards: [], warnings: [], errors: [] };
+
+  // File size validation
+  const contentSize = new Blob([csvContent]).size;
+  if (contentSize > CSV_CONFIG.MAX_FILE_SIZE_BYTES) {
+    result.errors.push({
+      type: 'file_too_large',
+      message: `File size ${(contentSize / 1024 / 1024).toFixed(2)}MB exceeds maximum of 5MB`,
+    });
+    return result;
+  }
+
   const lines = csvContent.trim().split('\n');
 
   if (lines.length < 2) {
-    throw new Error('CSV must have at least a header row and one data row');
+    result.errors.push({
+      type: 'empty_file',
+      message: 'CSV must have at least a header row and one data row',
+    });
+    return result;
   }
 
-  // Parse header
+  // Row count validation
+  if (lines.length > CSV_CONFIG.MAX_ROWS + 1) {
+    result.errors.push({
+      type: 'too_many_rows',
+      message: `File has ${lines.length - 1} rows, maximum is ${CSV_CONFIG.MAX_ROWS}`,
+    });
+    return result;
+  }
+
+  // Parse and validate header
   const headerLine = lines[0];
-  const headers = parseCSVLine(headerLine).map(h => h.toLowerCase().trim());
+  let headers: string[];
+  try {
+    headers = parseCSVLine(headerLine).map(h => h.toLowerCase().trim());
+  } catch {
+    result.errors.push({
+      line: 1,
+      type: 'malformed',
+      message: 'Could not parse header row',
+    });
+    return result;
+  }
 
   const frontIndex = headers.findIndex(h => h === 'front');
   const backIndex = headers.findIndex(h => h === 'back');
@@ -81,23 +141,58 @@ export function parseCSV(csvContent: string): Flashcard[] {
   const categoryIndex = headers.findIndex(h => h === 'category');
 
   if (frontIndex === -1 || backIndex === -1) {
-    throw new Error('CSV must have "Front" and "Back" columns');
+    result.errors.push({
+      type: 'missing_columns',
+      message: 'CSV must have "Front" and "Back" columns',
+    });
+    return result;
   }
 
-  const flashcards: Flashcard[] = [];
+  // Track seen cards for duplicate detection
+  const seenCards = new Set<string>();
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    const values = parseCSVLine(line);
+    let values: string[];
+    try {
+      values = parseCSVLine(line);
+    } catch {
+      result.warnings.push({
+        line: i + 1,
+        type: 'skipped_row',
+        message: 'Malformed CSV line, skipping',
+      });
+      continue;
+    }
 
     const front = values[frontIndex]?.trim() || '';
     const back = values[backIndex]?.trim() || '';
+
+    if (!front || !back) {
+      result.warnings.push({
+        line: i + 1,
+        type: 'skipped_row',
+        message: 'Missing front or back value',
+      });
+      continue;
+    }
+
+    // Duplicate detection
+    const cardKey = `${front.toLowerCase()}|${back.toLowerCase()}`;
+    if (seenCards.has(cardKey)) {
+      result.warnings.push({
+        line: i + 1,
+        type: 'duplicate',
+        message: `Duplicate card: "${front.substring(0, 30)}..."`,
+      });
+      continue;
+    }
+    seenCards.add(cardKey);
+
     const notes = notesIndex >= 0 ? values[notesIndex]?.trim() || '' : '';
     const explicitCategory = categoryIndex >= 0 ? values[categoryIndex]?.trim() || '' : '';
-
-    if (!front || !back) continue;
 
     // Parse category from notes if not explicitly provided
     const { category: parsedCategory, subcategory, gender: notesGender } = parseCategory(notes);
@@ -107,9 +202,19 @@ export function parseCSV(csvContent: string): Flashcard[] {
 
     // Extract gender from back column if present (e.g., "Pa (M)", "Aigua (F)")
     const genderFromBack = extractGenderFromBack(back);
-    const gender = genderFromBack || notesGender;
+    let gender = genderFromBack || notesGender;
 
-    flashcards.push({
+    // Validate gender value
+    if (gender && !CSV_CONFIG.VALID_GENDERS.includes(gender)) {
+      result.warnings.push({
+        line: i + 1,
+        type: 'invalid_gender',
+        message: `Invalid gender "${gender}", ignoring`,
+      });
+      gender = undefined;
+    }
+
+    result.cards.push({
       id: generateId(),
       front,
       back,
@@ -122,7 +227,28 @@ export function parseCSV(csvContent: string): Flashcard[] {
     });
   }
 
-  return flashcards;
+  logger.info('CSV parsed', 'CSVParser', {
+    cards: result.cards.length,
+    warnings: result.warnings.length,
+    errors: result.errors.length,
+  });
+
+  return result;
+}
+
+/**
+ * Parse CSV (backwards-compatible wrapper).
+ * Throws on errors, silently skips problematic rows.
+ */
+export function parseCSV(csvContent: string): Flashcard[] {
+  const result = parseCSVWithValidation(csvContent);
+
+  // Throw if there are any errors
+  if (result.errors.length > 0) {
+    throw new Error(result.errors[0].message);
+  }
+
+  return result.cards;
 }
 
 function extractGenderFromBack(back: string): 'masculine' | 'feminine' | undefined {

@@ -1,4 +1,5 @@
 import type { TypingResult, Correction } from '../types/flashcard';
+import { TYPING_CONFIG } from '../config/constants';
 
 const CATALAN_SPECIAL_CHARS = ['à', 'é', 'è', 'í', 'ï', 'ó', 'ò', 'ú', 'ü', 'ç', 'l·l'];
 
@@ -16,9 +17,6 @@ const CONTRACTIONS: Record<string, string> = {
   "i'd": "i would", "you'd": "you would", "we'd": "we would", "they'd": "they would",
   "let's": "let us", "who's": "who is", "what's": "what is", "where's": "where is",
 };
-
-// Typo tolerance threshold (85% similarity)
-const TYPO_THRESHOLD = 0.85;
 
 function expandContractions(text: string): string {
   let result = text.toLowerCase();
@@ -107,7 +105,7 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
   // Tier 5: Typo tolerance via similarity score
   const similarity = getSimilarityScore(contractedUser, contractedCorrect);
 
-  if (similarity >= TYPO_THRESHOLD) {
+  if (similarity >= TYPING_CONFIG.TYPO_SIMILARITY_THRESHOLD) {
     const corrections = findCorrections(trimmedUser, cleanedCorrect);
     return {
       isCorrect: false,

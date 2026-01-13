@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -8,6 +8,8 @@ import {
   Sparkles,
   Zap,
   ArrowRight,
+  Gamepad2,
+  Dumbbell,
 } from 'lucide-react';
 import { useCardStore } from '../stores/cardStore';
 import { useUserStore } from '../stores/userStore';
@@ -20,6 +22,8 @@ import { WordOfTheDay } from '../components/gamification/WordOfTheDay';
 import { DailyChallenges } from '../components/gamification/DailyChallenges';
 import { StudyReminder, StreakWarning } from '../components/gamification/StudyReminder';
 import { generateDailyChallenges, getDailyChallenges, type DailyChallenge } from '../types/challenges';
+import { initializeWeeklyChallenges, getWeeklyChallenges, type WeeklyChallenge } from '../types/weeklyChallenges';
+import { WeeklyChallenges } from '../components/gamification/WeeklyChallenges';
 import { format, isSameDay } from 'date-fns';
 
 // Stagger animation variants
@@ -49,16 +53,19 @@ const itemVariants = {
 
 export function HomePage() {
   const flashcards = useCardStore((state) => state.flashcards);
+  const cardProgress = useCardStore((state) => state.cardProgress);
   const progress = useUserStore((state) => state.progress);
 
-  // Subscribe to cardProgress size to trigger re-renders when card progress changes
-  // This ensures category stats, due counts, etc. update properly after study sessions
-  const cardProgressSize = useCardStore((state) => state.cardProgress.size);
-  const categoryStats = useCardStore((state) => state.getCategoryStats());
-  const dueCount = useCardStore((state) => state.getDueCount());
-  const uniqueCardsDue = useCardStore((state) => state.getUniqueCardsDueCount());
-  // cardProgressSize is used for subscription reactivity
-  void cardProgressSize;
+  // Get store functions (stable references)
+  const getCategoryStats = useCardStore((state) => state.getCategoryStats);
+  const getDueCount = useCardStore((state) => state.getDueCount);
+  const getUniqueCardsDueCount = useCardStore((state) => state.getUniqueCardsDueCount);
+
+  // Use useMemo to compute derived values only when dependencies change
+  // This prevents infinite re-renders while ensuring updates when card progress changes
+  const categoryStats = useMemo(() => getCategoryStats(), [flashcards, cardProgress, getCategoryStats]);
+  const dueCount = useMemo(() => getDueCount(), [flashcards, cardProgress, getDueCount]);
+  const uniqueCardsDue = useMemo(() => getUniqueCardsDueCount(), [flashcards, cardProgress, getUniqueCardsDueCount]);
 
   const hasCards = flashcards.length > 0;
   const totalCards = flashcards.length * 2;
@@ -66,6 +73,7 @@ export function HomePage() {
   const masteryProgress = totalCards > 0 ? Math.round((masteredCards / totalCards) * 100) : 0;
 
   const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([]);
+  const [weeklyChallenges, setWeeklyChallenges] = useState<WeeklyChallenge[]>([]);
 
   // Function to load or generate daily challenges
   const loadDailyChallenges = () => {
@@ -89,10 +97,12 @@ export function HomePage() {
   useEffect(() => {
     // Load challenges on mount
     loadDailyChallenges();
+    setWeeklyChallenges(initializeWeeklyChallenges());
 
     // Reload challenges when window gains focus (after returning from study session)
     const handleFocus = () => {
       loadDailyChallenges();
+      setWeeklyChallenges(getWeeklyChallenges());
     };
 
     window.addEventListener('focus', handleFocus);
@@ -255,6 +265,58 @@ export function HomePage() {
         </Link>
       </motion.div>
 
+      {/* Practice & Games Section */}
+      {hasCards && (
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
+        >
+          {/* Mini Games */}
+          <Link to="/games" className="block">
+            <Card variant="playful" hover className="h-full bg-gradient-to-br from-miro-yellow/10 to-miro-orange/10">
+              <div className="flex items-center gap-4">
+                <motion.div
+                  className="w-14 h-14 bg-gradient-to-br from-miro-yellow to-miro-orange blob flex items-center justify-center"
+                  whileHover={{ rotate: [0, -5, 5, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Gamepad2 size={24} className="text-white" />
+                </motion.div>
+                <div className="flex-1">
+                  <CardTitle>Mini Games</CardTitle>
+                  <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
+                    Word scramble, memory match & more
+                  </p>
+                </div>
+                <ArrowRight className="text-miro-blue/40" />
+              </div>
+            </Card>
+          </Link>
+
+          {/* Practice Drills */}
+          <Link to="/drills" className="block">
+            <Card variant="playful" hover className="h-full bg-gradient-to-br from-miro-red/10 to-miro-orange/10">
+              <div className="flex items-center gap-4">
+                <motion.div
+                  className="w-14 h-14 bg-gradient-to-br from-miro-red to-miro-orange blob-2 flex items-center justify-center"
+                  whileHover={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Dumbbell size={24} className="text-white" />
+                </motion.div>
+                <div className="flex-1">
+                  <CardTitle>Practice Drills</CardTitle>
+                  <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
+                    Category boot camps & weakness training
+                  </p>
+                </div>
+                <ArrowRight className="text-miro-blue/40" />
+              </div>
+            </Card>
+          </Link>
+        </motion.div>
+      )}
+
       {/* Word of the Day & Daily Challenges */}
       {hasCards && (
         <motion.div
@@ -263,6 +325,13 @@ export function HomePage() {
         >
           <WordOfTheDay />
           <DailyChallenges challenges={dailyChallenges} />
+        </motion.div>
+      )}
+
+      {/* Weekly Challenges */}
+      {hasCards && weeklyChallenges.length > 0 && (
+        <motion.div variants={itemVariants} className="mb-10">
+          <WeeklyChallenges challenges={weeklyChallenges} />
         </motion.div>
       )}
 

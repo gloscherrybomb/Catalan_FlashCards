@@ -1,6 +1,8 @@
 // Notification Service for Study Reminders
 // Uses Web Notification API and Service Worker for push notifications
 
+import { logger } from './logger';
+
 export interface NotificationSettings {
   enabled: boolean;
   dueCardReminders: boolean;
@@ -59,7 +61,7 @@ class NotificationService {
    */
   async requestPermission(): Promise<boolean> {
     if (!this.isSupported()) {
-      console.warn('Notifications not supported');
+      logger.warn('Notifications not supported', 'NotificationService');
       return false;
     }
 
@@ -74,7 +76,7 @@ class NotificationService {
 
       return granted;
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      logger.error('Error requesting notification permission', 'NotificationService', { error: String(error) });
       return false;
     }
   }
@@ -89,7 +91,7 @@ class NotificationService {
         return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.error('Error loading notification settings:', error);
+      logger.error('Error loading notification settings', 'NotificationService', { error: String(error) });
     }
     return { ...DEFAULT_SETTINGS };
   }
@@ -101,7 +103,7 @@ class NotificationService {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.settings));
     } catch (error) {
-      console.error('Error saving notification settings:', error);
+      logger.error('Error saving notification settings', 'NotificationService', { error: String(error) });
     }
   }
 
@@ -183,12 +185,12 @@ class NotificationService {
    */
   async showNotification(title: string, body: string, options?: NotificationOptions): Promise<void> {
     if (!this.settings.enabled || this.getPermissionStatus() !== 'granted') {
-      console.log('Notifications disabled or permission not granted');
+      logger.debug('Notifications disabled or permission not granted', 'NotificationService');
       return;
     }
 
     if (this.isQuietHours()) {
-      console.log('Skipping notification during quiet hours');
+      logger.debug('Skipping notification during quiet hours', 'NotificationService');
       return;
     }
 
@@ -212,7 +214,7 @@ class NotificationService {
         });
       }
     } catch (error) {
-      console.error('Error showing notification:', error);
+      logger.error('Error showing notification', 'NotificationService', { error: String(error) });
     }
   }
 

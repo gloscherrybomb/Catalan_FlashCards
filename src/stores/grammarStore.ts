@@ -10,6 +10,12 @@ export interface LessonProgress {
   attempts: number;
 }
 
+// Type for persisted state deserialization
+interface PersistedGrammarState {
+  lessonProgress?: Array<[string, Omit<LessonProgress, 'completedAt'> & { completedAt?: string }]>;
+  currentLesson?: string | null;
+}
+
 interface GrammarState {
   lessonProgress: Map<string, LessonProgress>;
   currentLesson: string | null;
@@ -137,11 +143,25 @@ export const useGrammarStore = create<GrammarState>()(
         lessonProgress: Array.from(state.lessonProgress.entries()),
         currentLesson: state.currentLesson,
       }),
-      merge: (persisted: any, current) => ({
-        ...current,
-        ...persisted,
-        lessonProgress: new Map(persisted?.lessonProgress || []),
-      }),
+      merge: (persistedState, current) => {
+        const persisted = persistedState as PersistedGrammarState | undefined;
+        // Restore lessonProgress with proper date deserialization
+        const lessonProgressEntries: [string, LessonProgress][] = (persisted?.lessonProgress || []).map(
+          ([key, value]) => [
+            key,
+            {
+              ...value,
+              completedAt: value.completedAt ? new Date(value.completedAt) : undefined,
+            },
+          ]
+        );
+
+        return {
+          ...current,
+          lessonProgress: new Map(lessonProgressEntries),
+          currentLesson: persisted?.currentLesson ?? null,
+        };
+      },
     }
   )
 );

@@ -3,6 +3,7 @@ import type { Achievement, UnlockedAchievement, AchievementRequirement } from '.
 import type { UserProgress } from '../types/user';
 import type { CardProgress, Flashcard } from '../types/flashcard';
 import { unlockAchievement, isDemoMode } from './firebase';
+import { logger } from './logger';
 
 export interface AchievementContext {
   progress: UserProgress;
@@ -34,7 +35,7 @@ export async function checkAchievements(context: AchievementContext): Promise<Ac
         try {
           await unlockAchievement(userId, achievement.id);
         } catch (error) {
-          console.error(`Failed to save achievement ${achievement.id}:`, error);
+          logger.error(`Failed to save achievement ${achievement.id}`, 'AchievementService', { error: String(error) });
         }
       }
     }

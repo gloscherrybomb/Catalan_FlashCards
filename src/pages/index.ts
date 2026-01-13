@@ -10,3 +10,5 @@ export { GrammarPage } from './GrammarPage';
 export { LearningPathPage } from './LearningPathPage';
 export { StoriesPage } from './StoriesPage';
 export { ConversationPage } from './ConversationPage';
+export { GamesPage } from './GamesPage';
+export { PracticeDrillsPage } from './PracticeDrillsPage';

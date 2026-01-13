@@ -8,21 +8,31 @@ import {
   X,
   ClipboardPaste,
   FileText,
+  AlertTriangle,
 } from 'lucide-react';
 import { useCardStore } from '../stores/cardStore';
 import { Button } from '../components/ui/Button';
 import { Card, CardTitle } from '../components/ui/Card';
-import { exportToCSV } from '../services/csvParser';
+import { exportToCSV, parseCSVWithValidation, type CSVWarning, type CSVError } from '../services/csvParser';
 
 type ImportMode = 'file' | 'paste';
+
+interface ImportResult {
+  success: boolean;
+  count: number;
+  error?: string;
+  warnings?: CSVWarning[];
+  errors?: CSVError[];
+}
 
 export function ImportPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; count: number; error?: string } | null>(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
   const [previewContent, setPreviewContent] = useState<string | null>(null);
   const [importMode, setImportMode] = useState<ImportMode>('file');
   const [pasteContent, setPasteContent] = useState('');
+  const [validationResult, setValidationResult] = useState<{ warnings: CSVWarning[]; errors: CSVError[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const importCSV = useCardStore((state) => state.importCSV);
@@ -62,6 +72,20 @@ export function ImportPage() {
 
     try {
       const content = await file.text();
+      // Validate the content
+      const validation = parseCSVWithValidation(content);
+      setValidationResult({ warnings: validation.warnings, errors: validation.errors });
+
+      if (validation.errors.length > 0) {
+        setResult({
+          success: false,
+          count: 0,
+          error: validation.errors[0].message,
+          errors: validation.errors,
+        });
+        return;
+      }
+
       setPreviewContent(content);
     } catch (error) {
       setResult({ success: false, count: 0, error: 'Failed to read file' });
@@ -76,8 +100,13 @@ export function ImportPage() {
 
     try {
       const count = await importCSV(previewContent);
-      setResult({ success: true, count });
+      setResult({
+        success: true,
+        count,
+        warnings: validationResult?.warnings,
+      });
       setPreviewContent(null);
+      setValidationResult(null);
     } catch (error) {
       setResult({
         success: false,
@@ -102,6 +131,20 @@ export function ImportPage() {
 
   const handlePastePreview = () => {
     if (pasteContent.trim()) {
+      // Validate the content
+      const validation = parseCSVWithValidation(pasteContent);
+      setValidationResult({ warnings: validation.warnings, errors: validation.errors });
+
+      if (validation.errors.length > 0) {
+        setResult({
+          success: false,
+          count: 0,
+          error: validation.errors[0].message,
+          errors: validation.errors,
+        });
+        return;
+      }
+
       setPreviewContent(pasteContent);
     }
   };
@@ -292,26 +335,79 @@ Grammar,I am,Jo sóc,Verb: Ser"
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${
-            result.success
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-          }`}
+          className="mt-6 space-y-3"
         >
-          {result.success ? (
-            <CheckCircle size={24} />
-          ) : (
-            <AlertCircle size={24} />
-          )}
-          <div>
+          {/* Main result */}
+          <div
+            className={`p-4 rounded-xl flex items-center gap-3 ${
+              result.success
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+            }`}
+          >
             {result.success ? (
-              <p className="font-medium">
-                Successfully imported {result.count} new cards!
-              </p>
+              <CheckCircle size={24} />
             ) : (
-              <p className="font-medium">{result.error}</p>
+              <AlertCircle size={24} />
             )}
+            <div>
+              {result.success ? (
+                <p className="font-medium">
+                  Successfully imported {result.count} new cards!
+                </p>
+              ) : (
+                <p className="font-medium">{result.error}</p>
+              )}
+            </div>
           </div>
+
+          {/* Warnings */}
+          {result.warnings && result.warnings.length > 0 && (
+            <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle size={20} />
+                <p className="font-medium">{result.warnings.length} warning(s) during import:</p>
+              </div>
+              <ul className="text-sm space-y-1 ml-7">
+                {result.warnings.slice(0, 5).map((warning, i) => (
+                  <li key={i}>
+                    Line {warning.line}: {warning.message}
+                  </li>
+                ))}
+                {result.warnings.length > 5 && (
+                  <li className="text-yellow-600 dark:text-yellow-500">
+                    +{result.warnings.length - 5} more warnings
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Validation warnings during preview */}
+      {validationResult && validationResult.warnings.length > 0 && previewContent && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle size={20} />
+            <p className="font-medium">{validationResult.warnings.length} issue(s) found:</p>
+          </div>
+          <ul className="text-sm space-y-1 ml-7">
+            {validationResult.warnings.slice(0, 5).map((warning, i) => (
+              <li key={i}>
+                Line {warning.line}: {warning.message}
+              </li>
+            ))}
+            {validationResult.warnings.length > 5 && (
+              <li className="text-yellow-600 dark:text-yellow-500">
+                +{validationResult.warnings.length - 5} more issues
+              </li>
+            )}
+          </ul>
         </motion.div>
       )}
 

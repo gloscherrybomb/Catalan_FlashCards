@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { logger } from '../services/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
@@ -82,14 +83,28 @@ export function StudyPage() {
   // Handle session completion
   useEffect(() => {
     if (isComplete && isActive) {
-      endSession().then((s) => {
-        setSummary(s);
-        if (s.accuracy >= 80) {
-          setShowConfetti(true);
-        }
-      });
+      endSession()
+        .then((s) => {
+          setSummary(s);
+          if (s.accuracy >= 80) {
+            setShowConfetti(true);
+          }
+        })
+        .catch((error) => {
+          logger.error('Failed to end session', 'StudyPage', { error: String(error) });
+          // Still show a summary with available data
+          setSummary({
+            totalCards: cards.length,
+            correctAnswers: 0,
+            accuracy: 0,
+            xpEarned: 0,
+            timeSpentMs: 0,
+            perfectStreak: 0,
+            newAchievements: [],
+          });
+        });
     }
-  }, [isComplete, isActive, endSession]);
+  }, [isComplete, isActive, endSession, cards.length]);
 
   const handleStartSession = (mode: StudyMode) => {
     setSelectedMode(mode);

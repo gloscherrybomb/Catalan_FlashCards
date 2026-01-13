@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { StudyCard, StudyMode, StudyResult, StudyDirection } from '../types/flashcard';
+import { logger } from '../services/logger';
 import { XP_VALUES } from '../types/gamification';
 import { useUserStore } from './userStore';
 import { useCardStore } from './cardStore';
@@ -80,6 +81,15 @@ export const useSessionStore = create<SessionState>()(
     const studyDeck = cardStore.getStudyDeck(cardLimit);
 
     if (studyDeck.length === 0) {
+      // No cards due - this is not an error, just nothing to study
+      // Reset session state to ensure clean state
+      set({
+        isActive: false,
+        cards: [],
+        currentIndex: 0,
+        results: [],
+        sessionId: null,
+      });
       return;
     }
 
@@ -229,32 +239,43 @@ export const useSessionStore = create<SessionState>()(
 
     // Record session in user store
     const userStore = useUserStore.getState();
-    await userStore.recordStudySession(totalCards, correctAnswers, timeSpentMs);
-
-    // Check for achievements
-    const cardStore = useCardStore.getState();
-    const newAchievements = await checkAchievements({
-      progress: userStore.progress,
-      cardProgress: cardStore.cardProgress,
-      flashcards: cardStore.flashcards,
-      perfectStreak,
-      unlockedAchievements: userStore.achievements,
-      userId: userStore.user?.uid,
-      hasImported: cardStore.flashcards.length > 0,
-    });
-
-    // Award XP for new achievements and update local state
-    for (const achievement of newAchievements) {
-      await userStore.addXP(achievement.xpReward);
+    try {
+      await userStore.recordStudySession(totalCards, correctAnswers, timeSpentMs);
+    } catch (error) {
+      logger.error('Failed to record study session', 'SessionStore', { error: String(error) });
+      // Continue anyway - local state is already updated
     }
 
-    // Update local achievements list
-    if (newAchievements.length > 0) {
-      const newUnlocked = newAchievements.map(a => ({
-        achievementId: a.id,
-        unlockedAt: new Date(),
-      }));
-      userStore.addAchievements(newUnlocked);
+    // Check for achievements (wrapped in try-catch to not block session end)
+    let newAchievements: Awaited<ReturnType<typeof checkAchievements>> = [];
+    try {
+      const cardStore = useCardStore.getState();
+      newAchievements = await checkAchievements({
+        progress: userStore.progress,
+        cardProgress: cardStore.cardProgress,
+        flashcards: cardStore.flashcards,
+        perfectStreak,
+        unlockedAchievements: userStore.achievements,
+        userId: userStore.user?.uid,
+        hasImported: cardStore.flashcards.length > 0,
+      });
+
+      // Award XP for new achievements and update local state
+      await Promise.all(newAchievements.map(achievement =>
+        userStore.addXP(achievement.xpReward)
+      ));
+
+      // Update local achievements list
+      if (newAchievements.length > 0) {
+        const newUnlocked = newAchievements.map(a => ({
+          achievementId: a.id,
+          unlockedAt: new Date(),
+        }));
+        userStore.addAchievements(newUnlocked);
+      }
+    } catch (error) {
+      logger.error('Failed to check/award achievements', 'SessionStore', { error: String(error) });
+      // Continue anyway - session data is more important
     }
 
     const summary: SessionSummary = {

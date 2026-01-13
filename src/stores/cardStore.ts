@@ -1,6 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Flashcard, CardProgress, StudyDirection, StudyCard, MistakeRecord } from '../types/flashcard';
+import { logger } from '../services/logger';
+import { SESSION_CONFIG, MISTAKE_CONFIG, MASTERY_CONFIG } from '../config/constants';
+
+// Type for persisted state deserialization
+interface PersistedCardState {
+  cardProgress?: Array<[string, Omit<CardProgress, 'nextReviewDate' | 'lastReviewDate'> & {
+    nextReviewDate: string;
+    lastReviewDate?: string;
+  }]>;
+  mistakeHistory?: Array<Omit<MistakeRecord, 'timestamp'> & { timestamp: string }>;
+}
 import {
   createInitialProgress,
   calculateSM2,
@@ -83,7 +94,7 @@ export const useCardStore = create<CardState>()(
           }
         } catch (error) {
           set({ error: 'Failed to load cards', isLoading: false });
-          console.error('Load cards error:', error);
+          logger.error('Load cards error', 'CardStore', { error: String(error) });
         }
       },
 
@@ -119,7 +130,7 @@ export const useCardStore = create<CardState>()(
 
           return uniqueNewCards.length;
         } catch (error) {
-          console.error('CSV import error:', error);
+          logger.error('CSV import error', 'CardStore', { error: String(error) });
           throw error;
         }
       },
@@ -143,7 +154,7 @@ export const useCardStore = create<CardState>()(
         }
       },
 
-      getStudyDeck: (limit = 20) => {
+      getStudyDeck: (limit = SESSION_CONFIG.DEFAULT_CARD_LIMIT) => {
         const { flashcards, cardProgress } = get();
         const studyCards: StudyCard[] = [];
 
@@ -183,7 +194,7 @@ export const useCardStore = create<CardState>()(
         const typingRequired = studyCards.filter(c => c.requiresTyping);
         const typingOptional = studyCards.filter(c => !c.requiresTyping);
 
-        const minTyping = Math.ceil(limit * 0.3);
+        const minTyping = Math.ceil(limit * SESSION_CONFIG.MIN_TYPING_PERCENTAGE);
         const typingCards = typingRequired.slice(0, Math.max(minTyping, typingRequired.length));
         const remainingSlots = limit - typingCards.length;
         const optionalCards = typingOptional.slice(0, remainingSlots);
@@ -247,7 +258,7 @@ export const useCardStore = create<CardState>()(
             const progress = cardProgress.get(key);
 
             if (progress) {
-              if (progress.interval >= 21) {
+              if (progress.interval >= MASTERY_CONFIG.MASTERED_INTERVAL_DAYS) {
                 masteredCount++;
               } else if (progress.repetitions > 0) {
                 learningCount++;
@@ -306,8 +317,8 @@ export const useCardStore = create<CardState>()(
       // Mistake tracking methods
       recordMistake: (mistake: MistakeRecord) => {
         const { mistakeHistory } = get();
-        // Keep only last 500 mistakes to prevent unbounded growth
-        const newHistory = [...mistakeHistory, mistake].slice(-500);
+        // Keep only last MISTAKE_CONFIG.MAX_HISTORY_SIZE mistakes to prevent unbounded growth
+        const newHistory = [...mistakeHistory, mistake].slice(-MISTAKE_CONFIG.MAX_HISTORY_SIZE);
         set({ mistakeHistory: newHistory });
       },
 
@@ -315,7 +326,7 @@ export const useCardStore = create<CardState>()(
         return get().mistakeHistory;
       },
 
-      getWeaknessDeck: (limit = 20) => {
+      getWeaknessDeck: (limit = MISTAKE_CONFIG.DEFAULT_WEAKNESS_DECK_LIMIT) => {
         const { cardProgress, flashcards, mistakeHistory } = get();
         return generateWeaknessDeck(cardProgress, flashcards, mistakeHistory, limit);
       },
@@ -417,10 +428,11 @@ export const useCardStore = create<CardState>()(
         cardProgress: Array.from(state.cardProgress.entries()),
         mistakeHistory: state.mistakeHistory,
       }),
-      merge: (persisted: any, current) => {
+      merge: (persistedState, current) => {
+        const persisted = persistedState as PersistedCardState | undefined;
         // Restore cardProgress Map with proper date deserialization
         const cardProgressEntries: [string, CardProgress][] = (persisted?.cardProgress || []).map(
-          ([key, value]: [string, any]) => [
+          ([key, value]) => [
             key,
             {
               ...value,
@@ -431,7 +443,7 @@ export const useCardStore = create<CardState>()(
         );
 
         // Restore mistake history with proper date deserialization
-        const mistakeHistory = (persisted?.mistakeHistory || []).map((mistake: any) => ({
+        const mistakeHistory: MistakeRecord[] = (persisted?.mistakeHistory || []).map((mistake) => ({
           ...mistake,
           timestamp: new Date(mistake.timestamp),
         }));
