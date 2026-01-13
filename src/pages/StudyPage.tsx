@@ -69,6 +69,12 @@ export function StudyPage() {
   const cardProgress = useCardStore((state) => state.cardProgress);
   const dueCount = getDueCount();
 
+  // Get category filter from URL
+  const categoryFilter = useMemo(() => {
+    const categoriesParam = searchParams.get('categories');
+    return categoriesParam ? categoriesParam.split(',') : undefined;
+  }, [searchParams]);
+
   // Check for special modes in URL or recoverable session
   useEffect(() => {
     const modeParam = searchParams.get('mode');
@@ -82,18 +88,23 @@ export function StudyPage() {
       if (weaknessDeck.length > 0) {
         // Start a type-answer session with weakness cards
         setSelectedMode('type-answer');
-        startSession('type-answer', 20);
+        startSession('type-answer', 20, true, categoryFilter);
         setShowModeSelect(false);
       } else {
         // No weaknesses found, show mode select with message
         setShowModeSelect(true);
       }
+    } else if (categoryFilter && categoryFilter.length > 0) {
+      // Category filter from Learning Path - auto-start in mixed mode
+      setSelectedMode('mixed');
+      startSession('mixed', 20, true, categoryFilter);
+      setShowModeSelect(false);
     } else if (hasRecoverableSession()) {
       setShowRecoveryPrompt(true);
       setShowModeSelect(false);
       setSelectedMode(sessionMode);
     }
-  }, [searchParams, hasRecoverableSession, sessionMode, getWeaknessDeck, startSession]);
+  }, [searchParams, hasRecoverableSession, sessionMode, getWeaknessDeck, startSession, categoryFilter]);
 
   // Adaptive learning state
   const difficultyProfile = useAdaptiveLearningStore((state) => state.difficultyProfile);

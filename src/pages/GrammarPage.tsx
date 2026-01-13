@@ -124,6 +124,11 @@ function LessonDetail({ lesson }: { lesson: GrammarLesson }) {
     // Stay on exercises to show completion screen
   };
 
+  const handleContinueAfterExercises = () => {
+    // Go back to lesson content after completing exercises
+    setShowExercises(false);
+  };
+
   if (showExercises) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -153,6 +158,7 @@ function LessonDetail({ lesson }: { lesson: GrammarLesson }) {
             exercises={lesson.exercises}
             onComplete={handleAllExercisesComplete}
             onExerciseComplete={handleExerciseComplete}
+            onContinue={handleContinueAfterExercises}
           />
         </motion.div>
       </div>

@@ -61,8 +61,43 @@ export function LearningPathPage() {
 
   const handleStartLesson = (lessonId: string) => {
     startLesson(lessonId);
-    // Navigate to appropriate study mode based on lesson type
-    navigate('/study');
+
+    // Find the lesson to determine navigation
+    const lesson = selectedUnit?.lessons.find(l => l.id === lessonId);
+    if (!lesson) {
+      navigate('/study');
+      return;
+    }
+
+    // Navigate based on lesson type
+    switch (lesson.content.type) {
+      case 'vocabulary':
+        // Navigate to study with category filter
+        if (lesson.content.cardCategories && lesson.content.cardCategories.length > 0) {
+          navigate(`/study?categories=${lesson.content.cardCategories.join(',')}`);
+        } else {
+          navigate('/study');
+        }
+        break;
+      case 'grammar':
+        // Navigate to grammar lesson
+        if (lesson.content.grammarLessonId) {
+          navigate(`/grammar/${lesson.content.grammarLessonId}`);
+        } else {
+          navigate('/grammar');
+        }
+        break;
+      case 'conversation':
+        // Navigate to conversation practice
+        navigate('/conversation');
+        break;
+      case 'culture':
+        // Navigate to stories/culture content
+        navigate('/stories');
+        break;
+      default:
+        navigate('/study');
+    }
   };
 
   const handlePlacementComplete = (_result: PlacementResult) => {

@@ -43,7 +43,7 @@ interface CardState {
   importCSV: (csvContent: string) => Promise<number>;
   loadStarterVocabulary: () => Promise<number>;
   deleteCard: (cardId: string) => Promise<void>;
-  getStudyDeck: (limit?: number) => StudyCard[];
+  getStudyDeck: (limit?: number, categoryFilter?: string[]) => StudyCard[];
   reviewCard: (cardId: string, direction: StudyDirection, quality: number) => Promise<void>;
   getProgress: (cardId: string, direction: StudyDirection) => CardProgress;
   getCategoryStats: () => Record<string, { total: number; mastered: number; learning: number }>;
@@ -193,12 +193,17 @@ export const useCardStore = create<CardState>()(
         }
       },
 
-      getStudyDeck: (limit = SESSION_CONFIG.DEFAULT_CARD_LIMIT) => {
+      getStudyDeck: (limit = SESSION_CONFIG.DEFAULT_CARD_LIMIT, categoryFilter?: string[]) => {
         const { flashcards, cardProgress } = get();
         const studyCards: StudyCard[] = [];
 
+        // Filter cards by category if specified
+        const filteredCards = categoryFilter && categoryFilter.length > 0
+          ? flashcards.filter(card => categoryFilter.includes(card.category))
+          : flashcards;
+
         // Create study items for both directions
-        for (const card of flashcards) {
+        for (const card of filteredCards) {
           for (const direction of ['english-to-catalan', 'catalan-to-english'] as StudyDirection[]) {
             const key = getProgressKey(card.id, direction);
             let progress = cardProgress.get(key);
@@ -268,7 +273,7 @@ export const useCardStore = create<CardState>()(
         // If card just became mastered, increment the counter
         if (!wasMastered && isNowMastered) {
           const userStore = useUserStore.getState();
-          const currentCardsLearned = userStore.progress.cardsLearned;
+          const currentCardsLearned = userStore.progress?.cardsLearned || 0;
           userStore.updateCardsLearned(currentCardsLearned + 1);
         }
 

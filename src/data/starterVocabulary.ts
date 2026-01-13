@@ -60,7 +60,7 @@ export const STARTER_VOCABULARY: StarterCard[] = [
   { front: 'friend (male)', back: 'amic', category: 'Family', gender: 'masculine' },
   { front: 'friend (female)', back: 'amiga', category: 'Family', gender: 'feminine' },
 
-  // Numbers (10 words)
+  // Numbers 1-20
   { front: 'one', back: 'un / una', category: 'Numbers', notes: 'Gender depends on noun' },
   { front: 'two', back: 'dos / dues', category: 'Numbers', notes: 'Gender depends on noun' },
   { front: 'three', back: 'tres', category: 'Numbers' },
@@ -71,6 +71,27 @@ export const STARTER_VOCABULARY: StarterCard[] = [
   { front: 'eight', back: 'vuit', category: 'Numbers' },
   { front: 'nine', back: 'nou', category: 'Numbers' },
   { front: 'ten', back: 'deu', category: 'Numbers' },
+  { front: 'eleven', back: 'onze', category: 'Numbers' },
+  { front: 'twelve', back: 'dotze', category: 'Numbers' },
+  { front: 'thirteen', back: 'tretze', category: 'Numbers' },
+  { front: 'fourteen', back: 'catorze', category: 'Numbers' },
+  { front: 'fifteen', back: 'quinze', category: 'Numbers' },
+  { front: 'sixteen', back: 'setze', category: 'Numbers' },
+  { front: 'seventeen', back: 'disset', category: 'Numbers' },
+  { front: 'eighteen', back: 'divuit', category: 'Numbers' },
+  { front: 'nineteen', back: 'dinou', category: 'Numbers' },
+  { front: 'twenty', back: 'vint', category: 'Numbers' },
+  // Numbers 21-100
+  { front: 'twenty-one', back: 'vint-i-un', category: 'Numbers' },
+  { front: 'twenty-two', back: 'vint-i-dos', category: 'Numbers' },
+  { front: 'thirty', back: 'trenta', category: 'Numbers' },
+  { front: 'forty', back: 'quaranta', category: 'Numbers' },
+  { front: 'fifty', back: 'cinquanta', category: 'Numbers' },
+  { front: 'sixty', back: 'seixanta', category: 'Numbers' },
+  { front: 'seventy', back: 'setanta', category: 'Numbers' },
+  { front: 'eighty', back: 'vuitanta', category: 'Numbers' },
+  { front: 'ninety', back: 'noranta', category: 'Numbers' },
+  { front: 'one hundred', back: 'cent', category: 'Numbers' },
 
   // Colors (10 words)
   { front: 'red', back: 'vermell', category: 'Colors', gender: 'masculine', notes: 'Feminine: vermella' },
@@ -122,6 +143,40 @@ export const STARTER_VOCABULARY: StarterCard[] = [
   { front: 'to understand', back: 'entendre', category: 'Verbs', notes: "Jo entenc, tu entens, ell entén" },
   { front: 'to live', back: 'viure', category: 'Verbs', notes: 'Jo visc, tu vius, ell viu' },
   { front: 'to work', back: 'treballar', category: 'Verbs', notes: 'Regular -ar verb' },
+
+  // Articles (8 words)
+  { front: 'the (masc. singular)', back: 'el', category: 'Articles', notes: "el llibre (the book)" },
+  { front: 'the (fem. singular)', back: 'la', category: 'Articles', notes: 'la casa (the house)' },
+  { front: 'the (masc. plural)', back: 'els', category: 'Articles', notes: 'els llibres (the books)' },
+  { front: 'the (fem. plural)', back: 'les', category: 'Articles', notes: 'les cases (the houses)' },
+  { front: 'a/an (masc.)', back: 'un', category: 'Articles', notes: 'un home (a man)' },
+  { front: 'a/an (fem.)', back: 'una', category: 'Articles', notes: 'una dona (a woman)' },
+  { front: 'some (masc.)', back: 'uns', category: 'Articles', notes: 'uns llibres (some books)' },
+  { front: 'some (fem.)', back: 'unes', category: 'Articles', notes: 'unes cases (some houses)' },
+
+  // Days of the Week (7 words)
+  { front: 'Monday', back: 'dilluns', category: 'Time', gender: 'masculine' },
+  { front: 'Tuesday', back: 'dimarts', category: 'Time', gender: 'masculine' },
+  { front: 'Wednesday', back: 'dimecres', category: 'Time', gender: 'masculine' },
+  { front: 'Thursday', back: 'dijous', category: 'Time', gender: 'masculine' },
+  { front: 'Friday', back: 'divendres', category: 'Time', gender: 'masculine' },
+  { front: 'Saturday', back: 'dissabte', category: 'Time', gender: 'masculine' },
+  { front: 'Sunday', back: 'diumenge', category: 'Time', gender: 'masculine' },
+  { front: 'week', back: 'setmana', category: 'Time', gender: 'feminine' },
+  { front: 'month', back: 'mes', category: 'Time', gender: 'masculine' },
+  { front: 'year', back: 'any', category: 'Time', gender: 'masculine' },
+
+  // Body Parts (10 words)
+  { front: 'head', back: 'cap', category: 'Body', gender: 'masculine' },
+  { front: 'face', back: 'cara', category: 'Body', gender: 'feminine' },
+  { front: 'eye', back: 'ull', category: 'Body', gender: 'masculine' },
+  { front: 'ear', back: 'orella', category: 'Body', gender: 'feminine' },
+  { front: 'nose', back: 'nas', category: 'Body', gender: 'masculine' },
+  { front: 'mouth', back: 'boca', category: 'Body', gender: 'feminine' },
+  { front: 'hand', back: 'mà', category: 'Body', gender: 'feminine' },
+  { front: 'arm', back: 'braç', category: 'Body', gender: 'masculine' },
+  { front: 'leg', back: 'cama', category: 'Body', gender: 'feminine' },
+  { front: 'foot', back: 'peu', category: 'Body', gender: 'masculine' },
 
   // Common Phrases (18 words)
   { front: "I don't understand", back: 'No entenc', category: 'Phrases' },

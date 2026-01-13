@@ -17,12 +17,14 @@ interface GrammarExercisesProps {
   exercises: GrammarExerciseType[];
   onComplete: (score: number) => void;
   onExerciseComplete?: (exerciseId: string, correct: boolean) => void;
+  onContinue?: () => void; // Called when user clicks Continue after completion
 }
 
 export function GrammarExercises({
   exercises,
   onComplete,
   onExerciseComplete,
+  onContinue,
 }: GrammarExercisesProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -155,7 +157,7 @@ export function GrammarExercises({
           </Button>
           <Button
             variant="secondary"
-            onClick={() => onComplete(percentage)}
+            onClick={() => onContinue ? onContinue() : onComplete(percentage)}
             leftIcon={<Trophy className="w-4 h-4" />}
           >
             Continue
