@@ -14,7 +14,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { audioService } from '../../services/audioService';
 import type { StudyCard } from '../../types/flashcard';
-import { stripBracketedContent } from '../../utils/textUtils';
+import { stripBracketedContent, extractAllForms } from '../../utils/textUtils';
 
 interface DictationModeProps {
   studyCard: StudyCard;
@@ -85,7 +85,10 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
 
   const { flashcard } = studyCard;
   // Always dictate Catalan words
-  const correctAnswer = stripBracketedContent(flashcard.back);
+  // Get all valid forms (handles "un / una" -> ["un", "una"])
+  const validForms = extractAllForms(flashcard.back);
+  // Use the first form for audio playback
+  const correctAnswer = validForms[0] || stripBracketedContent(flashcard.back);
 
   // Reset on card change
   useEffect(() => {
@@ -132,16 +135,28 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
   const handleSubmit = () => {
     if (!userInput.trim() || isSubmitted) return;
 
-    const comp = compareStrings(userInput.trim(), correctAnswer);
-    setComparison(comp);
+    // Try all valid forms and use the best match
+    let bestComparison = compareStrings(userInput.trim(), correctAnswer);
+    let bestAccuracy = calculateAccuracy(bestComparison);
 
-    const accuracy = calculateAccuracy(comp);
+    for (const form of validForms) {
+      const comp = compareStrings(userInput.trim(), form);
+      const acc = calculateAccuracy(comp);
+      if (acc > bestAccuracy) {
+        bestAccuracy = acc;
+        bestComparison = comp;
+      }
+    }
+
+    setComparison(bestComparison);
+
+    const accuracy = bestAccuracy;
     const isCorrect = accuracy >= 90; // 90% threshold for "correct"
 
     if (!isCorrect && wrongAttempts < 2) {
       // Allow retry
       setWrongAttempts(prev => prev + 1);
-      setComparison(comp);
+      setComparison(bestComparison);
       return;
     }
 
@@ -396,10 +411,10 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
               {/* Correct answer */}
               <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-xs text-miro-blue/50 dark:text-ink-light/50 mb-2 font-medium">
-                  Correct answer:
+                  {validForms.length > 1 ? 'Accepted answers:' : 'Correct answer:'}
                 </p>
                 <p className="text-xl font-bold text-miro-green text-center">
-                  {correctAnswer}
+                  {validForms.length > 1 ? validForms.join(' / ') : correctAnswer}
                 </p>
               </div>
             </div>

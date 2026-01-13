@@ -7,8 +7,11 @@ import {
   Gamepad2,
   Trophy,
   BarChart3,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { useCardStore } from '../stores/cardStore';
+import { STARTER_VOCABULARY_COUNT } from '../data/starterVocabulary';
 import { useUserStore } from '../stores/userStore';
 import { useAdaptiveLearningStore } from '../stores/adaptiveLearningStore';
 import { Button } from '../components/ui/Button';
@@ -234,39 +237,105 @@ export function HomePage() {
 
       {/* Empty State - No cards */}
       {!hasCards && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-12 text-center py-16 relative"
-        >
-          {/* Decorative background */}
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-miro-red/10 blob animate-float" />
-            <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-miro-yellow/10 blob-2 animate-float-delayed" />
-          </div>
-
-          <motion.div
-            className="w-28 h-28 mx-auto mb-8 bg-miro-yellow blob flex items-center justify-center"
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 6, repeat: Infinity }}
-          >
-            <Sparkles size={48} className="text-miro-blue" />
-          </motion.div>
-
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-miro-blue dark:text-ink-light mb-4">
-            Welcome to Catalan Cards!
-          </h2>
-          <p className="text-lg text-miro-blue/70 dark:text-ink-light/70 max-w-lg mx-auto mb-8">
-            Start your Catalan learning journey by importing flashcards.
-            We'll help you master them with spaced repetition!
-          </p>
-          <Link to="/import">
-            <Button size="lg" leftIcon={<Sparkles size={22} />}>
-              Import Your First Cards
-            </Button>
-          </Link>
-        </motion.div>
+        <EmptyStateWithStarter />
       )}
+    </motion.div>
+  );
+}
+
+// Empty state component with starter vocabulary option
+function EmptyStateWithStarter() {
+  const loadStarterVocabulary = useCardStore((state) => state.loadStarterVocabulary);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadedCount, setLoadedCount] = useState<number | null>(null);
+
+  const handleLoadStarter = async () => {
+    setIsLoading(true);
+    try {
+      const count = await loadStarterVocabulary();
+      setLoadedCount(count);
+    } catch (error) {
+      console.error('Failed to load starter vocabulary:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (loadedCount !== null) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="mt-12 text-center py-16"
+      >
+        <div className="w-20 h-20 mx-auto mb-6 bg-miro-green rounded-full flex items-center justify-center">
+          <Sparkles size={40} className="text-white" />
+        </div>
+        <h2 className="text-2xl font-display font-bold text-miro-green mb-2">
+          {loadedCount} cards loaded!
+        </h2>
+        <p className="text-miro-blue/70 dark:text-ink-light/70 mb-6">
+          You're ready to start learning Catalan.
+        </p>
+        <Link to="/study">
+          <Button size="lg" variant="secondary">
+            Start Learning
+          </Button>
+        </Link>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mt-12 text-center py-16 relative"
+    >
+      {/* Decorative background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-miro-red/10 blob animate-float" />
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-miro-yellow/10 blob-2 animate-float-delayed" />
+      </div>
+
+      <motion.div
+        className="w-28 h-28 mx-auto mb-8 bg-miro-yellow blob flex items-center justify-center"
+        animate={{ rotate: [0, 5, -5, 0] }}
+        transition={{ duration: 6, repeat: Infinity }}
+      >
+        <Sparkles size={48} className="text-miro-blue" />
+      </motion.div>
+
+      <h2 className="text-3xl md:text-4xl font-display font-bold text-miro-blue dark:text-ink-light mb-4">
+        Welcome to Catalan Cards!
+      </h2>
+      <p className="text-lg text-miro-blue/70 dark:text-ink-light/70 max-w-lg mx-auto mb-8">
+        Start your Catalan learning journey with our starter vocabulary
+        or import your own flashcards.
+      </p>
+
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <Button
+          size="lg"
+          onClick={handleLoadStarter}
+          isLoading={isLoading}
+          leftIcon={<Download size={22} />}
+        >
+          Load {STARTER_VOCABULARY_COUNT} Starter Cards
+        </Button>
+
+        <span className="text-miro-blue/50 dark:text-ink-light/50">or</span>
+
+        <Link to="/import">
+          <Button size="lg" variant="outline" leftIcon={<Upload size={22} />}>
+            Import Your Own
+          </Button>
+        </Link>
+      </div>
+
+      <p className="mt-6 text-sm text-miro-blue/50 dark:text-ink-light/50">
+        Starter vocabulary includes essential A1 Catalan: greetings, family, numbers, colors, food, and common phrases.
+      </p>
     </motion.div>
   );
 }

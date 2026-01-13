@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
@@ -14,10 +14,17 @@ interface MultipleChoiceProps {
 export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [hasAnswered, setHasAnswered] = useState(false);
-  const [startTime] = useState(Date.now());
+  const startTimeRef = useRef(Date.now());
 
   const { flashcard, direction } = studyCard;
   const flashcards = useCardStore((state) => state.flashcards);
+
+  // Reset state when card changes
+  useEffect(() => {
+    setSelectedIndex(null);
+    setHasAnswered(false);
+    startTimeRef.current = Date.now();
+  }, [flashcard.id, direction]);
 
   // Generate options
   const options = useMemo(() => {
@@ -62,7 +69,7 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
     setHasAnswered(true);
 
     const isCorrect = options[index].isCorrect;
-    const timeSpent = Date.now() - startTime;
+    const timeSpent = Date.now() - startTimeRef.current;
 
     // Calculate quality based on correctness and time
     let quality: number;
@@ -76,11 +83,9 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
       quality = 3;
     }
 
-    // Delay before moving to next card
+    // Delay before moving to next card - state resets via useEffect when card changes
     setTimeout(() => {
       onAnswer(quality);
-      setSelectedIndex(null);
-      setHasAnswered(false);
     }, 1500);
   };
 

@@ -24,20 +24,26 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [result, setResult] = useState<ReturnType<typeof validateTyping> | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
-  const [startTime] = useState(Date.now());
+  const startTimeRef = useRef(Date.now());
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { flashcard, direction } = studyCard;
+
+  // Reset state when card changes
+  useEffect(() => {
+    setUserInput('');
+    setHasSubmitted(false);
+    setResult(null);
+    setShowKeyboard(false);
+    startTimeRef.current = Date.now();
+    inputRef.current?.focus();
+  }, [flashcard.id, direction]);
 
   const question = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.front : flashcard.back);
   const correctAnswer = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
   const questionLabel = direction === 'english-to-catalan' ? 'English' : 'Català';
   const answerLabel = direction === 'english-to-catalan' ? 'Català' : 'English';
 
-  // Focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -49,7 +55,7 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
     setHasSubmitted(true);
 
     // Calculate quality
-    const timeSpent = Date.now() - startTime;
+    const timeSpent = Date.now() - startTimeRef.current;
     let quality: number;
 
     if (validationResult.isCorrect) {
@@ -62,12 +68,9 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
       quality = 1; // Wrong
     }
 
-    // Delay before next card
+    // Delay before next card - state resets via useEffect when card changes
     setTimeout(() => {
       onAnswer(quality, userInput);
-      setUserInput('');
-      setHasSubmitted(false);
-      setResult(null);
     }, 2500);
   };
 

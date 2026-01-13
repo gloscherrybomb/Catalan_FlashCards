@@ -19,6 +19,7 @@ import {
   requiresTyping,
 } from '../services/sm2Algorithm';
 import { parseCSV } from '../services/csvParser';
+import { getStarterFlashcards } from '../data/starterVocabulary';
 import {
   saveFlashcards,
   getFlashcards,
@@ -40,6 +41,7 @@ interface CardState {
   // Actions
   loadCards: () => Promise<void>;
   importCSV: (csvContent: string) => Promise<number>;
+  loadStarterVocabulary: () => Promise<number>;
   deleteCard: (cardId: string) => Promise<void>;
   getStudyDeck: (limit?: number) => StudyCard[];
   reviewCard: (cardId: string, direction: StudyDirection, quality: number) => Promise<void>;
@@ -131,6 +133,43 @@ export const useCardStore = create<CardState>()(
           return uniqueNewCards.length;
         } catch (error) {
           logger.error('CSV import error', 'CardStore', { error: String(error) });
+          throw error;
+        }
+      },
+
+      loadStarterVocabulary: async () => {
+        const { flashcards } = get();
+
+        try {
+          const starterCards = getStarterFlashcards();
+
+          // Enhanced duplicate check: normalize whitespace and case
+          const normalizeText = (text: string) =>
+            text.toLowerCase().trim().replace(/\s+/g, ' ');
+
+          const existingFronts = new Set(flashcards.map(c => normalizeText(c.front)));
+          const existingBacks = new Set(flashcards.map(c => normalizeText(c.back)));
+
+          // Filter out any duplicates
+          const uniqueNewCards = starterCards.filter(c => {
+            const normFront = normalizeText(c.front);
+            const normBack = normalizeText(c.back);
+            return !existingFronts.has(normFront) && !existingBacks.has(normBack);
+          });
+
+          const allCards = [...flashcards, ...uniqueNewCards];
+          set({ flashcards: allCards });
+
+          // Save to Firebase
+          const userStore = useUserStore.getState();
+          const userId = userStore.user?.uid;
+          if (userId && !isDemoMode) {
+            await saveFlashcards(userId, uniqueNewCards);
+          }
+
+          return uniqueNewCards.length;
+        } catch (error) {
+          logger.error('Starter vocabulary import error', 'CardStore', { error: String(error) });
           throw error;
         }
       },

@@ -91,6 +91,8 @@ export const useSessionStore = create<SessionState>()(
         currentIndex: 0,
         results: [],
         sessionId: null,
+        cardFormats: {},
+        sessionStartTime: 0,
       });
       return;
     }
@@ -406,16 +408,19 @@ export const useSessionStore = create<SessionState>()(
   },
 
   hasRecoverableSession: () => {
-    const { isActive, cards, currentIndex, sessionId, sessionStartTime } = get();
+    const { isActive, cards, currentIndex, sessionId, sessionStartTime, results } = get();
     // Session is only recoverable if:
     // 1. isActive is true
     // 2. There are cards to review
     // 3. We haven't gone through all cards
     // 4. Session has an ID
     // 5. Session is less than 1 hour old (prevents stale session prompts)
+    // 6. At least 1 card has been completed (currentIndex > 0 or results.length > 0)
+    //    - No point resuming if user hasn't started
     const ONE_HOUR = 60 * 60 * 1000;
     const isRecentSession = sessionStartTime > 0 && (Date.now() - sessionStartTime) < ONE_HOUR;
-    return isActive && cards.length > 0 && currentIndex < cards.length && !!sessionId && isRecentSession;
+    const hasProgress = currentIndex > 0 || results.length > 0;
+    return isActive && cards.length > 0 && currentIndex < cards.length && !!sessionId && isRecentSession && hasProgress;
   },
 
   clearSavedSession: () => {

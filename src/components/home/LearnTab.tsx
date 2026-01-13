@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Zap, BookOpen, ArrowRight, Upload } from 'lucide-react';
+import { Play, Zap, BookOpen, ArrowRight, Upload, GraduationCap } from 'lucide-react';
 import { Card, CardTitle, DecorativeCard } from '../ui/Card';
 import { WordOfTheDay } from '../gamification/WordOfTheDay';
 import { DailyRecommendations } from '../adaptive';
@@ -126,6 +126,23 @@ export function LearnTab({
                 <CardTitle>Browse Cards</CardTitle>
                 <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
                   {totalCards / 2} cards in collection
+                </p>
+              </div>
+            </div>
+          </Card>
+        </Link>
+
+        {/* Learning Path */}
+        <Link to="/learn" className="block">
+          <Card variant="playful" hover className="h-full bg-gradient-to-br from-purple-500/10 to-indigo-500/10">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-500 blob-2 flex items-center justify-center">
+                <GraduationCap size={22} className="text-white" />
+              </div>
+              <div>
+                <CardTitle>Learning Path</CardTitle>
+                <p className="text-miro-blue/60 dark:text-ink-light/60 mt-0.5 text-sm">
+                  Structured A1-B2 curriculum
                 </p>
               </div>
             </div>
