@@ -5,7 +5,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import type { Flashcard } from '../../types/flashcard';
 import { audioService } from '../../services/audioService';
-import { stripBracketedContent } from '../../utils/textUtils';
+import { extractPrimaryForm } from '../../utils/textUtils';
 import confetti from 'canvas-confetti';
 
 interface HangmanProps {
@@ -35,7 +35,7 @@ export function Hangman({ flashcards, onComplete, onExit }: HangmanProps) {
   }, [flashcards]);
 
   const currentCard = gameCards[currentIndex];
-  const word = stripBracketedContent(currentCard?.back || '').toUpperCase();
+  const word = extractPrimaryForm(currentCard?.back || '').toUpperCase();
   const wordLetters = new Set(word.replace(/\s/g, '').split(''));
 
   const displayWord = word

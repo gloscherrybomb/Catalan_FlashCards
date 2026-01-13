@@ -1,6 +1,6 @@
 import type { TypingResult, Correction } from '../types/flashcard';
 import { TYPING_CONFIG } from '../config/constants';
-import { stripBracketedContent } from '../utils/textUtils';
+import { stripBracketedContent, extractAllForms } from '../utils/textUtils';
 
 const CATALAN_SPECIAL_CHARS = ['à', 'é', 'è', 'í', 'ï', 'ó', 'ò', 'ú', 'ü', 'ç', 'l·l'];
 
@@ -40,77 +40,85 @@ export function normalizeForComparison(text: string): string {
 export function validateTyping(userAnswer: string, correctAnswer: string): TypingResult {
   const trimmedUser = userAnswer.trim();
   const trimmedCorrect = correctAnswer.trim();
-  // Strip gender markers like "(F)" or "(M)" from correct answer
-  const cleanedCorrect = stripBracketedContent(trimmedCorrect);
 
-  // Tier 1: Exact match
-  if (trimmedUser === cleanedCorrect) {
-    return {
-      isCorrect: true,
-      isAcceptable: true,
-      userAnswer: trimmedUser,
-      correctAnswer: trimmedCorrect,
-      corrections: [],
-    };
+  // Get all valid forms (handles "vell / vella" -> ["vell", "vella"])
+  const validForms = extractAllForms(trimmedCorrect);
+
+  // Try to validate against each valid form
+  for (const form of validForms) {
+    const cleanedForm = stripBracketedContent(form);
+
+    // Tier 1: Exact match
+    if (trimmedUser === cleanedForm) {
+      return {
+        isCorrect: true,
+        isAcceptable: true,
+        userAnswer: trimmedUser,
+        correctAnswer: trimmedCorrect,
+        corrections: [],
+      };
+    }
+
+    // Tier 2: Case-insensitive exact match
+    if (trimmedUser.toLowerCase() === cleanedForm.toLowerCase()) {
+      return {
+        isCorrect: true,
+        isAcceptable: true,
+        userAnswer: trimmedUser,
+        correctAnswer: trimmedCorrect,
+        corrections: [],
+      };
+    }
+
+    // Tier 3: Normalize and compare (ignoring accents)
+    const normalizedUser = normalizeForComparison(trimmedUser);
+    const normalizedForm = normalizeForComparison(cleanedForm);
+
+    if (normalizedUser === normalizedForm) {
+      const corrections = findCorrections(trimmedUser, cleanedForm);
+      return {
+        isCorrect: false,
+        isAcceptable: true,
+        userAnswer: trimmedUser,
+        correctAnswer: trimmedCorrect,
+        corrections,
+      };
+    }
+
+    // Tier 4: Contraction-normalized comparison (e.g., "don't" = "do not")
+    const contractedUser = expandContractions(normalizedUser);
+    const contractedForm = expandContractions(normalizedForm);
+
+    if (contractedUser === contractedForm) {
+      return {
+        isCorrect: true,
+        isAcceptable: true,
+        userAnswer: trimmedUser,
+        correctAnswer: trimmedCorrect,
+        corrections: [],
+      };
+    }
+
+    // Tier 5: Typo tolerance via similarity score
+    const similarity = getSimilarityScore(contractedUser, contractedForm);
+
+    if (similarity >= TYPING_CONFIG.TYPO_SIMILARITY_THRESHOLD) {
+      const corrections = findCorrections(trimmedUser, cleanedForm);
+      return {
+        isCorrect: false,
+        isAcceptable: true,
+        hasTypo: true,
+        userAnswer: trimmedUser,
+        correctAnswer: trimmedCorrect,
+        corrections,
+      };
+    }
   }
 
-  // Tier 2: Case-insensitive exact match
-  if (trimmedUser.toLowerCase() === cleanedCorrect.toLowerCase()) {
-    return {
-      isCorrect: true,
-      isAcceptable: true,
-      userAnswer: trimmedUser,
-      correctAnswer: trimmedCorrect,
-      corrections: [],
-    };
-  }
+  // None of the forms matched - use first form for corrections
+  const primaryForm = stripBracketedContent(validForms[0] || trimmedCorrect);
+  const corrections = findCorrections(trimmedUser, primaryForm);
 
-  // Tier 3: Normalize and compare (ignoring accents)
-  const normalizedUser = normalizeForComparison(trimmedUser);
-  const normalizedCorrect = normalizeForComparison(cleanedCorrect);
-
-  if (normalizedUser === normalizedCorrect) {
-    const corrections = findCorrections(trimmedUser, cleanedCorrect);
-    return {
-      isCorrect: false,
-      isAcceptable: true,
-      userAnswer: trimmedUser,
-      correctAnswer: trimmedCorrect,
-      corrections,
-    };
-  }
-
-  // Tier 4: Contraction-normalized comparison (e.g., "don't" = "do not")
-  const contractedUser = expandContractions(normalizedUser);
-  const contractedCorrect = expandContractions(normalizedCorrect);
-
-  if (contractedUser === contractedCorrect) {
-    return {
-      isCorrect: true,
-      isAcceptable: true,
-      userAnswer: trimmedUser,
-      correctAnswer: trimmedCorrect,
-      corrections: [],
-    };
-  }
-
-  // Tier 5: Typo tolerance via similarity score
-  const similarity = getSimilarityScore(contractedUser, contractedCorrect);
-
-  if (similarity >= TYPING_CONFIG.TYPO_SIMILARITY_THRESHOLD) {
-    const corrections = findCorrections(trimmedUser, cleanedCorrect);
-    return {
-      isCorrect: false,
-      isAcceptable: true,
-      hasTypo: true,
-      userAnswer: trimmedUser,
-      correctAnswer: trimmedCorrect,
-      corrections,
-    };
-  }
-
-  // Tier 6: Not acceptable
-  const corrections = findCorrections(trimmedUser, cleanedCorrect);
   return {
     isCorrect: false,
     isAcceptable: false,

@@ -1,4 +1,5 @@
 // Daily Challenge Types and Definitions
+import { useUserStore } from '../stores/userStore';
 
 export type ChallengeType =
   | 'review_cards'
@@ -164,8 +165,8 @@ export function updateDailyChallenges(results: SessionResultsForChallenges): Dai
   if (date !== today) return challenges;
 
   const updatedChallenges = challenges.map((challenge) => {
-    // Skip already completed challenges
-    if (challenge.current >= challenge.target) return challenge;
+    // Skip already completed challenges (they already got XP)
+    if (challenge.completedAt) return challenge;
 
     let newCurrent = challenge.current;
 
@@ -196,10 +197,18 @@ export function updateDailyChallenges(results: SessionResultsForChallenges): Dai
         break;
     }
 
+    const wasIncomplete = challenge.current < challenge.target;
+    const isNowComplete = newCurrent >= challenge.target;
+
+    // Award XP when challenge completes for the first time
+    if (wasIncomplete && isNowComplete) {
+      useUserStore.getState().addXP(challenge.xpReward);
+    }
+
     return {
       ...challenge,
       current: Math.min(newCurrent, challenge.target),
-      completedAt: newCurrent >= challenge.target ? new Date() : challenge.completedAt,
+      completedAt: isNowComplete && !challenge.completedAt ? new Date() : challenge.completedAt,
     };
   });
 

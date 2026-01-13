@@ -8,6 +8,7 @@ import { useCardStore } from './cardStore';
 import { useAdaptiveLearningStore } from './adaptiveLearningStore';
 import { checkAchievements } from '../services/achievementService';
 import { updateDailyChallenges } from '../types/challenges';
+import { updateWeeklyChallenges } from '../types/weeklyChallenges';
 
 interface SessionState {
   isActive: boolean;
@@ -235,6 +236,18 @@ export const useSessionStore = create<SessionState>()(
       fastAnswers,
       accuracy,
       typedCorrectAnswers,
+      categoriesReviewed,
+    });
+
+    // Update weekly challenges
+    updateWeeklyChallenges({
+      cardsReviewed: totalCards,
+      cardsMastered: 0, // Will be tracked properly if needed
+      studiedToday: true,
+      sessionAccuracy: accuracy,
+      isPerfectSession: accuracy >= 90,
+      fastAnswers,
+      speakingExercises: 0,
       categoriesReviewed,
     });
 

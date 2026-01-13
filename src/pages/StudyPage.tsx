@@ -63,22 +63,37 @@ export function StudyPage() {
     getCardFormat,
   } = useSessionStore();
 
-  // Check for sprint mode in URL or recoverable session
+  const getDueCount = useCardStore((state) => state.getDueCount);
+  const getWeaknessDeck = useCardStore((state) => state.getWeaknessDeck);
+  const flashcards = useCardStore((state) => state.flashcards);
+  const cardProgress = useCardStore((state) => state.cardProgress);
+  const dueCount = getDueCount();
+
+  // Check for special modes in URL or recoverable session
   useEffect(() => {
-    if (searchParams.get('mode') === 'sprint') {
+    const modeParam = searchParams.get('mode');
+
+    if (modeParam === 'sprint') {
       setIsSprintMode(true);
       setShowModeSelect(false);
+    } else if (modeParam === 'weakness') {
+      // Start weakness practice session - check if we have weakness cards
+      const weaknessDeck = getWeaknessDeck(20);
+      if (weaknessDeck.length > 0) {
+        // Start a type-answer session with weakness cards
+        setSelectedMode('type-answer');
+        startSession('type-answer', 20);
+        setShowModeSelect(false);
+      } else {
+        // No weaknesses found, show mode select with message
+        setShowModeSelect(true);
+      }
     } else if (hasRecoverableSession()) {
       setShowRecoveryPrompt(true);
       setShowModeSelect(false);
       setSelectedMode(sessionMode);
     }
-  }, [searchParams, hasRecoverableSession, sessionMode]);
-
-  const getDueCount = useCardStore((state) => state.getDueCount);
-  const flashcards = useCardStore((state) => state.flashcards);
-  const cardProgress = useCardStore((state) => state.cardProgress);
-  const dueCount = getDueCount();
+  }, [searchParams, hasRecoverableSession, sessionMode, getWeaknessDeck, startSession]);
 
   // Adaptive learning state
   const difficultyProfile = useAdaptiveLearningStore((state) => state.difficultyProfile);

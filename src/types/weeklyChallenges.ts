@@ -1,4 +1,5 @@
 // Weekly Challenge Types and Definitions
+import { useUserStore } from '../stores/userStore';
 
 export type WeeklyChallengeType =
   | 'review_cards'
@@ -261,8 +262,12 @@ export function updateWeeklyChallenges(results: WeeklySessionResults): WeeklyCha
   const today = new Date().toISOString().split('T')[0];
   const updatedDaysStudied = daysStudied.includes(today) ? daysStudied : [...daysStudied, today];
 
+  // Track if all challenges were already complete before this update
+  const wereAllComplete = challenges.every(c => c.completedAt);
+
   const updatedChallenges = challenges.map((challenge) => {
-    if (challenge.current >= challenge.target) return challenge;
+    // Skip already completed challenges (they already got XP)
+    if (challenge.completedAt) return challenge;
 
     let newCurrent = challenge.current;
 
@@ -298,12 +303,26 @@ export function updateWeeklyChallenges(results: WeeklySessionResults): WeeklyCha
         break;
     }
 
+    const wasIncomplete = challenge.current < challenge.target;
+    const isNowComplete = newCurrent >= challenge.target;
+
+    // Award XP when challenge completes for the first time
+    if (wasIncomplete && isNowComplete) {
+      useUserStore.getState().addXP(challenge.xpReward);
+    }
+
     return {
       ...challenge,
       current: Math.min(newCurrent, challenge.target),
-      completedAt: newCurrent >= challenge.target ? new Date() : challenge.completedAt,
+      completedAt: isNowComplete && !challenge.completedAt ? new Date() : challenge.completedAt,
     };
   });
+
+  // Check if all challenges are now complete and award 500 XP bonus
+  const areAllNowComplete = updatedChallenges.every(c => c.current >= c.target);
+  if (!wereAllComplete && areAllNowComplete) {
+    useUserStore.getState().addXP(500);
+  }
 
   // Save updated challenges
   localStorage.setItem('weekly-challenges', JSON.stringify({

@@ -51,6 +51,7 @@ interface UserState {
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   recordStudySession: (cardsReviewed: number, correctAnswers: number, timeSpentMs: number) => Promise<void>;
   addAchievements: (newAchievements: UnlockedAchievement[]) => void;
+  updateCardsLearned: (count: number) => Promise<void>;
 }
 
 const DEFAULT_PROGRESS: UserProgress = {
@@ -404,6 +405,20 @@ export const useUserStore = create<UserState>()(
 
         if (uniqueNew.length > 0) {
           set({ achievements: [...achievements, ...uniqueNew] });
+        }
+      },
+
+      updateCardsLearned: async (count: number) => {
+        const { user, progress } = get();
+
+        const newProgress: Partial<UserProgress> = {
+          cardsLearned: count,
+        };
+
+        set({ progress: { ...progress, ...newProgress } });
+
+        if (user && !isDemoMode) {
+          await updateUserProgress(user.uid, newProgress);
         }
       },
     }),

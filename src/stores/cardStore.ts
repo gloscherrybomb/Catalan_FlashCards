@@ -218,7 +218,21 @@ export const useCardStore = create<CardState>()(
           progress = createInitialProgress(cardId, direction);
         }
 
+        // Track if card was mastered before this review
+        const wasMastered = progress.interval >= MASTERY_CONFIG.MASTERED_INTERVAL_DAYS;
+
         const newProgress = calculateSM2(progress, quality);
+
+        // Check if card is now mastered after this review
+        const isNowMastered = newProgress.interval >= MASTERY_CONFIG.MASTERED_INTERVAL_DAYS;
+
+        // If card just became mastered, increment the counter
+        if (!wasMastered && isNowMastered) {
+          const userStore = useUserStore.getState();
+          const currentCardsLearned = userStore.progress.cardsLearned;
+          userStore.updateCardsLearned(currentCardsLearned + 1);
+        }
+
         const newProgressMap = new Map(cardProgress);
         newProgressMap.set(key, newProgress);
 
