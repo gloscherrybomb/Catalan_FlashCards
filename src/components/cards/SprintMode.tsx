@@ -4,6 +4,7 @@ import { Zap, Trophy, X } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { Button } from '../ui/Button';
 import { Confetti } from '../ui/Confetti';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface SprintModeProps {
   cards: StudyCard[];
@@ -39,13 +40,17 @@ export function SprintMode({
   const currentCard = cards[currentIndex];
   const isComplete = currentIndex >= cards.length;
 
-  const front = currentCard?.direction === 'english-to-catalan'
-    ? currentCard.flashcard.front
-    : currentCard?.flashcard.back;
+  const front = currentCard
+    ? stripBracketedContent(currentCard.direction === 'english-to-catalan'
+        ? currentCard.flashcard.front
+        : currentCard.flashcard.back)
+    : '';
 
-  const back = currentCard?.direction === 'english-to-catalan'
-    ? currentCard.flashcard.back
-    : currentCard?.flashcard.front;
+  const back = currentCard
+    ? stripBracketedContent(currentCard.direction === 'english-to-catalan'
+        ? currentCard.flashcard.back
+        : currentCard.flashcard.front)
+    : '';
 
   // Timer countdown
   useEffect(() => {

@@ -4,6 +4,7 @@ import { Shuffle, Check, X, RotateCcw, Trophy, Lightbulb } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import type { Flashcard } from '../../types/flashcard';
+import { stripBracketedContent } from '../../utils/textUtils';
 import confetti from 'canvas-confetti';
 
 interface WordScrambleProps {
@@ -43,11 +44,11 @@ export function WordScramble({ flashcards, onComplete, onExit }: WordScramblePro
   }, [flashcards]);
 
   const currentCard = gameCards[currentIndex];
-  const correctWord = currentCard?.back.toUpperCase() || '';
+  const correctWord = stripBracketedContent(currentCard?.back || '').toUpperCase();
 
   useEffect(() => {
     if (currentCard) {
-      setScrambledLetters(scrambleWord(currentCard.back));
+      setScrambledLetters(scrambleWord(stripBracketedContent(currentCard.back)));
       setSelectedLetters([]);
       setShowResult(null);
     }

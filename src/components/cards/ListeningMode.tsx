@@ -4,6 +4,7 @@ import { Volume2, RefreshCw, Check, X } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { audioService } from '../../services/audioService';
 import { useCardStore } from '../../stores/cardStore';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface ListeningModeProps {
   studyCard: StudyCard;
@@ -23,8 +24,8 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
 
   // Listening mode ALWAYS plays Catalan audio, user identifies the English meaning
   // This is the core purpose - train your ear to recognize Catalan words
-  const audioText = flashcard.back; // Always Catalan
-  const correctAnswer = flashcard.front; // Always English
+  const audioText = stripBracketedContent(flashcard.back); // Always Catalan
+  const correctAnswer = stripBracketedContent(flashcard.front); // Always English
 
   // Generate options - always English answers since we always play Catalan audio
   const options = useMemo(() => {
@@ -38,7 +39,7 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
 
     for (const card of shuffled) {
       // Always use English (front) as the answer options
-      const answer = card.front;
+      const answer = stripBracketedContent(card.front);
       if (answer !== correctAnswer && !wrongAnswers.includes(answer)) {
         wrongAnswers.push(answer);
         if (wrongAnswers.length >= 3) break;

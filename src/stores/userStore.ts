@@ -64,7 +64,13 @@ const DEFAULT_PROGRESS: UserProgress = {
   totalTimeSpentMs: 0,
   cardsLearned: 0,
   streakFreezeAvailable: true,
+  dailyActivity: {},
 };
+
+// Helper to get today's date key in YYYY-MM-DD format
+function getTodayKey(): string {
+  return new Date().toISOString().split('T')[0];
+}
 
 export const useUserStore = create<UserState>()(
   persist(
@@ -259,16 +265,28 @@ export const useUserStore = create<UserState>()(
         const newXP = progress.xp + bonusXP;
         const newLevel = getLevelForXP(newXP).level;
 
+        // Update daily XP tracking
+        const todayKey = getTodayKey();
+        const todayActivity = progress.dailyActivity[todayKey] || { cards: 0, xp: 0 };
+        const updatedDailyActivity = {
+          ...progress.dailyActivity,
+          [todayKey]: {
+            ...todayActivity,
+            xp: todayActivity.xp + bonusXP,
+          },
+        };
+
         const newProgress = {
           ...progress,
           xp: newXP,
           level: newLevel,
+          dailyActivity: updatedDailyActivity,
         };
 
         set({ progress: newProgress });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, { xp: newXP, level: newLevel });
+          await updateUserProgress(user.uid, { xp: newXP, level: newLevel, dailyActivity: updatedDailyActivity });
         }
       },
 
@@ -354,10 +372,22 @@ export const useUserStore = create<UserState>()(
       recordStudySession: async (cardsReviewed: number, correctAnswers: number, timeSpentMs: number) => {
         const { user, progress } = get();
 
+        // Update daily activity
+        const todayKey = getTodayKey();
+        const todayActivity = progress.dailyActivity[todayKey] || { cards: 0, xp: 0 };
+        const updatedDailyActivity = {
+          ...progress.dailyActivity,
+          [todayKey]: {
+            cards: todayActivity.cards + cardsReviewed,
+            xp: todayActivity.xp, // XP is tracked separately via addXP
+          },
+        };
+
         const newProgress: Partial<UserProgress> = {
           totalCardsReviewed: progress.totalCardsReviewed + cardsReviewed,
           totalCorrect: progress.totalCorrect + correctAnswers,
           totalTimeSpentMs: progress.totalTimeSpentMs + timeSpentMs,
+          dailyActivity: updatedDailyActivity,
         };
 
         set({ progress: { ...progress, ...newProgress } });

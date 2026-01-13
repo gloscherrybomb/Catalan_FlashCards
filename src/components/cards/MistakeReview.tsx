@@ -5,6 +5,7 @@ import type { Flashcard } from '../../types/flashcard';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { audioService } from '../../services/audioService';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface MistakeReviewProps {
   mistakes: MistakeCard[];
@@ -99,10 +100,10 @@ export function MistakeReview({ mistakes, onComplete, onPracticeAgain }: Mistake
                 <div className="flex items-center justify-between">
                   <div className="text-left">
                     <p className="font-medium text-gray-800 dark:text-white">
-                      {mistake.flashcard.front}
+                      {stripBracketedContent(mistake.flashcard.front)}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {mistake.flashcard.back}
+                      {stripBracketedContent(mistake.flashcard.back)}
                     </p>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
@@ -144,13 +145,13 @@ export function MistakeReview({ mistakes, onComplete, onPracticeAgain }: Mistake
     );
   }
 
-  const questionText = currentMistake.direction === 'english-to-catalan'
+  const questionText = stripBracketedContent(currentMistake.direction === 'english-to-catalan'
     ? currentMistake.flashcard.front
-    : currentMistake.flashcard.back;
+    : currentMistake.flashcard.back);
 
-  const answerText = currentMistake.direction === 'english-to-catalan'
+  const answerText = stripBracketedContent(currentMistake.direction === 'english-to-catalan'
     ? currentMistake.flashcard.back
-    : currentMistake.flashcard.front;
+    : currentMistake.flashcard.front);
 
   const answerLang = currentMistake.direction === 'english-to-catalan' ? 'catalan' : 'english';
 

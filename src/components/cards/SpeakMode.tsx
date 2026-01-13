@@ -14,6 +14,7 @@ import {
 } from '../../services/speechRecognitionService';
 import { audioService } from '../../services/audioService';
 import type { StudyCard } from '../../types/flashcard';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface SpeakModeProps {
   studyCard: StudyCard;
@@ -41,8 +42,8 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
   const { flashcard } = studyCard;
 
   // For pronunciation practice, we always speak Catalan
-  const textToSpeak = flashcard.back; // Catalan text
-  const translationHint = flashcard.front; // English translation
+  const textToSpeak = stripBracketedContent(flashcard.back); // Catalan text
+  const translationHint = stripBracketedContent(flashcard.front); // English translation
 
   // Check for speech recognition support
   const isSupported = speechRecognitionService.isSupported();

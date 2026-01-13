@@ -4,6 +4,7 @@ import { Grid3X3, Trophy, Clock, RotateCcw } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import type { Flashcard } from '../../types/flashcard';
+import { stripBracketedContent } from '../../utils/textUtils';
 import confetti from 'canvas-confetti';
 
 interface MemoryMatchProps {
@@ -41,7 +42,7 @@ export function MemoryMatch({ flashcards, onComplete, onExit }: MemoryMatchProps
       // Catalan card
       memoryCards.push({
         id: `${card.id}-catalan`,
-        content: card.back,
+        content: stripBracketedContent(card.back),
         type: 'catalan',
         pairId: card.id,
         isFlipped: false,
@@ -50,7 +51,7 @@ export function MemoryMatch({ flashcards, onComplete, onExit }: MemoryMatchProps
       // English card
       memoryCards.push({
         id: `${card.id}-english`,
-        content: card.front,
+        content: stripBracketedContent(card.front),
         type: 'english',
         pairId: card.id,
         isFlipped: false,

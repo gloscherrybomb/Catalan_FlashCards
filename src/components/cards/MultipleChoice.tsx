@@ -4,6 +4,7 @@ import { Check, X } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge } from './CategoryIcon';
 import { useCardStore } from '../../stores/cardStore';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface MultipleChoiceProps {
   studyCard: StudyCard;
@@ -20,7 +21,7 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
 
   // Generate options
   const options = useMemo(() => {
-    const correctAnswer = direction === 'english-to-catalan' ? flashcard.back : flashcard.front;
+    const correctAnswer = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
 
     // Get wrong answers from other cards
     const otherCards = flashcards.filter(c => c.id !== flashcard.id);
@@ -33,7 +34,7 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
     const shuffled = [...sameCategory.sort(() => Math.random() - 0.5), ...differentCategory.sort(() => Math.random() - 0.5)];
 
     for (const card of shuffled) {
-      const answer = direction === 'english-to-catalan' ? card.back : card.front;
+      const answer = stripBracketedContent(direction === 'english-to-catalan' ? card.back : card.front);
       if (answer !== correctAnswer && !wrongAnswers.includes(answer)) {
         wrongAnswers.push(answer);
         if (wrongAnswers.length >= 3) break;
@@ -50,7 +51,7 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
     return allOptions.sort(() => Math.random() - 0.5);
   }, [flashcard, direction, flashcards]);
 
-  const questionDisplay = direction === 'english-to-catalan' ? flashcard.front : flashcard.back;
+  const questionDisplay = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.front : flashcard.back);
   const questionLabel = direction === 'english-to-catalan' ? 'English' : 'Català';
   const answerLabel = direction === 'english-to-catalan' ? 'Català' : 'English';
 

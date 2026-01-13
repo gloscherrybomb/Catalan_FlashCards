@@ -5,6 +5,7 @@ import type { StudyCard } from '../../types/flashcard';
 import { validateTyping } from '../../services/typingValidator';
 import { CategoryIcon, Badge } from './CategoryIcon';
 import { Button } from '../ui/Button';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface TypeAnswerProps {
   studyCard: StudyCard;
@@ -28,8 +29,8 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
 
   const { flashcard, direction } = studyCard;
 
-  const question = direction === 'english-to-catalan' ? flashcard.front : flashcard.back;
-  const correctAnswer = direction === 'english-to-catalan' ? flashcard.back : flashcard.front;
+  const question = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.front : flashcard.back);
+  const correctAnswer = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
   const questionLabel = direction === 'english-to-catalan' ? 'English' : 'Català';
   const answerLabel = direction === 'english-to-catalan' ? 'Català' : 'English';
 

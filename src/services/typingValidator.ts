@@ -1,5 +1,6 @@
 import type { TypingResult, Correction } from '../types/flashcard';
 import { TYPING_CONFIG } from '../config/constants';
+import { stripBracketedContent } from '../utils/textUtils';
 
 const CATALAN_SPECIAL_CHARS = ['à', 'é', 'è', 'í', 'ï', 'ó', 'ò', 'ú', 'ü', 'ç', 'l·l'];
 
@@ -24,15 +25,6 @@ function expandContractions(text: string): string {
     result = result.replace(new RegExp(contraction.replace("'", "'"), 'gi'), expanded);
   }
   return result;
-}
-
-function stripBracketedContent(text: string): string {
-  // Remove any content in parentheses (M/F, feminine, notes, etc.)
-  // This handles all cases: (M), (F), (M/F), (masculine), (plural), etc.
-  return text
-    .replace(/\s*\([^)]*\)\s*/g, ' ')  // Replace bracketed content with space
-    .replace(/\s+/g, ' ')              // Normalize multiple spaces
-    .trim();
 }
 
 export function normalizeForComparison(text: string): string {

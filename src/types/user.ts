@@ -27,6 +27,7 @@ export interface UserProgress {
   cardsLearned: number;        // Cards with interval >= 21 days
   streakFreezeAvailable: boolean;
   lastStreakFreezeUsed?: Date;
+  dailyActivity: Record<string, { cards: number; xp: number }>; // keyed by YYYY-MM-DD
 }
 
 export interface DailyStats {
@@ -57,4 +58,5 @@ export const DEFAULT_PROGRESS: UserProgress = {
   totalTimeSpentMs: 0,
   cardsLearned: 0,
   streakFreezeAvailable: true,
+  dailyActivity: {},
 };

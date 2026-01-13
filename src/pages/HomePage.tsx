@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Play,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCardStore } from '../stores/cardStore';
 import { useUserStore } from '../stores/userStore';
+import { useAdaptiveLearningStore } from '../stores/adaptiveLearningStore';
 import { Button } from '../components/ui/Button';
 import { Card, CardTitle, DecorativeCard } from '../components/ui/Card';
 import { ProgressRing } from '../components/ui/ProgressRing';
@@ -21,6 +22,7 @@ import { StreakCard } from '../components/gamification/StreakCounter';
 import { WordOfTheDay } from '../components/gamification/WordOfTheDay';
 import { DailyChallenges } from '../components/gamification/DailyChallenges';
 import { StudyReminder, StreakWarning } from '../components/gamification/StudyReminder';
+import { DailyRecommendations, AdaptiveInsightsCard, WeakSpotAlerts } from '../components/adaptive';
 import { generateDailyChallenges, getDailyChallenges, type DailyChallenge } from '../types/challenges';
 import { initializeWeeklyChallenges, getWeeklyChallenges, type WeeklyChallenge } from '../types/weeklyChallenges';
 import { WeeklyChallenges } from '../components/gamification/WeeklyChallenges';
@@ -52,9 +54,21 @@ const itemVariants = {
 };
 
 export function HomePage() {
+  const navigate = useNavigate();
   const flashcards = useCardStore((state) => state.flashcards);
   const cardProgress = useCardStore((state) => state.cardProgress);
+  const mistakeHistory = useCardStore((state) => state.mistakeHistory);
   const progress = useUserStore((state) => state.progress);
+
+  // Adaptive learning state
+  const currentRecommendations = useAdaptiveLearningStore((state) => state.currentRecommendations);
+  const insights = useAdaptiveLearningStore((state) => state.insights);
+  const weakSpots = useAdaptiveLearningStore((state) => state.weakSpots);
+  const shouldReanalyze = useAdaptiveLearningStore((state) => state.shouldReanalyze);
+  const analyzePerformance = useAdaptiveLearningStore((state) => state.analyzePerformance);
+  const refreshRecommendations = useAdaptiveLearningStore((state) => state.refreshRecommendations);
+  const dismissInsight = useAdaptiveLearningStore((state) => state.dismissInsight);
+  const getCriticalWeakSpots = useAdaptiveLearningStore((state) => state.getCriticalWeakSpots);
 
   // Get store functions (stable references)
   const getCategoryStats = useCardStore((state) => state.getCategoryStats);
@@ -109,6 +123,30 @@ export function HomePage() {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
+  // Run adaptive analysis when needed
+  useEffect(() => {
+    if (hasCards && shouldReanalyze()) {
+      analyzePerformance(flashcards, cardProgress, mistakeHistory, []);
+      refreshRecommendations(
+        flashcards,
+        cardProgress,
+        { currentStreak: progress.currentStreak, lastStudyDate: progress.lastStudyDate },
+        20 // daily goal
+      );
+    }
+  }, [hasCards, flashcards, cardProgress, mistakeHistory, progress.currentStreak, progress.lastStudyDate, shouldReanalyze, analyzePerformance, refreshRecommendations]);
+
+  const criticalWeakSpots = useMemo(() => getCriticalWeakSpots(), [getCriticalWeakSpots, weakSpots]);
+
+  const handleStartSession = useCallback(() => {
+    navigate('/study');
+  }, [navigate]);
+
+  const handlePracticeWeakSpot = useCallback((_weakSpot: { affectedCardIds: string[] }) => {
+    // Navigate to drills with the weak spot category
+    navigate('/drills');
+  }, [navigate]);
+
   const hasStudiedToday = progress.lastStudyDate
     ? isSameDay(new Date(progress.lastStudyDate), new Date())
     : false;
@@ -131,6 +169,17 @@ export function HomePage() {
       {hasCards && (
         <motion.div variants={itemVariants} className="mb-4">
           <StreakWarning currentStreak={progress.currentStreak} hasStudiedToday={hasStudiedToday} />
+        </motion.div>
+      )}
+
+      {/* Adaptive Insights - Critical alerts */}
+      {hasCards && insights.length > 0 && (
+        <motion.div variants={itemVariants} className="mb-6">
+          <AdaptiveInsightsCard
+            insights={insights}
+            onDismiss={dismissInsight}
+            maxDisplay={2}
+          />
         </motion.div>
       )}
 
@@ -332,6 +381,27 @@ export function HomePage() {
       {hasCards && weeklyChallenges.length > 0 && (
         <motion.div variants={itemVariants} className="mb-10">
           <WeeklyChallenges challenges={weeklyChallenges} />
+        </motion.div>
+      )}
+
+      {/* Adaptive Daily Recommendations */}
+      {hasCards && (
+        <motion.div variants={itemVariants} className="mb-10">
+          <DailyRecommendations
+            recommendations={currentRecommendations}
+            onStartSession={handleStartSession}
+          />
+        </motion.div>
+      )}
+
+      {/* Critical Weak Spots */}
+      {hasCards && criticalWeakSpots.length > 0 && (
+        <motion.div variants={itemVariants} className="mb-10">
+          <WeakSpotAlerts
+            weakSpots={criticalWeakSpots}
+            onPractice={handlePracticeWeakSpot}
+            maxDisplay={3}
+          />
         </motion.div>
       )}
 

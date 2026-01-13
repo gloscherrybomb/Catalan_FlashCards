@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { logger } from '../services/logger';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useSessionStore, type SessionSummary } from '../stores/sessionStore';
 import { useCardStore } from '../stores/cardStore';
+import { useAdaptiveLearningStore } from '../stores/adaptiveLearningStore';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
@@ -32,6 +33,7 @@ import { SentenceMode } from '../components/cards/SentenceMode';
 import { DictationMode } from '../components/cards/DictationMode';
 import { SpeakMode } from '../components/cards/SpeakMode';
 import { Confetti } from '../components/ui/Confetti';
+import { DifficultyIndicator, SessionCompositionPreview } from '../components/adaptive';
 import type { StudyMode } from '../types/flashcard';
 
 export function StudyPage() {
@@ -74,7 +76,21 @@ export function StudyPage() {
   }, [searchParams, hasRecoverableSession, sessionMode]);
 
   const getDueCount = useCardStore((state) => state.getDueCount);
+  const flashcards = useCardStore((state) => state.flashcards);
+  const cardProgress = useCardStore((state) => state.cardProgress);
   const dueCount = getDueCount();
+
+  // Adaptive learning state
+  const difficultyProfile = useAdaptiveLearningStore((state) => state.difficultyProfile);
+  const getSessionComposition = useAdaptiveLearningStore((state) => state.getSessionComposition);
+
+  // Calculate session composition for preview
+  const sessionComposition = useMemo(() => {
+    if (dueCount > 0) {
+      return getSessionComposition(flashcards, cardProgress, 20);
+    }
+    return null;
+  }, [flashcards, cardProgress, dueCount, getSessionComposition]);
 
   const currentCard = cards[currentIndex];
   const progress = cards.length > 0 ? Math.round((currentIndex / cards.length) * 100) : 0;
@@ -247,14 +263,29 @@ export function StudyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white text-center mb-2">
-            Choose Study Mode
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-center mb-8">
+          {/* Header with difficulty indicator */}
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+              Choose Study Mode
+            </h1>
+            <DifficultyIndicator profile={difficultyProfile} size="sm" />
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
             {dueCount > 0
               ? `${dueCount} cards ready for review`
               : 'No cards due - great job!'}
           </p>
+
+          {/* Session composition preview */}
+          {sessionComposition && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6"
+            >
+              <SessionCompositionPreview composition={sessionComposition} compact />
+            </motion.div>
+          )}
 
           {dueCount > 0 ? (
             <div className="space-y-4">

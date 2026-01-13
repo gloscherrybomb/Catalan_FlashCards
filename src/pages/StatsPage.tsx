@@ -55,16 +55,29 @@ export function StatsPage() {
     }));
   }, [categoryStats]);
 
-  // Weekly activity (mock data for visualization)
-  const weeklyData = [
-    { day: 'Mon', cards: 15, xp: 180 },
-    { day: 'Tue', cards: 22, xp: 275 },
-    { day: 'Wed', cards: 8, xp: 95 },
-    { day: 'Thu', cards: 30, xp: 380 },
-    { day: 'Fri', cards: 18, xp: 210 },
-    { day: 'Sat', cards: 25, xp: 310 },
-    { day: 'Sun', cards: 12, xp: 150 },
-  ];
+  // Weekly activity from real daily tracking data
+  const weeklyData = useMemo(() => {
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const result: Array<{ day: string; cards: number; xp: number }> = [];
+    const today = new Date();
+
+    // Get the last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().split('T')[0];
+      const dayName = dayNames[date.getDay()];
+      const activity = progress.dailyActivity?.[dateKey] || { cards: 0, xp: 0 };
+
+      result.push({
+        day: dayName,
+        cards: activity.cards,
+        xp: activity.xp,
+      });
+    }
+
+    return result;
+  }, [progress.dailyActivity]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { StudyCard, StudyMode, StudyResult, StudyDirection } from '../types/flashcard';
+import type { StudyCard, StudyMode, StudyResult, StudyDirection, MistakeType } from '../types/flashcard';
 import { logger } from '../services/logger';
 import { XP_VALUES } from '../types/gamification';
 import { useUserStore } from './userStore';
 import { useCardStore } from './cardStore';
+import { useAdaptiveLearningStore } from './adaptiveLearningStore';
 import { checkAchievements } from '../services/achievementService';
 import { updateDailyChallenges } from '../types/challenges';
 
@@ -287,6 +288,81 @@ export const useSessionStore = create<SessionState>()(
       perfectStreak,
       newAchievements: newAchievements.map(a => a.id),
     };
+
+    // Record session for adaptive learning analysis
+    try {
+      const { mode } = get();
+      const adaptiveStore = useAdaptiveLearningStore.getState();
+
+      // Build category breakdown for adaptive analysis
+      const categoryBreakdown: Record<string, { count: number; accuracy: number }> = {};
+      for (const result of results) {
+        const card = cards.find(c => c.flashcard.id === result.cardId);
+        if (card) {
+          const category = card.flashcard.category;
+          if (!categoryBreakdown[category]) {
+            categoryBreakdown[category] = { count: 0, accuracy: 0 };
+          }
+          categoryBreakdown[category].count++;
+          if (result.isCorrect) {
+            categoryBreakdown[category].accuracy++;
+          }
+        }
+      }
+      // Convert accuracy to percentage
+      for (const cat of Object.keys(categoryBreakdown)) {
+        const data = categoryBreakdown[cat];
+        data.accuracy = data.count > 0 ? (data.accuracy / data.count) * 100 : 0;
+      }
+
+      // Build mistake types distribution
+      const mistakeTypes: Record<MistakeType, number> = {
+        spelling: 0,
+        accent: 0,
+        gender: 0,
+        wrong: 0,
+      };
+      // Note: We don't have detailed mistake types in results yet, so we count incorrects as 'wrong'
+      for (const result of results) {
+        if (!result.isCorrect) {
+          mistakeTypes.wrong++;
+        }
+      }
+
+      // Calculate average quality
+      const averageQuality = results.length > 0
+        ? results.reduce((sum, r) => sum + r.quality, 0) / results.length
+        : 0;
+
+      // Calculate average response time
+      const averageResponseTimeMs = results.length > 0
+        ? results.reduce((sum, r) => sum + r.timeSpentMs, 0) / results.length
+        : 0;
+
+      // Record session
+      adaptiveStore.recordSession({
+        duration: timeSpentMs,
+        cardsReviewed: totalCards,
+        accuracy,
+        averageQuality,
+        averageResponseTimeMs,
+        mode,
+        categoryBreakdown,
+        mistakeTypes,
+      });
+
+      // Check if difficulty adjustment is needed
+      adaptiveStore.checkAndAdjustDifficulty(perfectStreak);
+
+      logger.debug('Recorded session for adaptive learning', 'SessionStore', {
+        cardsReviewed: totalCards,
+        accuracy,
+        perfectStreak,
+      });
+    } catch (error) {
+      logger.error('Failed to record session for adaptive learning', 'SessionStore', { error: String(error) });
+      // Continue anyway - main session data is already saved
+    }
 
     // Clear all session data, not just isActive
     set({

@@ -7,6 +7,7 @@ import { CategoryIcon, Badge, CardDecoration } from './CategoryIcon';
 import { audioService } from '../../services/audioService';
 import { imageService, type CachedImage } from '../../services/imageService';
 import { MnemonicHint } from './MnemonicHint';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface FlashCardProps {
   studyCard: StudyCard;
@@ -83,8 +84,8 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
     };
   }, [flashcard.id, flashcard.front, flashcard.imageUrl, flashcard.imageThumbUrl, flashcard.imageAttribution]);
 
-  const front = direction === 'english-to-catalan' ? flashcard.front : flashcard.back;
-  const back = direction === 'english-to-catalan' ? flashcard.back : flashcard.front;
+  const front = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.front : flashcard.back);
+  const back = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
   const frontLabel = direction === 'english-to-catalan' ? 'English' : 'Catala';
   const backLabel = direction === 'english-to-catalan' ? 'Catala' : 'English';
 

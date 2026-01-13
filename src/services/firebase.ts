@@ -153,6 +153,7 @@ export async function getUserProgress(userId: string): Promise<UserProgress> {
       totalTimeSpentMs: 0,
       cardsLearned: 0,
       streakFreezeAvailable: true,
+      dailyActivity: {},
     };
   }
 

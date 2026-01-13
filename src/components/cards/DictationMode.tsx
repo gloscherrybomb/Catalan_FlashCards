@@ -14,6 +14,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { audioService } from '../../services/audioService';
 import type { StudyCard } from '../../types/flashcard';
+import { stripBracketedContent } from '../../utils/textUtils';
 
 interface DictationModeProps {
   studyCard: StudyCard;
@@ -84,7 +85,7 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
 
   const { flashcard } = studyCard;
   // Always dictate Catalan words
-  const correctAnswer = flashcard.back;
+  const correctAnswer = stripBracketedContent(flashcard.back);
 
   // Reset on card change
   useEffect(() => {
