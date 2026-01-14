@@ -56,6 +56,11 @@ function findExampleSentence(card: Flashcard): SentenceData | null {
   return match || null;
 }
 
+// Escape special regex characters in a string
+function escapeRegex(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // Highlight the target word in a sentence
 function HighlightedSentence({
   sentence,
@@ -64,7 +69,8 @@ function HighlightedSentence({
   sentence: string;
   targetWord: string;
 }) {
-  const parts = sentence.split(new RegExp(`(${targetWord})`, 'gi'));
+  const escapedWord = escapeRegex(targetWord);
+  const parts = sentence.split(new RegExp(`(${escapedWord})`, 'gi'));
 
   return (
     <span>
@@ -371,6 +377,12 @@ export function VocabularyIntro({
   unitTitle,
 }: VocabularyIntroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Guard against empty cards
+  if (!cards || cards.length === 0) {
+    onComplete();
+    return null;
+  }
 
   const handleNext = () => {
     if (currentIndex < cards.length - 1) {

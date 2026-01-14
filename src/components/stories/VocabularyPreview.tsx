@@ -255,6 +255,12 @@ export function VocabularyPreview({
 
   const vocabulary = story.vocabulary;
 
+  // Guard against empty vocabulary
+  if (!vocabulary || vocabulary.length === 0) {
+    onComplete();
+    return null;
+  }
+
   const handleLearnNext = () => {
     if (currentIndex < vocabulary.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -310,7 +316,7 @@ export function VocabularyPreview({
           </div>
           {(onSkip || isReread) && (
             <button
-              onClick={handleSkip || onComplete}
+              onClick={onSkip ? handleSkip : onComplete}
               className="flex items-center gap-1 text-sm text-miro-blue/50 dark:text-ink-light/50 hover:text-miro-blue dark:hover:text-ink-light"
             >
               <SkipForward className="w-4 h-4" />

@@ -154,6 +154,12 @@ export function PhraseTeaching({
 
   const phrases = scenario.keyVocabulary;
 
+  // Guard against empty phrases
+  if (!phrases || phrases.length === 0) {
+    onComplete();
+    return null;
+  }
+
   const handleNext = async () => {
     if (currentIndex < phrases.length - 1) {
       setCurrentIndex(currentIndex + 1);
