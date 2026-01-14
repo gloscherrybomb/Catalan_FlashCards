@@ -34,6 +34,7 @@ import { SentenceMode } from '../components/cards/SentenceMode';
 import { DictationMode } from '../components/cards/DictationMode';
 import { SpeakMode } from '../components/cards/SpeakMode';
 import { VocabularyIntro } from '../components/cards/VocabularyIntro';
+import { CategoryIntro, hasCategoryIntroBeenShown } from '../components/cards/CategoryIntro';
 import { Confetti } from '../components/ui/Confetti';
 import { DifficultyIndicator, SessionCompositionPreview } from '../components/adaptive';
 import type { StudyMode } from '../types/flashcard';
@@ -51,6 +52,8 @@ export function StudyPage() {
   const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
   const [showIntroPhase, setShowIntroPhase] = useState(false);
   const [introCards, setIntroCards] = useState<typeof cards>([]);
+  const [showCategoryIntro, setShowCategoryIntro] = useState(false);
+  const [categoryForIntro, setCategoryForIntro] = useState<string | null>(null);
 
   const {
     isActive,
@@ -220,8 +223,17 @@ export function StudyPage() {
         return !progress || progress.repetitions === 0;
       });
 
-      // If there are new cards, show intro phase first
+      // Check if we should show category intro (first time studying this category)
       if (newCards.length > 0 && mode !== 'listening' && mode !== 'dictation' && mode !== 'speak') {
+        // Get the primary category from new cards
+        const primaryCategory = newCards[0]?.flashcard.category;
+
+        // Check if this is the first time studying this category
+        if (primaryCategory && !hasCategoryIntroBeenShown(primaryCategory)) {
+          setCategoryForIntro(primaryCategory);
+          setShowCategoryIntro(true);
+        }
+
         setIntroCards(newCards.slice(0, 5)); // Limit to first 5 new cards per session
         setShowIntroPhase(true);
       }
@@ -253,12 +265,20 @@ export function StudyPage() {
     setShowConfetti(false);
     setShowIntroPhase(false);
     setIntroCards([]);
+    setShowCategoryIntro(false);
+    setCategoryForIntro(null);
   };
 
   const handleIntroComplete = () => {
     setShowIntroPhase(false);
     setIntroCards([]);
     // Continue with regular study session
+  };
+
+  const handleCategoryIntroComplete = () => {
+    setShowCategoryIntro(false);
+    setCategoryForIntro(null);
+    // Continue to vocabulary intro or session
   };
 
   // Sentence mode
@@ -271,6 +291,18 @@ export function StudyPage() {
         }}
         difficulty="mixed"
         count={10}
+      />
+    );
+  }
+
+  // Category introduction (shown first time studying a category)
+  if (showCategoryIntro && categoryForIntro) {
+    return (
+      <CategoryIntro
+        category={categoryForIntro}
+        unitNumber={unitNumber}
+        onContinue={handleCategoryIntroComplete}
+        onSkip={handleCategoryIntroComplete}
       />
     );
   }

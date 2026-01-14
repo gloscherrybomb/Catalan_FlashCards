@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { logger } from '../../services/logger';
-import { Lightbulb, Volume2, ImageOff } from 'lucide-react';
+import { Lightbulb, Volume2, ImageOff, BookOpen } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge, CardDecoration } from './CategoryIcon';
 import { audioService } from '../../services/audioService';
@@ -9,6 +10,7 @@ import { imageService, type CachedImage } from '../../services/imageService';
 import { MnemonicHint } from './MnemonicHint';
 import { stripBracketedContent } from '../../utils/textUtils';
 import { EXAMPLE_SENTENCES, type SentenceData } from '../../data/exampleSentences';
+import { getRelatedGrammar, grammarLessonExists } from '../../utils/grammarMapping';
 
 // Find an example sentence containing the target word
 function findExampleSentence(word: string, catalanWord: string): SentenceData | null {
@@ -40,6 +42,7 @@ interface FlashCardProps {
 }
 
 export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProps) {
+  const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -48,6 +51,15 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
   const [imageFailed, setImageFailed] = useState(false);
 
   const { flashcard, direction } = studyCard;
+
+  // Get related grammar lesson
+  const relatedGrammar = useMemo(() => {
+    const grammar = getRelatedGrammar(flashcard);
+    if (grammar && grammarLessonExists(grammar.lessonId)) {
+      return grammar;
+    }
+    return null;
+  }, [flashcard]);
 
   // Fetch image for the card on mount
   useEffect(() => {
@@ -375,6 +387,23 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 className="mb-2"
                 defaultExpanded={true}
               />
+
+              {/* Related grammar lesson link */}
+              {relatedGrammar && (
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/grammar/${relatedGrammar.lessonId}`);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 hover:text-white text-sm font-medium transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>{relatedGrammar.title}</span>
+                  <span className="text-xs text-white/60">- {relatedGrammar.reason}</span>
+                </motion.button>
+              )}
             </div>
           </div>
         </motion.div>

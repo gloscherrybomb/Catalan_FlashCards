@@ -1,6 +1,7 @@
 import { addDays } from 'date-fns';
-import type { CardProgress, StudyDirection } from '../types/flashcard';
+import type { CardProgress, StudyDirection, MasteryLevel } from '../types/flashcard';
 import { SM2_CONFIG, MASTERY_CONFIG, SPEED_THRESHOLDS } from '../config/constants';
+import { calculateMasteryProgress } from '../utils/progressiveDifficulty';
 
 /**
  * SM-2 Spaced Repetition Algorithm
@@ -24,6 +25,8 @@ export function createInitialProgress(cardId: string, direction: StudyDirection)
     nextReviewDate: new Date(),
     totalReviews: 0,
     correctReviews: 0,
+    masteryLevel: 0 as MasteryLevel,
+    consecutiveCorrect: 0,
   };
 }
 
@@ -66,6 +69,18 @@ export function calculateSM2(
   // Cap maximum interval at configured max days
   newInterval = Math.min(newInterval, SM2_CONFIG.MAX_INTERVAL_DAYS);
 
+  // Update mastery level based on answer quality
+  const currentMasteryLevel = progress.masteryLevel ?? 0;
+  const currentConsecutive = progress.consecutiveCorrect ?? 0;
+  const wasCorrect = q >= 3;
+
+  const { newLevel, newConsecutive } = calculateMasteryProgress(
+    currentMasteryLevel as MasteryLevel,
+    currentConsecutive,
+    wasCorrect,
+    q
+  );
+
   return {
     ...progress,
     easeFactor: newEF,
@@ -76,6 +91,8 @@ export function calculateSM2(
     lastQuality: q,
     totalReviews: progress.totalReviews + 1,
     correctReviews: progress.correctReviews + (q >= 3 ? 1 : 0),
+    masteryLevel: newLevel,
+    consecutiveCorrect: newConsecutive,
   };
 }
 

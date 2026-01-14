@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, RefreshCw, Check, X } from 'lucide-react';
+import { Volume2, RefreshCw, Check, X, Eye, EyeOff } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { audioService } from '../../services/audioService';
 import { useCardStore } from '../../stores/cardStore';
@@ -11,6 +11,24 @@ interface ListeningModeProps {
   onAnswer: (quality: number) => void;
 }
 
+type ListeningPhase = 'full-text' | 'partial-text' | 'audio-only';
+
+// Create a cloze (fill-in-the-blank) version of text
+function createClozeText(text: string): string {
+  const words = text.split(' ');
+  if (words.length <= 2) {
+    // Very short - just show first letter of each word
+    return words.map(w => w[0] + '_'.repeat(Math.max(0, w.length - 1))).join(' ');
+  }
+
+  // Hide every other word (keep first word visible for context)
+  return words.map((word, index) => {
+    if (index === 0) return word; // Keep first word
+    if (index % 2 === 0) return word; // Keep even-indexed words
+    return '_'.repeat(word.length); // Hide odd-indexed words
+  }).join(' ');
+}
+
 export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
   const [hasPlayed, setHasPlayed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -18,14 +36,27 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
+  const [currentPhase, setCurrentPhase] = useState<ListeningPhase>('audio-only');
+  const [phasePlayCount, setPhasePlayCount] = useState(0);
 
-  const { flashcard } = studyCard;
+  const { flashcard, progress } = studyCard;
   const flashcards = useCardStore((state) => state.flashcards);
 
+  // Determine initial phase based on card progress
+  // New cards (low repetitions) get scaffolded support
+  const initialPhase = useMemo((): ListeningPhase => {
+    const repetitions = progress?.repetitions ?? 0;
+    if (repetitions === 0) return 'full-text';      // Brand new card
+    if (repetitions <= 2) return 'partial-text';    // Still learning
+    return 'audio-only';                             // Well-practiced
+  }, [progress]);
+
   // Listening mode ALWAYS plays Catalan audio, user identifies the English meaning
-  // This is the core purpose - train your ear to recognize Catalan words
   const audioText = stripBracketedContent(flashcard.back); // Always Catalan
   const correctAnswer = stripBracketedContent(flashcard.front); // Always English
+
+  // Generate cloze text for partial-text phase
+  const clozeText = useMemo(() => createClozeText(audioText), [audioText]);
 
   // Generate options - always English answers since we always play Catalan audio
   const options = useMemo(() => {
@@ -61,7 +92,21 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
     setSelectedIndex(null);
     setHasAnswered(false);
     setStartTime(Date.now());
-  }, [flashcard.id]);
+    setCurrentPhase(initialPhase);
+    setPhasePlayCount(0);
+  }, [flashcard.id, initialPhase]);
+
+  // Progress to next phase after listening
+  const advancePhase = () => {
+    if (currentPhase === 'full-text') {
+      setCurrentPhase('partial-text');
+      setPhasePlayCount(0);
+    } else if (currentPhase === 'partial-text') {
+      setCurrentPhase('audio-only');
+      setPhasePlayCount(0);
+    }
+    // audio-only doesn't advance further
+  };
 
   const playAudio = async () => {
     if (isPlaying) return;
@@ -70,10 +115,15 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
       // Always play Catalan audio for listening comprehension
       await audioService.speakCatalan(audioText);
       setHasPlayed(true);
-      // Show options after first play
+      setPhasePlayCount(prev => prev + 1);
+
+      // Show options after first play in audio-only mode
+      // For scaffolded modes, show after playing once
       setTimeout(() => {
-        setShowOptions(true);
-        setStartTime(Date.now()); // Reset timer when options appear
+        if (currentPhase === 'audio-only' || phasePlayCount >= 0) {
+          setShowOptions(true);
+          setStartTime(Date.now()); // Reset timer when options appear
+        }
       }, 500);
     } finally {
       setIsPlaying(false);
@@ -88,16 +138,26 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
     const isCorrect = options[index].isCorrect;
     const timeSpent = Date.now() - startTime;
 
-    // Calculate quality based on correctness and time
+    // Calculate quality based on correctness, time, and scaffolding used
     let quality: number;
     if (!isCorrect) {
       quality = 1;
-    } else if (timeSpent < 3000) {
-      quality = 5;
-    } else if (timeSpent < 6000) {
-      quality = 4;
     } else {
-      quality = 3;
+      // Base quality on time
+      if (timeSpent < 3000) {
+        quality = 5;
+      } else if (timeSpent < 6000) {
+        quality = 4;
+      } else {
+        quality = 3;
+      }
+
+      // Slight penalty if used scaffolding (still learning)
+      if (currentPhase === 'full-text') {
+        quality = Math.max(3, quality - 1);
+      } else if (currentPhase === 'partial-text') {
+        quality = Math.max(3, quality);
+      }
     }
 
     setTimeout(() => {
@@ -105,10 +165,30 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
     }, 1500);
   };
 
+  // Phase indicator labels
+  const phaseLabel = {
+    'full-text': 'Learning Mode - Text Visible',
+    'partial-text': 'Practice Mode - Partial Text',
+    'audio-only': 'Challenge Mode - Audio Only',
+  }[currentPhase];
+
+  const phaseColor = {
+    'full-text': 'text-miro-green bg-miro-green/10',
+    'partial-text': 'text-miro-yellow bg-miro-yellow/10',
+    'audio-only': 'text-miro-blue bg-miro-blue/10',
+  }[currentPhase];
+
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Audio prompt card */}
       <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-playful border-3 border-miro-blue dark:border-ink-light/50 p-8 mb-6 text-center">
+        {/* Phase indicator */}
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <span className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full ${phaseColor}`}>
+            {phaseLabel}
+          </span>
+        </div>
+
         <span className="text-xs font-bold text-miro-blue/50 dark:text-ink-light/50 uppercase tracking-wider mb-4 block">
           Listening Comprehension
         </span>
@@ -136,6 +216,68 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
         <p className="text-miro-blue dark:text-ink-light font-medium">
           {hasPlayed ? 'Tap to replay' : 'Tap to listen'}
         </p>
+
+        {/* Scaffolded text display based on phase */}
+        <AnimatePresence mode="wait">
+          {currentPhase === 'full-text' && hasPlayed && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-4 p-4 bg-miro-green/10 dark:bg-miro-green/20 rounded-xl"
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Eye className="w-4 h-4 text-miro-green" />
+                <span className="text-xs text-miro-green font-medium">Full Text</span>
+              </div>
+              <p className="text-lg font-bold text-miro-blue dark:text-ink-light">
+                {audioText}
+              </p>
+              <button
+                onClick={advancePhase}
+                className="mt-3 text-xs text-miro-green hover:text-miro-green/80 underline"
+              >
+                Ready for a challenge? Hide some text →
+              </button>
+            </motion.div>
+          )}
+
+          {currentPhase === 'partial-text' && hasPlayed && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-4 p-4 bg-miro-yellow/10 dark:bg-miro-yellow/20 rounded-xl"
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <EyeOff className="w-4 h-4 text-miro-yellow" />
+                <span className="text-xs text-miro-yellow font-medium">Partial Text</span>
+              </div>
+              <p className="text-lg font-bold text-miro-blue dark:text-ink-light font-mono tracking-wide">
+                {clozeText}
+              </p>
+              <button
+                onClick={advancePhase}
+                className="mt-3 text-xs text-miro-yellow hover:text-miro-yellow/80 underline"
+              >
+                Try without any text →
+              </button>
+            </motion.div>
+          )}
+
+          {currentPhase === 'audio-only' && hasPlayed && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-4 p-3 bg-miro-blue/10 dark:bg-miro-blue/20 rounded-xl"
+            >
+              <p className="text-xs text-miro-blue/70 dark:text-ink-light/70">
+                Listen carefully and select the meaning below
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {hasPlayed && (
           <button
@@ -226,11 +368,22 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
             }`}
           >
             {options[selectedIndex!]?.isCorrect ? (
-              <span>Molt bé! Excellent!</span>
+              <div>
+                <span>Molt bé! Excellent!</span>
+                {/* Show the Catalan word they heard */}
+                <p className="text-sm mt-1 opacity-80">
+                  "{audioText}"
+                </p>
+              </div>
             ) : (
-              <span>
-                Not quite. The answer is: <strong>{options.find(o => o.isCorrect)?.text}</strong>
-              </span>
+              <div>
+                <span>
+                  Not quite. The answer is: <strong>{options.find(o => o.isCorrect)?.text}</strong>
+                </span>
+                <p className="text-sm mt-1 opacity-80">
+                  "{audioText}"
+                </p>
+              </div>
             )}
           </motion.div>
         )}

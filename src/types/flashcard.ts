@@ -34,7 +34,20 @@ export interface CardProgress {
   totalReviews: number;
   correctReviews: number;
   lastQuality?: number;    // Last quality rating (0-5)
+
+  // Progressive difficulty
+  masteryLevel: MasteryLevel; // 0-4, determines available study modes
+  consecutiveCorrect: number; // Correct answers at current level
 }
+
+// Mastery levels determine which study modes are available
+export type MasteryLevel = 0 | 1 | 2 | 3 | 4;
+
+// Level 0: Multiple choice only (brand new)
+// Level 1: Multiple choice + Type with hint
+// Level 2: Multiple choice + Type (no hint)
+// Level 3: All modes except sprint
+// Level 4: Full mastery (all modes)
 
 export interface StudyCard {
   flashcard: Flashcard;
