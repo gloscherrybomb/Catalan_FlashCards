@@ -78,6 +78,8 @@ export interface StudyResult {
   userAnswer?: string;     // For type-answer mode
 }
 
+export type MatchType = 'exact' | 'case' | 'accent' | 'phrase' | 'synonym' | 'article' | 'loose' | 'contraction' | 'typo' | 'none';
+
 export interface TypingResult {
   isCorrect: boolean;      // Exact match
   isAcceptable: boolean;   // Close enough (minor accent issues)
@@ -85,6 +87,8 @@ export interface TypingResult {
   userAnswer: string;
   correctAnswer: string;
   corrections: Correction[];
+  matchType?: MatchType;   // How the answer was matched
+  feedbackMessage?: string; // User-friendly explanation of match type
 }
 
 export interface Correction {

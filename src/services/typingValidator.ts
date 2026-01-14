@@ -1,6 +1,12 @@
-import type { TypingResult, Correction } from '../types/flashcard';
+import type { TypingResult, Correction, MatchType } from '../types/flashcard';
 import { TYPING_CONFIG } from '../config/constants';
 import { stripBracketedContent, extractAllForms } from '../utils/textUtils';
+import {
+  CATALAN_PHRASE_EQUIVALENCES,
+  CATALAN_SYNONYMS,
+  CATALAN_ARTICLES,
+  CATALAN_CONTRACTIONS,
+} from '../config/catalanEquivalences';
 
 const CATALAN_SPECIAL_CHARS = ['à', 'é', 'è', 'í', 'ï', 'ó', 'ò', 'ú', 'ü', 'ç', 'l·l'];
 
@@ -54,6 +60,131 @@ export function normalizeLooseComparison(text: string): string {
     .replace(/[-\s]+/g, ''); // Remove all spaces and hyphens
 }
 
+/**
+ * Check if two phrases are equivalent based on Catalan phrase mappings.
+ * E.g., "si us plau" ↔ "sisplau"
+ */
+function areEquivalentPhrases(user: string, correct: string): boolean {
+  const normalizedUser = normalizeForComparison(user);
+  const normalizedCorrect = normalizeForComparison(correct);
+
+  // Check if user's phrase has equivalents that match correct
+  const userEquivalents = CATALAN_PHRASE_EQUIVALENCES[normalizedUser];
+  if (userEquivalents) {
+    for (const eq of userEquivalents) {
+      if (normalizeForComparison(eq) === normalizedCorrect) return true;
+    }
+  }
+
+  // Check if correct phrase has equivalents that match user
+  const correctEquivalents = CATALAN_PHRASE_EQUIVALENCES[normalizedCorrect];
+  if (correctEquivalents) {
+    for (const eq of correctEquivalents) {
+      if (normalizeForComparison(eq) === normalizedUser) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if two words are synonyms based on Catalan synonym groups.
+ * E.g., "noi" ↔ "nen", "muller" ↔ "dona"
+ */
+function areSynonyms(user: string, correct: string): boolean {
+  const normalizedUser = normalizeForComparison(user);
+  const normalizedCorrect = normalizeForComparison(correct);
+
+  for (const synonymGroup of CATALAN_SYNONYMS) {
+    const normalizedGroup = synonymGroup.map(s => normalizeForComparison(s));
+    if (normalizedGroup.includes(normalizedUser) && normalizedGroup.includes(normalizedCorrect)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Strip leading Catalan articles from text.
+ * E.g., "el gat" → "gat", "la casa" → "casa"
+ */
+function stripArticles(text: string): string {
+  const words = text.trim().split(/\s+/);
+  if (words.length === 0) return text;
+
+  // Check if first word is an article
+  const firstWord = words[0].toLowerCase();
+
+  // Handle elided articles (l', d')
+  if (firstWord.startsWith("l'") || firstWord.startsWith("d'")) {
+    // Remove the article prefix, keep the rest of the first word
+    words[0] = words[0].substring(2);
+    return words.join(' ').trim();
+  }
+
+  // Handle regular articles
+  if (CATALAN_ARTICLES.includes(firstWord)) {
+    return words.slice(1).join(' ');
+  }
+
+  return text;
+}
+
+/**
+ * Check if two phrases match after expanding/contracting Catalan contractions.
+ * E.g., "al" ↔ "a el", "del" ↔ "de el"
+ */
+function matchWithContractions(user: string, correct: string): boolean {
+  const normalizedUser = normalizeForComparison(user);
+  const normalizedCorrect = normalizeForComparison(correct);
+
+  // Try expanding user's contractions
+  let expandedUser = normalizedUser;
+  for (const [contraction, expansion] of Object.entries(CATALAN_CONTRACTIONS)) {
+    const regex = new RegExp(`\\b${contraction}\\b`, 'g');
+    expandedUser = expandedUser.replace(regex, expansion);
+  }
+
+  if (expandedUser === normalizedCorrect) return true;
+
+  // Try expanding correct answer's contractions
+  let expandedCorrect = normalizedCorrect;
+  for (const [contraction, expansion] of Object.entries(CATALAN_CONTRACTIONS)) {
+    const regex = new RegExp(`\\b${contraction}\\b`, 'g');
+    expandedCorrect = expandedCorrect.replace(regex, expansion);
+  }
+
+  if (normalizedUser === expandedCorrect) return true;
+  if (expandedUser === expandedCorrect) return true;
+
+  return false;
+}
+
+/**
+ * Create a result object with the specified match type and feedback.
+ */
+function createResult(
+  userAnswer: string,
+  correctAnswer: string,
+  isCorrect: boolean,
+  isAcceptable: boolean,
+  matchType: MatchType,
+  corrections: Correction[] = [],
+  feedbackMessage?: string,
+  hasTypo?: boolean
+): TypingResult {
+  return {
+    isCorrect,
+    isAcceptable,
+    userAnswer,
+    correctAnswer,
+    corrections,
+    matchType,
+    feedbackMessage,
+    hasTypo,
+  };
+}
+
 export function validateTyping(userAnswer: string, correctAnswer: string): TypingResult {
   const trimmedUser = userAnswer.trim();
   const trimmedCorrect = correctAnswer.trim();
@@ -61,30 +192,41 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
   // Get all valid forms (handles "vell / vella" -> ["vell", "vella"])
   const validForms = extractAllForms(trimmedCorrect);
 
+  // Also extract forms from user input in case they typed "xxx / yyy"
+  const userForms = extractAllForms(trimmedUser);
+
+  // If user typed multiple forms, check if ANY user form matches ANY valid form
+  if (userForms.length > 1) {
+    for (const userForm of userForms) {
+      for (const validForm of validForms) {
+        const cleanedValid = stripBracketedContent(validForm);
+        if (normalizeForComparison(userForm) === normalizeForComparison(cleanedValid)) {
+          return createResult(
+            trimmedUser,
+            trimmedCorrect,
+            true,
+            true,
+            'exact',
+            [],
+            undefined
+          );
+        }
+      }
+    }
+  }
+
   // Try to validate against each valid form
   for (const form of validForms) {
     const cleanedForm = stripBracketedContent(form);
 
     // Tier 1: Exact match
     if (trimmedUser === cleanedForm) {
-      return {
-        isCorrect: true,
-        isAcceptable: true,
-        userAnswer: trimmedUser,
-        correctAnswer: trimmedCorrect,
-        corrections: [],
-      };
+      return createResult(trimmedUser, trimmedCorrect, true, true, 'exact');
     }
 
     // Tier 2: Case-insensitive exact match
     if (trimmedUser.toLowerCase() === cleanedForm.toLowerCase()) {
-      return {
-        isCorrect: true,
-        isAcceptable: true,
-        userAnswer: trimmedUser,
-        correctAnswer: trimmedCorrect,
-        corrections: [],
-      };
+      return createResult(trimmedUser, trimmedCorrect, true, true, 'case');
     }
 
     // Tier 3: Normalize and compare (ignoring accents)
@@ -93,13 +235,84 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
 
     if (normalizedUser === normalizedForm) {
       const corrections = findCorrections(trimmedUser, cleanedForm);
-      return {
-        isCorrect: false,
-        isAcceptable: true,
-        userAnswer: trimmedUser,
-        correctAnswer: trimmedCorrect,
+      return createResult(
+        trimmedUser,
+        trimmedCorrect,
+        false,
+        true,
+        'accent',
         corrections,
-      };
+        'Acceptable! Watch the accents next time.'
+      );
+    }
+
+    // Tier 3.1: Catalan phrase equivalence (si us plau ↔ sisplau)
+    if (areEquivalentPhrases(trimmedUser, cleanedForm)) {
+      return createResult(
+        trimmedUser,
+        trimmedCorrect,
+        true,
+        true,
+        'phrase',
+        [],
+        'Correct! Alternative spelling accepted.'
+      );
+    }
+
+    // Tier 3.2: Catalan synonyms (noi ↔ nen)
+    if (areSynonyms(trimmedUser, cleanedForm)) {
+      return createResult(
+        trimmedUser,
+        trimmedCorrect,
+        true,
+        true,
+        'synonym',
+        [],
+        `Correct! "${trimmedUser}" is a valid synonym.`
+      );
+    }
+
+    // Tier 3.3: Article-stripped match (el gat ↔ gat)
+    const userNoArticle = stripArticles(trimmedUser);
+    const formNoArticle = stripArticles(cleanedForm);
+    if (userNoArticle !== trimmedUser || formNoArticle !== cleanedForm) {
+      // Only check if articles were actually stripped
+      if (normalizeForComparison(userNoArticle) === normalizeForComparison(formNoArticle)) {
+        const hasUserArticle = userNoArticle !== trimmedUser;
+        const hasFormArticle = formNoArticle !== cleanedForm;
+        let feedback: string | undefined;
+
+        if (!hasUserArticle && hasFormArticle) {
+          // User omitted article
+          feedback = `Correct! The full form includes the article: "${cleanedForm}"`;
+        } else if (hasUserArticle && !hasFormArticle) {
+          // User added article
+          feedback = `Correct! Article not required here.`;
+        }
+
+        return createResult(
+          trimmedUser,
+          trimmedCorrect,
+          true,
+          true,
+          'article',
+          [],
+          feedback
+        );
+      }
+    }
+
+    // Tier 3.4: Catalan contractions (al ↔ a el)
+    if (matchWithContractions(trimmedUser, cleanedForm)) {
+      return createResult(
+        trimmedUser,
+        trimmedCorrect,
+        true,
+        true,
+        'contraction',
+        [],
+        'Correct! Contraction accepted.'
+      );
     }
 
     // Tier 3.5: Loose comparison ignoring spaces ("goodnight" = "good night")
@@ -107,43 +320,42 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
     const looseForm = normalizeLooseComparison(cleanedForm);
 
     if (looseUser === looseForm) {
-      // Space difference only - count as correct
-      return {
-        isCorrect: true,
-        isAcceptable: true,
-        userAnswer: trimmedUser,
-        correctAnswer: trimmedCorrect,
-        corrections: [],
-      };
+      return createResult(
+        trimmedUser,
+        trimmedCorrect,
+        true,
+        true,
+        'loose',
+        [],
+        undefined
+      );
     }
 
-    // Tier 4: Contraction-normalized comparison (e.g., "don't" = "do not")
-    const contractedUser = expandContractions(normalizedUser);
-    const contractedForm = expandContractions(normalizedForm);
+    // Tier 4: English contraction-normalized comparison (e.g., "don't" = "do not")
+    // Use original trimmed strings for contraction expansion (before apostrophe is stripped)
+    const expandedUser = expandContractions(trimmedUser.toLowerCase());
+    const expandedForm = expandContractions(cleanedForm.toLowerCase());
 
-    if (contractedUser === contractedForm) {
-      return {
-        isCorrect: true,
-        isAcceptable: true,
-        userAnswer: trimmedUser,
-        correctAnswer: trimmedCorrect,
-        corrections: [],
-      };
+    if (normalizeForComparison(expandedUser) === normalizeForComparison(expandedForm)) {
+      return createResult(trimmedUser, trimmedCorrect, true, true, 'contraction');
     }
 
     // Tier 5: Typo tolerance via similarity score
-    const similarity = getSimilarityScore(contractedUser, contractedForm);
+    // Use the expanded forms for better comparison
+    const similarity = getSimilarityScore(normalizeForComparison(expandedUser), normalizeForComparison(expandedForm));
 
     if (similarity >= TYPING_CONFIG.TYPO_SIMILARITY_THRESHOLD) {
       const corrections = findCorrections(trimmedUser, cleanedForm);
-      return {
-        isCorrect: false,
-        isAcceptable: true,
-        hasTypo: true,
-        userAnswer: trimmedUser,
-        correctAnswer: trimmedCorrect,
+      return createResult(
+        trimmedUser,
+        trimmedCorrect,
+        false,
+        true,
+        'typo',
         corrections,
-      };
+        'Acceptable, but there was a small typo.',
+        true
+      );
     }
   }
 
@@ -151,13 +363,14 @@ export function validateTyping(userAnswer: string, correctAnswer: string): Typin
   const primaryForm = stripBracketedContent(validForms[0] || trimmedCorrect);
   const corrections = findCorrections(trimmedUser, primaryForm);
 
-  return {
-    isCorrect: false,
-    isAcceptable: false,
-    userAnswer: trimmedUser,
-    correctAnswer: trimmedCorrect,
-    corrections,
-  };
+  return createResult(
+    trimmedUser,
+    trimmedCorrect,
+    false,
+    false,
+    'none',
+    corrections
+  );
 }
 
 function findCorrections(userAnswer: string, correctAnswer: string): Correction[] {

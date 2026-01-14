@@ -15,6 +15,7 @@ import { Card } from '../ui/Card';
 import { audioService } from '../../services/audioService';
 import type { StudyCard } from '../../types/flashcard';
 import { stripBracketedContent, extractAllForms, stripPunctuation } from '../../utils/textUtils';
+import { validateTyping } from '../../services/typingValidator';
 
 interface DictationModeProps {
   studyCard: StudyCard;
@@ -80,6 +81,7 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [score, setScore] = useState(0);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | undefined>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef<number>(0);
 
@@ -101,6 +103,7 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
     setWrongAttempts(0);
     setShowHint(false);
     setScore(0);
+    setFeedbackMessage(undefined);
     startTimeRef.current = 0;
   }, [flashcard.id]);
 
@@ -135,6 +138,46 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
   const handleSubmit = () => {
     if (!userInput.trim() || isSubmitted) return;
 
+    // First, check for phrase/synonym equivalence using full validation
+    // This handles cases like "sisplau" vs "si us plau"
+    const typingResult = validateTyping(userInput.trim(), correctAnswer);
+
+    if (typingResult.isCorrect || typingResult.isAcceptable) {
+      // Quick pass via equivalence - give high accuracy
+      const normalizedInput = stripPunctuation(userInput.trim());
+      const normalizedCorrect = stripPunctuation(correctAnswer);
+      const comp = compareStrings(normalizedInput, normalizedCorrect);
+      setComparison(comp);
+
+      // Set feedback message if there is one
+      if (typingResult.feedbackMessage) {
+        setFeedbackMessage(typingResult.feedbackMessage);
+      }
+
+      setIsSubmitted(true);
+
+      // Calculate score - high accuracy for accepted answers
+      const baseAccuracy = typingResult.isCorrect ? 100 : 95;
+      let finalScore = baseAccuracy;
+
+      // Speed bonus/penalty
+      if (speed === 'slow') finalScore -= 10;
+      if (speed === 'fast') finalScore += 10;
+
+      // Replay penalty
+      const replaysUsed = 3 - replaysLeft;
+      finalScore -= replaysUsed * 5;
+
+      // Time bonus (if answered quickly)
+      const timeSpent = (Date.now() - startTimeRef.current) / 1000;
+      if (timeSpent < 10) finalScore += 10;
+
+      finalScore = Math.max(0, Math.min(100, finalScore));
+      setScore(Math.round(finalScore));
+      return;
+    }
+
+    // Fall back to character-level comparison for detailed feedback
     // Normalize user input (strip punctuation for relaxed matching)
     const normalizedInput = stripPunctuation(userInput.trim());
 
@@ -423,6 +466,15 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
                   {validForms.length > 1 ? validForms.join(' / ') : correctAnswer}
                 </p>
               </div>
+
+              {/* Feedback message for alternative matches */}
+              {feedbackMessage && (
+                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm text-miro-blue/70 dark:text-ink-light/70 text-center italic">
+                    {feedbackMessage}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Score */}

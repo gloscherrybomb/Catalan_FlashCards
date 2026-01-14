@@ -234,4 +234,172 @@ describe('Typing Validator', () => {
       expect(score).toBeGreaterThanOrEqual(TYPING_CONFIG.TYPO_SIMILARITY_THRESHOLD);
     });
   });
+
+  describe('Catalan phrase equivalences', () => {
+    it('should accept "sisplau" for "si us plau"', () => {
+      const result = validateTyping('sisplau', 'si us plau');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('phrase');
+      expect(result.feedbackMessage).toContain('Alternative spelling');
+    });
+
+    it('should accept "si us plau" for "sisplau"', () => {
+      const result = validateTyping('si us plau', 'sisplau');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('phrase');
+    });
+
+    it('should accept "perdoni" for "disculpi"', () => {
+      const result = validateTyping('perdoni', 'disculpi');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('phrase');
+    });
+
+    it('should accept "disculpa" for "perdona"', () => {
+      const result = validateTyping('disculpa', 'perdona');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+
+    it('should accept "benvinguda" for "benvingut"', () => {
+      const result = validateTyping('benvinguda', 'benvingut');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+  });
+
+  describe('Catalan synonyms', () => {
+    it('should accept "nen" for "noi"', () => {
+      const result = validateTyping('nen', 'noi');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('synonym');
+      expect(result.feedbackMessage).toContain('valid synonym');
+    });
+
+    it('should accept "noia" for "nena"', () => {
+      const result = validateTyping('noia', 'nena');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('synonym');
+    });
+
+    it('should accept "dona" for "muller"', () => {
+      const result = validateTyping('dona', 'muller');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+
+    it('should accept "cotxe" for "auto"', () => {
+      const result = validateTyping('cotxe', 'auto');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+  });
+
+  describe('Article handling', () => {
+    it('should accept "gat" for "el gat"', () => {
+      const result = validateTyping('gat', 'el gat');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('article');
+      expect(result.feedbackMessage).toContain('full form');
+    });
+
+    it('should accept "casa" for "la casa"', () => {
+      const result = validateTyping('casa', 'la casa');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+
+    it('should accept "el gat" for "gat"', () => {
+      const result = validateTyping('el gat', 'gat');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('article');
+    });
+
+    it('should accept "escola" for "l\'escola"', () => {
+      const result = validateTyping('escola', "l'escola");
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+  });
+
+  describe('User slash input', () => {
+    it('should accept "gat / gata" when answer is "gat"', () => {
+      const result = validateTyping('gat / gata', 'gat');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+
+    it('should accept "vell / vella" when answer is "vella"', () => {
+      const result = validateTyping('vell / vella', 'vella');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+
+    it('should accept "blanc / blanca" when answer is "blanc / blanca"', () => {
+      const result = validateTyping('blanc / blanca', 'blanc / blanca');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+  });
+
+  describe('Catalan contractions', () => {
+    it('should accept "al" for "a el"', () => {
+      const result = validateTyping('al', 'a el');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+      expect(result.matchType).toBe('contraction');
+    });
+
+    it('should accept "a el" for "al"', () => {
+      const result = validateTyping('a el', 'al');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+
+    it('should accept "del" for "de el"', () => {
+      const result = validateTyping('del', 'de el');
+      expect(result.isCorrect).toBe(true);
+      expect(result.isAcceptable).toBe(true);
+    });
+  });
+
+  describe('Match type and feedback', () => {
+    it('should return exact matchType for exact match', () => {
+      const result = validateTyping('Hola', 'Hola');
+      expect(result.matchType).toBe('exact');
+      expect(result.feedbackMessage).toBeUndefined();
+    });
+
+    it('should return case matchType for case-only difference', () => {
+      const result = validateTyping('hola', 'Hola');
+      expect(result.matchType).toBe('case');
+    });
+
+    it('should return accent matchType for accent difference', () => {
+      const result = validateTyping('adeu', 'Adéu');
+      expect(result.matchType).toBe('accent');
+      expect(result.feedbackMessage).toContain('accent');
+    });
+
+    it('should return typo matchType for small typos', () => {
+      const result = validateTyping('restaurnt', 'restaurant');
+      expect(result.matchType).toBe('typo');
+      expect(result.hasTypo).toBe(true);
+      expect(result.feedbackMessage).toContain('typo');
+    });
+
+    it('should return none matchType for wrong answers', () => {
+      const result = validateTyping('goodbye', 'hello');
+      expect(result.matchType).toBe('none');
+      expect(result.isCorrect).toBe(false);
+      expect(result.isAcceptable).toBe(false);
+    });
+  });
 });

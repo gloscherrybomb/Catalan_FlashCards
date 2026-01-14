@@ -1,4 +1,5 @@
 import type { SentenceData } from '../data/exampleSentences';
+import { normalizeForComparison } from './typingValidator';
 
 export interface ScrambledWord {
   word: string;
@@ -83,7 +84,11 @@ export function validateSentenceOrder(
   let correctCount = 0;
 
   for (let i = 0; i < Math.max(correctWords.length, userWords.length); i++) {
-    if (correctWords[i]?.toLowerCase() === userWords[i]?.toLowerCase()) {
+    // Use full normalization for accent tolerance
+    const normalizedCorrect = normalizeForComparison(correctWords[i] || '');
+    const normalizedUser = normalizeForComparison(userWords[i] || '');
+
+    if (normalizedCorrect === normalizedUser) {
       correctCount++;
     } else if (firstErrorIndex === null) {
       firstErrorIndex = i;

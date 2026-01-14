@@ -261,6 +261,13 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
               )}
             </div>
 
+            {/* Display feedback message for alternative matches */}
+            {result.feedbackMessage && (
+              <p className="text-sm text-miro-blue/70 dark:text-ink-light/70 mb-2 italic">
+                {result.feedbackMessage}
+              </p>
+            )}
+
             {!result.isCorrect && renderCorrectedAnswer()}
           </motion.div>
         )}

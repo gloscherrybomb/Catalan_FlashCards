@@ -17,6 +17,7 @@ import {
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import type { GrammarExercise as GrammarExerciseType } from '../../data/grammarLessons';
+import { validateTyping } from '../../services/typingValidator';
 
 // Color palette for word chips in sentence-build
 const WORD_COLORS = [
@@ -115,25 +116,31 @@ export function GrammarExercises({
     let correct = false;
 
     switch (currentExercise.type) {
-      case 'fill-blank':
+      case 'fill-blank': {
         userAnswer = inputAnswer.trim();
-        correct = userAnswer?.toLowerCase() === currentExercise.correctAnswer.toLowerCase();
+        // Use proper validation with accent tolerance, synonyms, etc.
+        const result = validateTyping(userAnswer || '', currentExercise.correctAnswer);
+        correct = result.isCorrect || result.isAcceptable;
         break;
+      }
       case 'multiple-choice':
         userAnswer = selectedAnswer;
         correct = userAnswer?.toLowerCase() === currentExercise.correctAnswer.toLowerCase();
         break;
-      case 'sentence-build':
+      case 'sentence-build': {
         userAnswer = selectedWords.map(w => w.word).join(' ');
-        correct = userAnswer.toLowerCase() === currentExercise.correctAnswer.toLowerCase();
+        // Use proper validation for sentence building too
+        const result = validateTyping(userAnswer, currentExercise.correctAnswer);
+        correct = result.isCorrect || result.isAcceptable;
         break;
-      case 'translate':
+      }
+      case 'translate': {
         userAnswer = inputAnswer.trim();
-        // More lenient comparison for translation - ignore case and extra spaces
-        const normalizedUser = userAnswer?.toLowerCase().replace(/\s+/g, ' ').trim() || '';
-        const normalizedCorrect = currentExercise.correctAnswer.toLowerCase().replace(/\s+/g, ' ').trim();
-        correct = normalizedUser === normalizedCorrect;
+        // Use proper validation with full tolerance for translation
+        const result = validateTyping(userAnswer || '', currentExercise.correctAnswer);
+        correct = result.isCorrect || result.isAcceptable;
         break;
+      }
       case 'match':
         // For match, check if all pairs are correctly matched
         userAnswer = matchedPairs.join(',');
