@@ -246,7 +246,7 @@ export function CategoryIntro({
   onContinue,
   onSkip,
 }: CategoryIntroProps) {
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [playingWord, setPlayingWord] = useState<string | null>(null);
 
   const categoryInfo = CATEGORY_INFO[category] || DEFAULT_CATEGORY_INFO;
 
@@ -256,12 +256,12 @@ export function CategoryIntro({
   }, [category]);
 
   const handlePlayExample = async (catalan: string) => {
-    if (isPlayingAudio) return;
-    setIsPlayingAudio(true);
+    if (playingWord) return;
+    setPlayingWord(catalan);
     try {
       await audioService.speakCatalan(catalan);
     } finally {
-      setIsPlayingAudio(false);
+      setPlayingWord(null);
     }
   };
 
@@ -386,13 +386,13 @@ export function CategoryIntro({
                     </div>
                     <button
                       onClick={() => handlePlayExample(word.catalan)}
-                      disabled={isPlayingAudio}
+                      disabled={playingWord !== null}
                       className="p-2 rounded-full hover:bg-miro-blue/10 transition-colors"
                       aria-label={`Play pronunciation of ${word.catalan}`}
                     >
                       <Volume2
                         className={`w-4 h-4 ${
-                          isPlayingAudio
+                          playingWord === word.catalan
                             ? 'text-miro-green animate-pulse'
                             : 'text-miro-blue/60 dark:text-ink-light/60'
                         }`}

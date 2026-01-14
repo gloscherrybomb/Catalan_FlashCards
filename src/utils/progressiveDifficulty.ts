@@ -141,7 +141,7 @@ export function getNextLevelRequirement(
  */
 export function initializeMasteryFields(): Pick<CardProgress, 'masteryLevel' | 'consecutiveCorrect'> {
   return {
-    masteryLevel: 0,
+    masteryLevel: 0 as MasteryLevel,
     consecutiveCorrect: 0,
   };
 }

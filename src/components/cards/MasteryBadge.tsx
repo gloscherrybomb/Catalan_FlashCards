@@ -29,8 +29,12 @@ export function MasteryBadge({
   showProgress = true,
   size = 'sm',
 }: MasteryBadgeProps) {
-  const Icon = LEVEL_ICONS[level];
-  const colorClass = LEVEL_COLORS[level];
+  // Handle undefined or invalid levels (from old data)
+  const safeLevel = (level !== undefined && level >= 0 && level <= 4 ? level : 0) as MasteryLevel;
+  const safeConsecutive = consecutiveCorrect ?? 0;
+
+  const Icon = LEVEL_ICONS[safeLevel];
+  const colorClass = LEVEL_COLORS[safeLevel];
 
   const sizeClasses = {
     sm: 'text-xs px-2 py-0.5',
@@ -51,16 +55,16 @@ export function MasteryBadge({
       className={`inline-flex items-center gap-1 rounded-full font-medium ${sizeClasses[size]} ${colorClass}`}
     >
       <Icon className={iconSizes[size]} />
-      <span>{LEVEL_NAMES[level]}</span>
+      <span>{LEVEL_NAMES[safeLevel]}</span>
 
       {/* Progress indicator for levels 0-3 */}
-      {showProgress && level < 4 && (
+      {showProgress && safeLevel < 4 && (
         <div className="ml-1 flex gap-0.5">
           {[0, 1, 2].map((i) => (
             <div
               key={i}
               className={`w-1.5 h-1.5 rounded-full ${
-                i < consecutiveCorrect
+                i < safeConsecutive
                   ? 'bg-current opacity-100'
                   : 'bg-current opacity-30'
               }`}
@@ -70,7 +74,7 @@ export function MasteryBadge({
       )}
 
       {/* Show star for max level */}
-      {level === 4 && (
+      {safeLevel === 4 && (
         <motion.span
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}

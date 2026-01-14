@@ -15,10 +15,17 @@ type ListeningPhase = 'full-text' | 'partial-text' | 'audio-only';
 
 // Create a cloze (fill-in-the-blank) version of text
 function createClozeText(text: string): string {
-  const words = text.split(' ');
+  if (!text || text.trim() === '') return text;
+
+  const words = text.split(' ').filter(w => w.length > 0);
+  if (words.length === 0) return text;
+
   if (words.length <= 2) {
     // Very short - just show first letter of each word
-    return words.map(w => w[0] + '_'.repeat(Math.max(0, w.length - 1))).join(' ');
+    return words.map(w => {
+      if (w.length === 0) return w;
+      return w[0] + '_'.repeat(Math.max(0, w.length - 1));
+    }).join(' ');
   }
 
   // Hide every other word (keep first word visible for context)
@@ -37,7 +44,6 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
   const [hasAnswered, setHasAnswered] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
   const [currentPhase, setCurrentPhase] = useState<ListeningPhase>('audio-only');
-  const [phasePlayCount, setPhasePlayCount] = useState(0);
 
   const { flashcard, progress } = studyCard;
   const flashcards = useCardStore((state) => state.flashcards);
@@ -93,17 +99,14 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
     setHasAnswered(false);
     setStartTime(Date.now());
     setCurrentPhase(initialPhase);
-    setPhasePlayCount(0);
   }, [flashcard.id, initialPhase]);
 
   // Progress to next phase after listening
   const advancePhase = () => {
     if (currentPhase === 'full-text') {
       setCurrentPhase('partial-text');
-      setPhasePlayCount(0);
     } else if (currentPhase === 'partial-text') {
       setCurrentPhase('audio-only');
-      setPhasePlayCount(0);
     }
     // audio-only doesn't advance further
   };
@@ -115,15 +118,12 @@ export function ListeningMode({ studyCard, onAnswer }: ListeningModeProps) {
       // Always play Catalan audio for listening comprehension
       await audioService.speakCatalan(audioText);
       setHasPlayed(true);
-      setPhasePlayCount(prev => prev + 1);
 
-      // Show options after first play in audio-only mode
-      // For scaffolded modes, show after playing once
+      // Show options after first play
+      // All phases show options after listening once
       setTimeout(() => {
-        if (currentPhase === 'audio-only' || phasePlayCount >= 0) {
-          setShowOptions(true);
-          setStartTime(Date.now()); // Reset timer when options appear
-        }
+        setShowOptions(true);
+        setStartTime(Date.now()); // Reset timer when options appear
       }, 500);
     } finally {
       setIsPlaying(false);
