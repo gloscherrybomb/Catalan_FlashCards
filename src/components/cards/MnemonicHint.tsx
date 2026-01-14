@@ -18,6 +18,7 @@ interface MnemonicHintProps {
   englishWord: string;
   userMnemonic?: string;
   className?: string;
+  defaultExpanded?: boolean;
 }
 
 export function MnemonicHint({
@@ -25,8 +26,9 @@ export function MnemonicHint({
   englishWord,
   userMnemonic,
   className = '',
+  defaultExpanded = false,
 }: MnemonicHintProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const mnemonicData = getMnemonicData(catalanWord, englishWord);

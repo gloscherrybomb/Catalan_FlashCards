@@ -247,33 +247,52 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
                   </p>
                 </div>
 
-                {/* Listen first button */}
+                {/* Listen first button with pronunciation tips */}
                 {phase === 'intro' && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-center"
+                    className="space-y-4"
                   >
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {/* Pronunciation tips shown before attempting */}
+                    {tips.length > 0 && (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 mb-4">
+                        <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-2">
+                          Pronunciation Tips
+                        </p>
+                        <ul className="space-y-1">
+                          {tips.slice(0, 2).map((tip, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-amber-800 dark:text-amber-300">
+                              <span className="text-amber-500 mt-0.5">•</span>
+                              {tip}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
                       Listen to the native pronunciation first, then try saying it yourself.
                     </p>
-                    <Button
-                      onClick={handleListenFirst}
-                      disabled={isPlaying}
-                      className="bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600"
-                    >
-                      {isPlaying ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Playing...
-                        </>
-                      ) : (
-                        <>
-                          <Volume2 className="w-5 h-5 mr-2" />
-                          Listen First
-                        </>
-                      )}
-                    </Button>
+                    <div className="text-center">
+                      <Button
+                        onClick={handleListenFirst}
+                        disabled={isPlaying}
+                        className="bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600"
+                      >
+                        {isPlaying ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            Playing...
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-5 h-5 mr-2" />
+                            Listen First
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </motion.div>
                 )}
 

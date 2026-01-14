@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logger } from '../../services/logger';
 import { Lightbulb, Volume2, ImageOff } from 'lucide-react';
@@ -8,6 +8,30 @@ import { audioService } from '../../services/audioService';
 import { imageService, type CachedImage } from '../../services/imageService';
 import { MnemonicHint } from './MnemonicHint';
 import { stripBracketedContent } from '../../utils/textUtils';
+import { EXAMPLE_SENTENCES, type SentenceData } from '../../data/exampleSentences';
+
+// Find an example sentence containing the target word
+function findExampleSentence(word: string, catalanWord: string): SentenceData | null {
+  const lowerWord = word.toLowerCase();
+  const lowerCatalan = catalanWord.toLowerCase();
+
+  // First try matching Catalan word in Catalan sentence
+  const match = EXAMPLE_SENTENCES.find(sentence => {
+    const catalanSentence = sentence.catalan.toLowerCase();
+    const englishSentence = sentence.english.toLowerCase();
+
+    // Check if Catalan word appears in the sentence
+    const catalanWords = catalanSentence.split(/\s+/).map(w => w.replace(/[.,!?;:'"]/g, ''));
+    const hasWord = catalanWords.includes(lowerCatalan) || catalanSentence.includes(lowerCatalan);
+
+    // Also check English
+    const hasEnglish = englishSentence.includes(lowerWord);
+
+    return hasWord || hasEnglish;
+  });
+
+  return match || null;
+}
 
 interface FlashCardProps {
   studyCard: StudyCard;
@@ -88,6 +112,12 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
   const back = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
   const frontLabel = direction === 'english-to-catalan' ? 'English' : 'Catala';
   const backLabel = direction === 'english-to-catalan' ? 'Catala' : 'English';
+
+  // Find example sentence for context
+  const exampleSentence = useMemo(
+    () => findExampleSentence(flashcard.front, flashcard.back),
+    [flashcard.front, flashcard.back]
+  );
 
   const handleFlip = () => {
     if (!isFlipped) {
@@ -221,6 +251,21 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                   >
                     {front}
                   </motion.h2>
+
+                  {/* Example sentence for context */}
+                  {exampleSentence && direction === 'english-to-catalan' && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className="mt-3 px-4 py-2 bg-miro-yellow/10 dark:bg-miro-yellow/5 rounded-lg max-w-xs mx-auto"
+                    >
+                      <p className="text-xs text-miro-blue/60 dark:text-ink-light/60 italic">
+                        "{exampleSentence.english}"
+                      </p>
+                    </motion.div>
+                  )}
+
                   <div className="flex flex-col items-center gap-1">
                     <motion.button
                       onClick={(e) => handlePlayAudio(e, front, direction === 'catalan-to-english')}
@@ -322,12 +367,13 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 </AnimatePresence>
               )}
 
-              {/* Mnemonic hints */}
+              {/* Mnemonic hints - shown expanded by default */}
               <MnemonicHint
                 catalanWord={flashcard.back}
                 englishWord={flashcard.front}
                 userMnemonic={flashcard.userMnemonic}
                 className="mb-2"
+                defaultExpanded={true}
               />
             </div>
           </div>

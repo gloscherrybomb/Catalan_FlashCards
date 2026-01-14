@@ -6,6 +6,7 @@ import { Card } from '../components/ui/Card';
 import { StoryCard } from '../components/stories/StoryCard';
 import { StoryReader } from '../components/stories/StoryReader';
 import { ComprehensionQuiz } from '../components/stories/ComprehensionQuiz';
+import { VocabularyPreview } from '../components/stories/VocabularyPreview';
 import {
   STORIES,
   type Story,
@@ -16,7 +17,7 @@ import { useStoryStore } from '../stores/storyStore';
 import { useUserStore } from '../stores/userStore';
 import { useCurriculumStore } from '../stores/curriculumStore';
 
-type ViewMode = 'list' | 'reading' | 'quiz';
+type ViewMode = 'list' | 'vocab-preview' | 'reading' | 'quiz';
 
 export function StoriesPage() {
   const [searchParams] = useSearchParams();
@@ -60,6 +61,22 @@ export function StoriesPage() {
   const handleSelectStory = (story: Story) => {
     setSelectedStory(story);
     startStory(story.id);
+
+    // Check if story has been completed before - if so, skip vocab preview
+    const progress = getStoryProgress(story.id);
+    if (progress?.completed) {
+      setViewMode('reading');
+    } else {
+      // First time reading - show vocab preview
+      setViewMode('vocab-preview');
+    }
+  };
+
+  const handleVocabPreviewComplete = () => {
+    setViewMode('reading');
+  };
+
+  const handleSkipVocabPreview = () => {
     setViewMode('reading');
   };
 
@@ -103,6 +120,21 @@ export function StoriesPage() {
       default: return cat;
     }
   };
+
+  // Vocabulary preview mode
+  if (viewMode === 'vocab-preview' && selectedStory) {
+    const progress = getStoryProgress(selectedStory.id);
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
+        <VocabularyPreview
+          story={selectedStory}
+          onComplete={handleVocabPreviewComplete}
+          onSkip={handleSkipVocabPreview}
+          isReread={progress?.completed}
+        />
+      </div>
+    );
+  }
 
   // Reading mode
   if (viewMode === 'reading' && selectedStory) {

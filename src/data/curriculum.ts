@@ -120,7 +120,7 @@ export const CURRICULUM_UNITS: CurriculumUnit[] = [
         xpReward: 35,
         content: {
           type: 'grammar',
-          grammarLessonId: 'ser-estar',
+          grammarLessonId: 'ser-vs-estar',
           description: 'The two verbs for "to be" in Catalan',
         },
       },
@@ -223,7 +223,7 @@ export const CURRICULUM_UNITS: CurriculumUnit[] = [
         xpReward: 30,
         content: {
           type: 'grammar',
-          grammarLessonId: 'present-tense',
+          grammarLessonId: 'present-tense-ar',
           description: 'Present tense conjugation of voler',
         },
       },
@@ -262,7 +262,7 @@ export const CURRICULUM_UNITS: CurriculumUnit[] = [
         xpReward: 35,
         content: {
           type: 'grammar',
-          grammarLessonId: 'possessives',
+          grammarLessonId: 'possessive-adjectives',
           description: 'Meu/meva, teu/teva, seu/seva',
         },
       },
@@ -708,7 +708,7 @@ export const CURRICULUM_UNITS: CurriculumUnit[] = [
         xpReward: 40,
         content: {
           type: 'grammar',
-          grammarLessonId: 'past-tense',
+          grammarLessonId: 'past-periphrastic',
           description: 'Vaig anar, vas fer, va veure...',
         },
       },
@@ -786,7 +786,7 @@ export const CURRICULUM_UNITS: CurriculumUnit[] = [
         xpReward: 35,
         content: {
           type: 'grammar',
-          grammarLessonId: 'conditional',
+          grammarLessonId: 'conditional-mood',
           description: 'Podria, voldria, seria...',
         },
       },

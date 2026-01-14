@@ -6,11 +6,12 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { ScenarioSelector } from '../components/conversation/ScenarioSelector';
 import { ChatInterface } from '../components/conversation/ChatInterface';
+import { PhraseTeaching } from '../components/conversation/PhraseTeaching';
 import { type ConversationScenario } from '../services/conversationService';
 import { useUserStore } from '../stores/userStore';
 import { useCurriculumStore } from '../stores/curriculumStore';
 
-type ViewMode = 'select' | 'chat' | 'results';
+type ViewMode = 'select' | 'teaching' | 'chat' | 'results';
 
 interface ConversationResults {
   scenario: ConversationScenario;
@@ -35,6 +36,19 @@ export function ConversationPage() {
 
   const handleSelectScenario = (scenario: ConversationScenario) => {
     setSelectedScenario(scenario);
+    // Go to teaching phase first if there are key phrases to learn
+    if (scenario.keyVocabulary && scenario.keyVocabulary.length > 0) {
+      setViewMode('teaching');
+    } else {
+      setViewMode('chat');
+    }
+  };
+
+  const handleTeachingComplete = () => {
+    setViewMode('chat');
+  };
+
+  const handleSkipTeaching = () => {
     setViewMode('chat');
   };
 
@@ -146,6 +160,19 @@ export function ConversationPage() {
             </div>
           </motion.div>
         </div>
+      </div>
+    );
+  }
+
+  // Phrase teaching view
+  if (viewMode === 'teaching' && selectedScenario) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
+        <PhraseTeaching
+          scenario={selectedScenario}
+          onComplete={handleTeachingComplete}
+          onSkip={handleSkipTeaching}
+        />
       </div>
     );
   }

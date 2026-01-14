@@ -33,6 +33,7 @@ import { SprintMode } from '../components/cards/SprintMode';
 import { SentenceMode } from '../components/cards/SentenceMode';
 import { DictationMode } from '../components/cards/DictationMode';
 import { SpeakMode } from '../components/cards/SpeakMode';
+import { VocabularyIntro } from '../components/cards/VocabularyIntro';
 import { Confetti } from '../components/ui/Confetti';
 import { DifficultyIndicator, SessionCompositionPreview } from '../components/adaptive';
 import type { StudyMode } from '../types/flashcard';
@@ -48,6 +49,8 @@ export function StudyPage() {
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
+  const [showIntroPhase, setShowIntroPhase] = useState(false);
+  const [introCards, setIntroCards] = useState<typeof cards>([]);
 
   const {
     isActive,
@@ -115,11 +118,37 @@ export function StudyPage() {
       setSelectedMode('mixed');
       startSession('mixed', 20, true, undefined, unitNumber);
       setShowModeSelect(false);
+
+      // Check for new cards after session starts
+      setTimeout(() => {
+        const sessionCards = useSessionStore.getState().cards;
+        const newCards = sessionCards.filter(card => {
+          const progress = cardProgress.get(`${card.flashcard.id}_${card.direction}`);
+          return !progress || progress.repetitions === 0;
+        });
+        if (newCards.length > 0) {
+          setIntroCards(newCards.slice(0, 5));
+          setShowIntroPhase(true);
+        }
+      }, 100);
     } else if (categoryFilter && categoryFilter.length > 0) {
       // Category filter from Learning Path - auto-start in mixed mode
       setSelectedMode('mixed');
       startSession('mixed', 20, true, categoryFilter);
       setShowModeSelect(false);
+
+      // Check for new cards after session starts
+      setTimeout(() => {
+        const sessionCards = useSessionStore.getState().cards;
+        const newCards = sessionCards.filter(card => {
+          const progress = cardProgress.get(`${card.flashcard.id}_${card.direction}`);
+          return !progress || progress.repetitions === 0;
+        });
+        if (newCards.length > 0) {
+          setIntroCards(newCards.slice(0, 5));
+          setShowIntroPhase(true);
+        }
+      }, 100);
     } else if (hasRecoverableSession()) {
       setShowRecoveryPrompt(true);
       setShowModeSelect(false);
@@ -180,6 +209,23 @@ export function StudyPage() {
     setIsSprintMode(false);
     startSession(mode, 20, mode === 'mixed' ? includeDictationInMixed : true);
     setShowModeSelect(false);
+
+    // After starting session, check for new cards that need introduction
+    // Delay slightly to ensure cards are loaded
+    setTimeout(() => {
+      const sessionCards = useSessionStore.getState().cards;
+      // Find cards that are new (low or no repetitions)
+      const newCards = sessionCards.filter(card => {
+        const progress = cardProgress.get(`${card.flashcard.id}_${card.direction}`);
+        return !progress || progress.repetitions === 0;
+      });
+
+      // If there are new cards, show intro phase first
+      if (newCards.length > 0 && mode !== 'listening' && mode !== 'dictation' && mode !== 'speak') {
+        setIntroCards(newCards.slice(0, 5)); // Limit to first 5 new cards per session
+        setShowIntroPhase(true);
+      }
+    }, 100);
   };
 
   const handleStartSprint = () => {
@@ -205,6 +251,14 @@ export function StudyPage() {
     setIsSentenceMode(false);
     setShowModeSelect(true);
     setShowConfetti(false);
+    setShowIntroPhase(false);
+    setIntroCards([]);
+  };
+
+  const handleIntroComplete = () => {
+    setShowIntroPhase(false);
+    setIntroCards([]);
+    // Continue with regular study session
   };
 
   // Sentence mode
@@ -218,6 +272,19 @@ export function StudyPage() {
         difficulty="mixed"
         count={10}
       />
+    );
+  }
+
+  // Vocabulary introduction phase for new cards
+  if (showIntroPhase && introCards.length > 0) {
+    return (
+      <div className="max-w-md mx-auto py-6">
+        <VocabularyIntro
+          cards={introCards}
+          onComplete={handleIntroComplete}
+          unitTitle={unitNumber ? `Unit ${unitNumber}` : undefined}
+        />
+      </div>
     );
   }
 
