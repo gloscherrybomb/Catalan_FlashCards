@@ -40,15 +40,20 @@ function findExampleSentence(card: Flashcard): SentenceData | null {
     const catalanSentence = sentence.catalan.toLowerCase();
     const englishSentence = sentence.english.toLowerCase();
 
-    // Check if the Catalan word appears in the sentence
+    // Check if the Catalan word appears as a complete word in the sentence
     const words = catalanSentence.split(/\s+/);
-    const hasWord = words.some(w =>
-      w.replace(/[.,!?;:]/g, '') === catalanWord ||
-      catalanSentence.includes(catalanWord)
-    );
+    const hasWord = words.some(w => {
+      // Remove common punctuation from the word
+      const cleaned = w.replace(/[.,!?;:'"]/g, '');
+      return cleaned === catalanWord;
+    });
 
-    // Also check English for compound phrases
-    const hasEnglish = englishSentence.includes(englishWord);
+    // Also check English for compound phrases using word boundaries
+    const englishWords = englishSentence.split(/\s+/);
+    const hasEnglish = englishWords.some(w => {
+      const cleaned = w.replace(/[.,!?;:'"]/g, '');
+      return cleaned === englishWord;
+    });
 
     return hasWord || hasEnglish;
   });
