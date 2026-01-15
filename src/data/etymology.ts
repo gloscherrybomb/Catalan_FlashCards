@@ -208,7 +208,11 @@ export function getEtymology(word: string): Etymology | null {
 
   // Check Latin roots
   for (const [root, data] of Object.entries(LATIN_ROOTS)) {
-    if (data.examples.some(ex => ex.toLowerCase().includes(lowerWord) || lowerWord.includes(ex.toLowerCase().split(' ')[0]))) {
+    if (data.examples.some(ex => {
+      // Extract just the word, before any space or parenthesis
+      const exampleWord = ex.toLowerCase().split(/[\s(]/)[0];
+      return exampleWord === lowerWord;
+    })) {
       return {
         word: lowerWord,
         origin: 'latin',
@@ -221,7 +225,11 @@ export function getEtymology(word: string): Etymology | null {
 
   // Check Arabic roots
   for (const [root, data] of Object.entries(ARABIC_ROOTS)) {
-    if (data.examples.some(ex => ex.toLowerCase().includes(lowerWord) || lowerWord.includes(ex.toLowerCase().split(' ')[0]))) {
+    if (data.examples.some(ex => {
+      // Extract just the word, before any space or parenthesis
+      const exampleWord = ex.toLowerCase().split(/[\s(]/)[0];
+      return exampleWord === lowerWord;
+    })) {
       return {
         word: lowerWord,
         origin: 'arabic',
@@ -239,8 +247,7 @@ export function getEtymology(word: string): Etymology | null {
 export function getCognates(word: string): Cognate | null {
   const lowerWord = word.toLowerCase();
   return COGNATES.find(c =>
-    c.catalan.toLowerCase() === lowerWord ||
-    c.english.toLowerCase().includes(lowerWord)
+    c.catalan.toLowerCase() === lowerWord
   ) || null;
 }
 

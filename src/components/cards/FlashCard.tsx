@@ -22,12 +22,13 @@ function findExampleSentence(word: string, catalanWord: string): SentenceData | 
     const catalanSentence = sentence.catalan.toLowerCase();
     const englishSentence = sentence.english.toLowerCase();
 
-    // Check if Catalan word appears in the sentence
+    // Check if Catalan word appears as a complete word in the sentence
     const catalanWords = catalanSentence.split(/\s+/).map(w => w.replace(/[.,!?;:'"]/g, ''));
-    const hasWord = catalanWords.includes(lowerCatalan) || catalanSentence.includes(lowerCatalan);
+    const hasWord = catalanWords.includes(lowerCatalan);
 
-    // Also check English
-    const hasEnglish = englishSentence.includes(lowerWord);
+    // Also check English as complete words
+    const englishWords = englishSentence.split(/\s+/).map(w => w.replace(/[.,!?;:'"]/g, ''));
+    const hasEnglish = englishWords.includes(lowerWord);
 
     return hasWord || hasEnglish;
   });
