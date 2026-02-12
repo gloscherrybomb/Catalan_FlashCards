@@ -6,4 +6,15 @@ const memoryStorage: StateStorage = {
   removeItem: () => {},
 };
 
-export const getPersistStorage = () => createJSONStorage(() => memoryStorage);
+function getLocalStorageIfAvailable(): StateStorage {
+  try {
+    const testKey = '__zustand_storage_test__';
+    localStorage.setItem(testKey, 'test');
+    localStorage.removeItem(testKey);
+    return localStorage;
+  } catch {
+    return memoryStorage;
+  }
+}
+
+export const getPersistStorage = () => createJSONStorage(() => getLocalStorageIfAvailable());

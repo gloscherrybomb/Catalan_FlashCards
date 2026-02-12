@@ -102,28 +102,55 @@ export const useUserStore = create<UserState>()(
             const unsubscribe = onAuthChange(async (user) => {
               try {
                 if (user) {
-                  let profile = await getUserProfile(user.uid);
-                  if (!profile) {
-                    profile = await createUserProfile(user);
-                  }
-
-                  const progress = await getUserProgress(user.uid);
-                  const achievements = await getUnlockedAchievements(user.uid);
+                  // Set user as authenticated immediately with basic profile
+                  // so the app works even if Firestore is unavailable
+                  const basicProfile: UserProfile = {
+                    uid: user.uid,
+                    email: user.email || '',
+                    displayName: user.displayName || 'Learner',
+                    photoURL: user.photoURL || undefined,
+                    createdAt: new Date(),
+                    settings: {
+                      dailyGoal: 20,
+                      preferredMode: 'mixed' as const,
+                      soundEnabled: true,
+                      vibrationEnabled: true,
+                      showHints: true,
+                    },
+                  };
 
                   set({
                     user,
-                    profile,
-                    progress,
-                    achievements,
+                    profile: basicProfile,
                     isAuthenticated: true,
-                    isLoading: false,
                   });
 
-                  // Initialize curriculum progress from Firebase
-                  await useCurriculumStore.getState().initializeFromFirebase(user.uid);
-                  await useGrammarStore.getState().initializeFromFirebase(user.uid);
-                  await useStoryStore.getState().initializeFromFirebase(user.uid);
-                  await notificationService.initialize(user.uid);
+                  // Now try to fetch full data from Firestore
+                  try {
+                    let profile = await getUserProfile(user.uid);
+                    if (!profile) {
+                      profile = await createUserProfile(user);
+                    }
+
+                    const progress = await getUserProgress(user.uid);
+                    const achievements = await getUnlockedAchievements(user.uid);
+
+                    set({
+                      profile,
+                      progress,
+                      achievements,
+                      isLoading: false,
+                    });
+
+                    // Initialize curriculum progress from Firebase
+                    await useCurriculumStore.getState().initializeFromFirebase(user.uid);
+                    await useGrammarStore.getState().initializeFromFirebase(user.uid);
+                    await useStoryStore.getState().initializeFromFirebase(user.uid);
+                    await notificationService.initialize(user.uid);
+                  } catch (firestoreError) {
+                    logger.error('Firestore fetch failed during init (using basic profile)', 'UserStore', { error: String(firestoreError) });
+                    set({ isLoading: false });
+                  }
                 } else {
                   // Clear curriculum user when logged out
                   useCurriculumStore.getState().clearUser();
@@ -142,7 +169,7 @@ export const useUserStore = create<UserState>()(
                 }
               } catch (error) {
                 logger.error('Auth state change error', 'UserStore', { error: String(error) });
-                set({ isLoading: false, isAuthenticated: false });
+                set({ isLoading: false });
               }
               resolve();
             });
