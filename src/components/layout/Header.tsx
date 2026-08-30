@@ -1,5 +1,6 @@
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
   BookOpen,
@@ -12,6 +13,13 @@ import {
   Sparkles,
   BookText,
   MessageCircle,
+  GraduationCap,
+  Library,
+  Gamepad2,
+  Dumbbell,
+  LineChart,
+  Settings,
+  MoreHorizontal,
 } from 'lucide-react';
 import { useUserStore } from '../../stores/userStore';
 import { XPBar } from '../gamification/XPBar';
@@ -20,17 +28,58 @@ import { ThemeToggle } from '../ui/ThemeToggle';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
+  { path: '/learn', icon: GraduationCap, label: 'Learn' },
   { path: '/study', icon: BookOpen, label: 'Study' },
-  { path: '/conversation', icon: MessageCircle, label: 'Chat' },
   { path: '/grammar', icon: BookText, label: 'Grammar' },
-  { path: '/browse', icon: Sparkles, label: 'Cards' },
-  { path: '/stats', icon: BarChart3, label: 'Stats' },
-  { path: '/achievements', icon: Trophy, label: 'Badges' },
-  { path: '/import', icon: Upload, label: 'Import' },
+  { path: '/stories', icon: Library, label: 'Stories' },
+  { path: '/conversation', icon: MessageCircle, label: 'Chat' },
+];
+
+/**
+ * Routes that exist but had no link anywhere in the app. /stories and
+ * /analytics were completely unreachable - you could only get to them by
+ * typing the URL - and /settings was reachable on mobile only.
+ */
+const MORE_NAV_ITEMS = [
+  { path: '/browse', icon: Sparkles, label: 'Browse cards' },
+  { path: '/games', icon: Gamepad2, label: 'Mini games' },
+  { path: '/drills', icon: Dumbbell, label: 'Practice drills' },
+  { path: '/stats', icon: BarChart3, label: 'Statistics' },
+  { path: '/analytics', icon: LineChart, label: 'Analytics' },
+  { path: '/achievements', icon: Trophy, label: 'Achievements' },
+  { path: '/import', icon: Upload, label: 'Import cards' },
+  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function Header() {
   const location = useLocation();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  // Close the overflow menu on outside click, on Escape, and on navigation.
+  useEffect(() => {
+    if (!moreOpen) return;
+
+    const onPointerDown = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreOpen(false);
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [moreOpen]);
+
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [location.pathname]);
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const profile = useUserStore((state) => state.profile);
   const login = useUserStore((state) => state.login);
@@ -158,6 +207,64 @@ export function Header() {
                   </Link>
                 );
               })}
+
+              {/* Overflow menu - the home for every route that had no link */}
+              <div className="relative" ref={moreRef}>
+                <motion.button
+                  type="button"
+                  onClick={() => setMoreOpen((open) => !open)}
+                  aria-expanded={moreOpen}
+                  aria-haspopup="menu"
+                  aria-label="More pages"
+                  className={`
+                    flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300
+                    ${MORE_NAV_ITEMS.some((i) => i.path === location.pathname)
+                      ? 'bg-miro-yellow text-miro-blue shadow-sm'
+                      : 'text-miro-blue/60 dark:text-ink-light/60 hover:text-miro-blue dark:hover:text-ink-light hover:bg-miro-yellow/10'
+                    }
+                  `}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0, scale: 0.98 }}
+                >
+                  <MoreHorizontal size={17} strokeWidth={2} />
+                  <span className="text-sm tracking-tight font-medium hidden lg:inline">More</span>
+                </motion.button>
+
+                <AnimatePresence>
+                  {moreOpen && (
+                    <motion.div
+                      role="menu"
+                      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-56 py-2 rounded-2xl bg-white dark:bg-gray-900 border-2 border-miro-blue/10 dark:border-ink-light/10 shadow-xl z-50"
+                    >
+                      {MORE_NAV_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            role="menuitem"
+                            className={`
+                              flex items-center gap-3 px-4 py-2.5 text-sm transition-colors
+                              ${isActive
+                                ? 'text-miro-blue dark:text-ink-light font-semibold bg-miro-yellow/20'
+                                : 'text-miro-blue/70 dark:text-ink-light/70 hover:bg-miro-yellow/10'
+                              }
+                            `}
+                          >
+                            <Icon size={16} strokeWidth={2} />
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </nav>
 
             {/* Right side - Stats & Auth */}

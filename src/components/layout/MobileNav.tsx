@@ -3,17 +3,17 @@ import { motion } from 'framer-motion';
 import {
   Home,
   BookOpen,
-  BarChart3,
-  Trophy,
-  Settings,
+  GraduationCap,
+  Library,
+  MoreHorizontal,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
+  { path: '/learn', icon: GraduationCap, label: 'Learn' },
   { path: '/study', icon: BookOpen, label: 'Study' },
-  { path: '/stats', icon: BarChart3, label: 'Stats' },
-  { path: '/achievements', icon: Trophy, label: 'Badges' },
-  { path: '/settings', icon: Settings, label: 'More' },
+  { path: '/stories', icon: Library, label: 'Stories' },
+  { path: '/more', icon: MoreHorizontal, label: 'More' },
 ];
 
 export function MobileNav() {

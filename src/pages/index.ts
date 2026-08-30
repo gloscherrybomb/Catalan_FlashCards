@@ -12,3 +12,5 @@ export { StoriesPage } from './StoriesPage';
 export { ConversationPage } from './ConversationPage';
 export { GamesPage } from './GamesPage';
 export { PracticeDrillsPage } from './PracticeDrillsPage';
+export { MorePage } from './MorePage';
+export { NotFoundPage } from './NotFoundPage';

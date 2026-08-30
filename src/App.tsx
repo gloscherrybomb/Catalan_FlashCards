@@ -28,6 +28,7 @@ const StoriesPage = lazy(() => import('./pages/StoriesPage').then(m => ({ defaul
 const ConversationPage = lazy(() => import('./pages/ConversationPage').then(m => ({ default: m.ConversationPage })));
 const GamesPage = lazy(() => import('./pages/GamesPage').then(m => ({ default: m.GamesPage })));
 const PracticeDrillsPage = lazy(() => import('./pages/PracticeDrillsPage').then(m => ({ default: m.PracticeDrillsPage })));
+const MorePage = lazy(() => import('./pages/MorePage').then(m => ({ default: m.MorePage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 /** Hard ceiling on how long the splash screen may block the UI. */
@@ -135,6 +136,7 @@ function AppContent() {
                 <Route path="/games" element={<GamesPage />} />
                 <Route path="/drills" element={<PracticeDrillsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/more" element={<MorePage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>

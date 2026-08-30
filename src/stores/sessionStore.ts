@@ -65,6 +65,12 @@ interface SessionState {
 
   // Actions
   startSession: (mode: StudyMode, cardLimit?: number, includeDictation?: boolean, categoryFilter?: string[], unitNumber?: number) => void;
+  /**
+   * Start a session from a deck the caller has already assembled - used by
+   * "Practice Weaknesses", which needs the weakness deck rather than the
+   * ordinary due-cards draw.
+   */
+  startSessionWithDeck: (mode: StudyMode, deck: StudyCard[], includeDictation?: boolean) => void;
   submitAnswer: (quality: number, userAnswer?: string) => Promise<void>;
   nextCard: () => void;
   endSession: () => Promise<SessionSummary>;
@@ -146,6 +152,11 @@ export const useSessionStore = create<SessionState>()(
   startSession: (mode: StudyMode, cardLimit = 20, includeDictation = true, categoryFilter?: string[], unitNumber?: number) => {
     const cardStore = useCardStore.getState();
     const studyDeck = cardStore.getStudyDeck(cardLimit, categoryFilter, unitNumber);
+    get().startSessionWithDeck(mode, studyDeck, includeDictation);
+  },
+
+  startSessionWithDeck: (mode: StudyMode, studyDeck: StudyCard[], includeDictation = true) => {
+    const cardStore = useCardStore.getState();
 
     if (studyDeck.length === 0) {
       // No cards due - this is not an error, just nothing to study

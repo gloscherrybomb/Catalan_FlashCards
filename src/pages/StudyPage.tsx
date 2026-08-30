@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { logger } from '../services/logger';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,6 +38,18 @@ import { CategoryIntro, hasCategoryIntroBeenShown } from '../components/cards/Ca
 import { Confetti } from '../components/ui/Confetti';
 import { DifficultyIndicator, SessionCompositionPreview } from '../components/adaptive';
 import type { StudyMode } from '../types/flashcard';
+import { SESSION_CONFIG, STUDY_PAGE_CONFIG } from '../config/constants';
+
+/** Cards drawn for a standard session. */
+const SESSION_CARD_LIMIT = SESSION_CONFIG.DEFAULT_CARD_LIMIT;
+/** Sprint is deliberately shorter - it is a fast recall drill, not a full session. */
+const SPRINT_CARD_LIMIT = 15;
+/** How many brand new cards to introduce before testing begins. */
+const INTRO_CARD_LIMIT = 5;
+/** Accuracy at which a session is worth celebrating. */
+const CONFETTI_ACCURACY_THRESHOLD = 80;
+/** Seconds per card in a sprint, unless a speed drill specifies otherwise. */
+const DEFAULT_SPRINT_SECONDS = 5;
 
 export function StudyPage() {
   const navigate = useNavigate();
@@ -45,6 +57,7 @@ export function StudyPage() {
   const [showModeSelect, setShowModeSelect] = useState(true);
   const [selectedMode, setSelectedMode] = useState<StudyMode>('flip');
   const [isSprintMode, setIsSprintMode] = useState(false);
+  const [sprintTimeLimit, setSprintTimeLimit] = useState(DEFAULT_SPRINT_SECONDS);
   const [isSentenceMode, setIsSentenceMode] = useState(false);
   const [includeDictationInMixed, setIncludeDictationInMixed] = useState(true);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
@@ -59,8 +72,8 @@ export function StudyPage() {
     isActive,
     cards,
     currentIndex,
-    mode: sessionMode,
     startSession,
+    startSessionWithDeck,
     submitAnswer,
     nextCard,
     endSession,
@@ -93,71 +106,156 @@ export function StudyPage() {
     return searchParams.get('lesson') || undefined;
   }, [searchParams]);
 
+  // Practice Drills links here with drill/type/category/limit/timeLimit.
+  // StudyPage previously read none of them, so every drill button landed on the
+  // plain mode-select screen and the whole Practice Drills page did nothing.
+  const drill = useMemo(() => {
+    const type = searchParams.get('type');
+    if (!type) return null;
+
+    const limit = Number.parseInt(searchParams.get('limit') ?? '', 10);
+    const timeLimit = Number.parseInt(searchParams.get('timeLimit') ?? '', 10);
+
+    return {
+      type: type as 'category' | 'weakness' | 'speed' | 'accuracy',
+      category: searchParams.get('category') || undefined,
+      limit: Number.isFinite(limit) && limit > 0 ? limit : SESSION_CARD_LIMIT,
+      timeLimit: Number.isFinite(timeLimit) && timeLimit > 0 ? timeLimit : undefined,
+    };
+  }, [searchParams]);
+
   // Curriculum store for marking lessons complete
   const completeLesson = useCurriculumStore((state) => state.completeLesson);
 
-  // Check for special modes in URL or recoverable session
+  // Queue the vocabulary-introduction phase for any brand new cards in the
+  // deck that was just drawn. Reads the store directly because zustand applies
+  // startSession synchronously - the previous code used setTimeout(..., 100)
+  // and raced against its own state update.
+  const queueIntroForNewCards = useCallback(() => {
+    const sessionCards = useSessionStore.getState().cards;
+    const progressMap = useCardStore.getState().cardProgress;
+
+    const newCards = sessionCards.filter((card) => {
+      const progress = progressMap.get(`${card.flashcard.id}_${card.direction}`);
+      return !progress || progress.repetitions === 0;
+    });
+
+    if (newCards.length > 0) {
+      setIntroCards(newCards.slice(0, INTRO_CARD_LIMIT));
+      setShowIntroPhase(true);
+    }
+    return newCards;
+  }, []);
+
+  // Interpret the URL exactly once per distinct query string.
+  //
+  // This effect used to depend on `sessionMode`, which startSession mutates -
+  // so starting a session re-ran the effect and started a second one, throwing
+  // away the first deck and any intro cards chosen from it.
+  const handledSearchRef = useRef<string | null>(null);
+
   useEffect(() => {
+    const search = searchParams.toString();
+    if (handledSearchRef.current === search) return;
+    handledSearchRef.current = search;
+
     const modeParam = searchParams.get('mode');
 
     if (modeParam === 'sprint') {
       setIsSprintMode(true);
       setShowModeSelect(false);
-    } else if (modeParam === 'weakness') {
-      // Start weakness practice session - check if we have weakness cards
-      const weaknessDeck = getWeaknessDeck(20);
+      startSession('flip', SPRINT_CARD_LIMIT);
+      return;
+    }
+
+    if (drill) {
+      switch (drill.type) {
+        case 'weakness': {
+          const deck = getWeaknessDeck(drill.limit);
+          if (deck.length > 0) {
+            setSelectedMode('type-answer');
+            startSessionWithDeck('type-answer', deck);
+            setShowModeSelect(false);
+          } else {
+            setShowModeSelect(true);
+          }
+          return;
+        }
+        case 'category': {
+          setSelectedMode('mixed');
+          startSession('mixed', drill.limit, true, drill.category ? [drill.category] : undefined);
+          setShowModeSelect(false);
+          queueIntroForNewCards();
+          return;
+        }
+        case 'speed': {
+          // Speed drills are sprint runs with the drill's per-card time limit.
+          setSprintTimeLimit(drill.timeLimit ?? DEFAULT_SPRINT_SECONDS);
+          setIsSprintMode(true);
+          setShowModeSelect(false);
+          startSession('flip', drill.limit);
+          return;
+        }
+        case 'accuracy': {
+          // Accuracy challenges demand production, so typing only.
+          setSelectedMode('type-answer');
+          startSession('type-answer', drill.limit);
+          setShowModeSelect(false);
+          queueIntroForNewCards();
+          return;
+        }
+      }
+    }
+
+    if (modeParam === 'weakness') {
+      // Practise the cards the learner actually struggles with. The weakness
+      // deck used to be computed here purely to test its length and then
+      // discarded, while startSession drew an ordinary deck instead - so
+      // "Practice Weaknesses" never practised weaknesses.
+      const weaknessDeck = getWeaknessDeck(SESSION_CARD_LIMIT);
       if (weaknessDeck.length > 0) {
-        // Start a type-answer session with weakness cards
         setSelectedMode('type-answer');
-        startSession('type-answer', 20, true, categoryFilter);
+        startSessionWithDeck('type-answer', weaknessDeck);
         setShowModeSelect(false);
       } else {
-        // No weaknesses found, show mode select with message
         setShowModeSelect(true);
       }
-    } else if (unitNumber) {
-      // Unit-based vocabulary from Learning Path - auto-start in mixed mode
-      // The cardStore will load unit vocabulary when we pass unitNumber
-      setSelectedMode('mixed');
-      startSession('mixed', 20, true, undefined, unitNumber);
-      setShowModeSelect(false);
+      return;
+    }
 
-      // Check for new cards after session starts
-      setTimeout(() => {
-        const sessionCards = useSessionStore.getState().cards;
-        const newCards = sessionCards.filter(card => {
-          const progress = cardProgress.get(`${card.flashcard.id}_${card.direction}`);
-          return !progress || progress.repetitions === 0;
-        });
-        if (newCards.length > 0) {
-          setIntroCards(newCards.slice(0, 5));
-          setShowIntroPhase(true);
-        }
-      }, 100);
-    } else if (categoryFilter && categoryFilter.length > 0) {
-      // Category filter from Learning Path - auto-start in mixed mode
+    if (unitNumber) {
+      // Unit vocabulary from the Learning Path.
       setSelectedMode('mixed');
-      startSession('mixed', 20, true, categoryFilter);
+      startSession('mixed', SESSION_CARD_LIMIT, true, undefined, unitNumber);
       setShowModeSelect(false);
+      queueIntroForNewCards();
+      return;
+    }
 
-      // Check for new cards after session starts
-      setTimeout(() => {
-        const sessionCards = useSessionStore.getState().cards;
-        const newCards = sessionCards.filter(card => {
-          const progress = cardProgress.get(`${card.flashcard.id}_${card.direction}`);
-          return !progress || progress.repetitions === 0;
-        });
-        if (newCards.length > 0) {
-          setIntroCards(newCards.slice(0, 5));
-          setShowIntroPhase(true);
-        }
-      }, 100);
-    } else if (hasRecoverableSession()) {
+    if (categoryFilter && categoryFilter.length > 0) {
+      setSelectedMode('mixed');
+      startSession('mixed', SESSION_CARD_LIMIT, true, categoryFilter);
+      setShowModeSelect(false);
+      queueIntroForNewCards();
+      return;
+    }
+
+    if (hasRecoverableSession()) {
       setShowRecoveryPrompt(true);
       setShowModeSelect(false);
-      setSelectedMode(sessionMode);
+      setSelectedMode(useSessionStore.getState().mode);
     }
-  }, [searchParams, hasRecoverableSession, sessionMode, getWeaknessDeck, startSession, categoryFilter]);
+  }, [
+    searchParams,
+    unitNumber,
+    categoryFilter,
+    drill,
+    getWeaknessDeck,
+    startSession,
+    startSessionWithDeck,
+    hasRecoverableSession,
+    queueIntroForNewCards,
+  ]);
 
   // Adaptive learning state
   const difficultyProfile = useAdaptiveLearningStore((state) => state.difficultyProfile);
@@ -176,36 +274,47 @@ export function StudyPage() {
   const isComplete = currentIndex >= cards.length && cards.length > 0;
 
   // Handle session completion
-  useEffect(() => {
-    if (isComplete && isActive) {
-      endSession()
-        .then((s) => {
-          setSummary(s);
-          if (s.accuracy >= 80) {
-            setShowConfetti(true);
-          }
-          // Mark curriculum lesson as complete if we came from Learning Path
-          // Require at least 60% accuracy to count as completed
-          if (lessonId && s.accuracy >= 60) {
-            completeLesson(lessonId, s.accuracy);
-            logger.info('Lesson marked complete', 'StudyPage', { lessonId, accuracy: s.accuracy });
-          }
-        })
-        .catch((error) => {
-          logger.error('Failed to end session', 'StudyPage', { error: String(error) });
-          // Still show a summary with available data
-          setSummary({
-            totalCards: cards.length,
-            correctAnswers: 0,
-            accuracy: 0,
-            xpEarned: 0,
-            timeSpentMs: 0,
-            perfectStreak: 0,
-            newAchievements: [],
-          });
-        });
+  /**
+   * Finish the session: award XP, achievements and challenge progress, then
+   * show the summary. Shared by every mode so none of them can drift into
+   * reporting numbers that were never actually recorded.
+   */
+  const finalizeSession = useCallback(async () => {
+    try {
+      const s = await endSession();
+      setSummary(s);
+
+      if (s.accuracy >= CONFETTI_ACCURACY_THRESHOLD) {
+        setShowConfetti(true);
+      }
+      // Curriculum lessons need a passing score to count as complete.
+      if (lessonId && s.accuracy >= STUDY_PAGE_CONFIG.GOOD_EFFORT_THRESHOLD) {
+        completeLesson(lessonId, s.accuracy);
+        logger.info('Lesson marked complete', 'StudyPage', { lessonId, accuracy: s.accuracy });
+      }
+      return s;
+    } catch (error) {
+      logger.error('Failed to end session', 'StudyPage', { error: String(error) });
+      setSummary({
+        totalCards: cards.length,
+        correctAnswers: 0,
+        accuracy: 0,
+        xpEarned: 0,
+        timeSpentMs: 0,
+        perfectStreak: 0,
+        newAchievements: [],
+      });
+      return null;
     }
-  }, [isComplete, isActive, endSession, cards.length, lessonId, completeLesson]);
+  }, [endSession, lessonId, completeLesson, cards.length]);
+
+  useEffect(() => {
+    // Sprint runs its own completion screen and finalises from there, so the
+    // deck running out must not end the session behind its back.
+    if (isComplete && isActive && !isSprintMode) {
+      void finalizeSession();
+    }
+  }, [isComplete, isActive, isSprintMode, finalizeSession]);
 
   const handleStartSession = (mode: StudyMode) => {
     setSelectedMode(mode);
@@ -213,36 +322,26 @@ export function StudyPage() {
     startSession(mode, 20, mode === 'mixed' ? includeDictationInMixed : true);
     setShowModeSelect(false);
 
-    // After starting session, check for new cards that need introduction
-    // Delay slightly to ensure cards are loaded
-    setTimeout(() => {
-      const sessionCards = useSessionStore.getState().cards;
-      // Find cards that are new (low or no repetitions)
-      const newCards = sessionCards.filter(card => {
-        const progress = cardProgress.get(`${card.flashcard.id}_${card.direction}`);
-        return !progress || progress.repetitions === 0;
-      });
+    // Audio-first modes teach through listening, so the written introduction
+    // would give the answer away before the exercise starts.
+    const introducesVocabulary =
+      mode !== 'listening' && mode !== 'dictation' && mode !== 'speak';
 
-      // Check if we should show category intro (first time studying this category)
-      if (newCards.length > 0 && mode !== 'listening' && mode !== 'dictation' && mode !== 'speak') {
-        // Get the primary category from new cards
-        const primaryCategory = newCards[0]?.flashcard.category;
+    if (introducesVocabulary) {
+      const newCards = queueIntroForNewCards();
+      const primaryCategory = newCards[0]?.flashcard.category;
 
-        // Check if this is the first time studying this category
-        if (primaryCategory && !hasCategoryIntroBeenShown(primaryCategory)) {
-          setCategoryForIntro(primaryCategory);
-          setShowCategoryIntro(true);
-        }
-
-        setIntroCards(newCards.slice(0, 5)); // Limit to first 5 new cards per session
-        setShowIntroPhase(true);
+      if (primaryCategory && !hasCategoryIntroBeenShown(primaryCategory)) {
+        setCategoryForIntro(primaryCategory);
+        setShowCategoryIntro(true);
       }
-    }, 100);
+    }
   };
 
   const handleStartSprint = () => {
+    setSprintTimeLimit(DEFAULT_SPRINT_SECONDS);
     setIsSprintMode(true);
-    startSession('flip', 15);
+    startSession('flip', SPRINT_CARD_LIMIT);
     setShowModeSelect(false);
   };
 
@@ -325,38 +424,32 @@ export function StudyPage() {
     return (
       <SprintMode
         cards={cards}
-        timeLimit={5}
-        onComplete={(results) => {
-          // Convert sprint results to session summary
-          const totalCards = results.length;
-          const correctAnswers = results.filter(r => r.isCorrect).length;
-          const accuracy = totalCards > 0 ? Math.round((correctAnswers / totalCards) * 100) : 0;
-          const timeSpentMs = results.reduce((sum, r) => sum + r.timeSpent * 1000, 0);
-
-          setSummary({
-            totalCards,
-            correctAnswers,
-            accuracy,
-            xpEarned: correctAnswers * 15,
-            timeSpentMs,
-            perfectStreak: 0,
-            newAchievements: [],
-          });
-          setIsSprintMode(false);
-          if (accuracy >= 80) {
-            setShowConfetti(true);
-          }
-          // Mark curriculum lesson as complete if we came from Learning Path
-          // Require at least 60% accuracy to count as completed
-          if (lessonId && accuracy >= 60) {
-            completeLesson(lessonId, accuracy);
-            logger.info('Lesson marked complete (sprint mode)', 'StudyPage', { lessonId, accuracy });
-          }
+        timeLimit={sprintTimeLimit}
+        onAnswer={async (quality) => {
+          // Route sprint answers through the session store so they update
+          // spaced repetition, XP and the streak like every other mode.
+          await submitAnswer(quality);
+          nextCard();
         }}
-        onExit={() => {
-          resetSession();
+        onComplete={async () => {
+          // Answers were recorded card by card via onAnswer, so the summary
+          // comes from the session store rather than being reconstructed here.
+          // The old code invented `xpEarned: correctAnswers * 15` and awarded
+          // nothing, reported a perfect streak of 0 and no achievements.
           setIsSprintMode(false);
-          setShowModeSelect(true);
+          await finalizeSession();
+        }}
+        onExit={async () => {
+          // Leaving early still finalises: the cards answered so far have
+          // already updated spaced repetition, and the session-level awards
+          // should reflect them rather than being thrown away.
+          setIsSprintMode(false);
+          if (useSessionStore.getState().results.length > 0) {
+            await finalizeSession();
+          } else {
+            resetSession();
+            setShowModeSelect(true);
+          }
         }}
       />
     );

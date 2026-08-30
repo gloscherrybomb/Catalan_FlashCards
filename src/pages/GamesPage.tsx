@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Gamepad2,
@@ -14,6 +14,8 @@ import { WordScramble } from '../components/games/WordScramble';
 import { MemoryMatch } from '../components/games/MemoryMatch';
 import { Hangman } from '../components/games/Hangman';
 import { useCardStore } from '../stores/cardStore';
+import { awardPracticeXP, xpRemainingToday } from '../services/practiceRewards';
+import { PRACTICE_REWARD_CONFIG } from '../config/constants';
 
 type GameType = 'menu' | 'scramble' | 'memory' | 'hangman';
 
@@ -70,12 +72,26 @@ export function GamesPage() {
   const [activeGame, setActiveGame] = useState<GameType>('menu');
   const flashcards = useCardStore((state) => state.flashcards);
 
-  const handleGameComplete = (_finalScore: number) => {
-    // Score is tracked internally by each game component
-  };
+  const [xpAwarded, setXpAwarded] = useState<number | null>(null);
+  // xpRemainingToday reads the localStorage ledger, which ESLint cannot see as
+  // a dependency. xpAwarded changes exactly when that ledger does, so it is the
+  // correct trigger for recomputing even though it is unused in the body.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const gameXpRemaining = useMemo(() => xpRemainingToday('game'), [xpAwarded]);
+
+  const handleGameComplete = useCallback(async (finalScore: number) => {
+    // Games used to award nothing: this handler was an empty no-op, so
+    // finishing one changed no number anywhere in the app.
+    const awarded = await awardPracticeXP(
+      'game',
+      finalScore * PRACTICE_REWARD_CONFIG.XP_PER_GAME_POINT
+    );
+    setXpAwarded(awarded);
+  }, []);
 
   const handleBackToMenu = () => {
     setActiveGame('menu');
+    setXpAwarded(null);
   };
 
   return (
@@ -100,6 +116,13 @@ export function GamesPage() {
               <p className="text-lg text-miro-blue/60 dark:text-ink-light/60">
                 Learn Catalan while having fun!
               </p>
+              {flashcards.length > 0 && (
+                <p className="mt-3 text-sm font-medium text-miro-blue/50 dark:text-ink-light/50">
+                  {gameXpRemaining > 0
+                    ? `${gameXpRemaining} XP still available from games today`
+                    : "You've earned today's game XP — keep playing for the practice!"}
+                </p>
+              )}
             </motion.div>
 
             {/* Games Grid */}
@@ -193,6 +216,21 @@ export function GamesPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
           >
+            {xpAwarded !== null && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                role="status"
+                className="mb-4 px-4 py-3 rounded-xl bg-miro-green/10 border border-miro-green/30 text-center"
+              >
+                <p className="font-semibold text-miro-green">
+                  {xpAwarded > 0
+                    ? `+${xpAwarded} XP earned`
+                    : "Nice round! You've already hit today's game XP cap."}
+                </p>
+              </motion.div>
+            )}
+
             {/* Back button */}
             <Button
               variant="ghost"

@@ -9,11 +9,18 @@ import { stripBracketedContent } from '../../utils/textUtils';
 interface SprintModeProps {
   cards: StudyCard[];
   timeLimit?: number; // seconds per card
+  /**
+   * Called once per answered card, before advancing. StudyPage wires this to
+   * the session store so a sprint updates spaced repetition, XP and streaks
+   * like every other mode. Sprint used to keep its results purely locally and
+   * hand them over at the end, which meant nothing was ever recorded.
+   */
+  onAnswer: (quality: number) => void;
   onComplete: (results: SprintResult[]) => void;
   onExit: () => void;
 }
 
-interface SprintResult {
+export interface SprintResult {
   cardId: string;
   direction: 'english-to-catalan' | 'catalan-to-english';
   isCorrect: boolean;
@@ -21,9 +28,23 @@ interface SprintResult {
   answer: string;
 }
 
+/**
+ * Grade a sprint answer for SM-2.
+ *
+ * Sprint is self-graded recall under time pressure, so it mirrors the
+ * multiple-choice scale: a confident fast hit is a 5, a slower one a 4, and a
+ * miss or timeout a 1 (rather than 0 - the learner saw the prompt and engaged
+ * with it, which is not a total blackout).
+ */
+function sprintQuality(isCorrect: boolean, timeSpent: number, timeLimit: number): number {
+  if (!isCorrect) return 1;
+  return timeSpent < timeLimit / 2 ? 5 : 4;
+}
+
 export function SprintMode({
   cards,
   timeLimit = 5,
+  onAnswer,
   onComplete,
   onExit,
 }: SprintModeProps) {
@@ -52,7 +73,60 @@ export function SprintMode({
         : currentCard.flashcard.front)
     : '';
 
-  // Timer countdown
+  const advance = useCallback(() => {
+    setShowAnswer(false);
+    setTimeLeft(timeLimit);
+    setCurrentIndex((prev) => prev + 1);
+  }, [timeLimit]);
+
+  const recordAnswer = useCallback(
+    (isCorrect: boolean, timeSpent: number, answer: string, delayMs: number) => {
+      if (!currentCard) return;
+
+      setResults((prev) => [
+        ...prev,
+        {
+          cardId: currentCard.flashcard.id,
+          direction: currentCard.direction,
+          isCorrect,
+          timeSpent,
+          answer,
+        },
+      ]);
+
+      // Push the result into the session store so it actually counts.
+      onAnswer(sprintQuality(isCorrect, timeSpent, timeLimit));
+
+      if (isCorrect) {
+        setTotalCorrect((prev) => prev + 1);
+        setStreak((prev) => {
+          const next = prev + 1;
+          setBestStreak((best) => Math.max(best, next));
+          if (next === 5 || next === 10) setShowConfetti(true);
+          return next;
+        });
+      } else {
+        setStreak(0);
+      }
+
+      setShowAnswer(true);
+      setTimeout(advance, delayMs);
+    },
+    [currentCard, onAnswer, timeLimit, advance]
+  );
+
+  const handleTimeout = useCallback(() => {
+    recordAnswer(false, timeLimit, 'timeout', 1500);
+  }, [recordAnswer, timeLimit]);
+
+  const handleAnswer = (isCorrect: boolean) => {
+    if (!currentCard || showAnswer) return;
+    recordAnswer(isCorrect, timeLimit - timeLeft, isCorrect ? 'correct' : 'wrong', 1000);
+  };
+
+  // Timer countdown. handleTimeout is a dependency: without it the interval
+  // closed over the first render's copy and timing out always graded the
+  // *first* card, whatever was on screen.
   useEffect(() => {
     if (isComplete || showAnswer || isPaused) return;
 
@@ -67,68 +141,7 @@ export function SprintMode({
     }, 100);
 
     return () => clearInterval(timer);
-  }, [currentIndex, showAnswer, isComplete, isPaused, timeLimit]);
-
-  const handleTimeout = useCallback(() => {
-    if (!currentCard) return;
-
-    // Time's up - mark as wrong
-    const result: SprintResult = {
-      cardId: currentCard.flashcard.id,
-      direction: currentCard.direction,
-      isCorrect: false,
-      timeSpent: timeLimit,
-      answer: 'timeout',
-    };
-
-    setResults((prev) => [...prev, result]);
-    setStreak(0);
-    setShowAnswer(true);
-
-    setTimeout(() => {
-      nextCard();
-    }, 1500);
-  }, [currentCard, timeLimit]);
-
-  const handleAnswer = (isCorrect: boolean) => {
-    if (!currentCard || showAnswer) return;
-
-    const result: SprintResult = {
-      cardId: currentCard.flashcard.id,
-      direction: currentCard.direction,
-      isCorrect,
-      timeSpent: timeLimit - timeLeft,
-      answer: isCorrect ? 'correct' : 'wrong',
-    };
-
-    setResults((prev) => [...prev, result]);
-
-    if (isCorrect) {
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      setTotalCorrect((prev) => prev + 1);
-      if (newStreak > bestStreak) {
-        setBestStreak(newStreak);
-      }
-      if (newStreak === 5 || newStreak === 10) {
-        setShowConfetti(true);
-      }
-    } else {
-      setStreak(0);
-    }
-
-    setShowAnswer(true);
-
-    setTimeout(() => {
-      nextCard();
-    }, 1000);
-  };
-
-  const nextCard = () => {
-    setShowAnswer(false);
-    setTimeLeft(timeLimit);
-    setCurrentIndex((prev) => prev + 1);
-  };
+  }, [currentIndex, showAnswer, isComplete, isPaused, timeLimit, handleTimeout]);
 
   // Completion screen
   if (isComplete) {
@@ -173,17 +186,11 @@ export function SprintMode({
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button variant="outline" fullWidth onClick={onExit}>
-              Exit
-            </Button>
-            <Button
-              fullWidth
-              onClick={() => onComplete(results)}
-            >
-              Save Results
-            </Button>
-          </div>
+          {/* Both paths finish the session. Answers were already recorded card
+              by card, so there is no longer a "discard my work" option here. */}
+          <Button fullWidth onClick={() => onComplete(results)}>
+            Finish
+          </Button>
         </motion.div>
       </div>
     );

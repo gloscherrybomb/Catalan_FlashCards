@@ -235,6 +235,34 @@ export const CONVERSATION_CONFIG = {
 } as const;
 
 // =============================================================================
+// PRACTICE REWARDS (games, grammar, drills)
+// =============================================================================
+
+export const PRACTICE_REWARD_CONFIG = {
+  /**
+   * Daily XP ceilings for freely repeatable practice.
+   *
+   * A review session is bounded by what is actually due, but a learner can
+   * replay a mini game indefinitely. Without a ceiling, grinding word scramble
+   * would out-earn real study and XP would stop tracking effort. The caps are
+   * set so a good run of each is worth roughly one solid study session, and
+   * further replays are for enjoyment rather than points.
+   */
+  GAME_DAILY_XP_CAP: 150,
+  GRAMMAR_DAILY_XP_CAP: 200,
+  DRILL_DAILY_XP_CAP: 150,
+
+  /** XP per point scored in a mini game. */
+  XP_PER_GAME_POINT: 2,
+  /** XP for each grammar exercise answered correctly. */
+  XP_PER_GRAMMAR_CORRECT: 8,
+  /** Bonus for completing a grammar lesson with a passing score. */
+  GRAMMAR_LESSON_BONUS: 40,
+  /** XP for each drill question answered correctly. */
+  XP_PER_DRILL_CORRECT: 5,
+} as const;
+
+// =============================================================================
 // ANALYTICS
 // =============================================================================
 

@@ -30,6 +30,8 @@ import { SENTENCE_PATTERNS } from '../data/sentencePatterns';
 import { useGrammarStore } from '../stores/grammarStore';
 import { useCurriculumStore } from '../stores/curriculumStore';
 import { audioService } from '../services/audioService';
+import { awardPracticeXP } from '../services/practiceRewards';
+import { PRACTICE_REWARD_CONFIG, STUDY_PAGE_CONFIG } from '../config/constants';
 
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 type CategoryFilter = string | 'all';
@@ -139,12 +141,27 @@ function LessonDetail({ lesson, curriculumLessonId }: { lesson: GrammarLesson; c
 
   const handleExerciseComplete = (exerciseId: string, correct: boolean) => {
     completeExercise(lesson.id, exerciseId, correct);
+
+    // Grammar practice used to award no XP at all, so working through a lesson
+    // moved no counter anywhere in the app. Award per correct answer, capped
+    // daily so re-running a finished lesson can't be farmed.
+    if (correct) {
+      void awardPracticeXP('grammar', PRACTICE_REWARD_CONFIG.XP_PER_GRAMMAR_CORRECT);
+    }
   };
 
   const handleAllExercisesComplete = (score: number) => {
+    const alreadyCompleted = getLessonProgress(lesson.id)?.completed ?? false;
+
     completeLesson(lesson.id);
+
+    // A completion bonus, but only the first time the lesson is passed.
+    if (!alreadyCompleted && score >= STUDY_PAGE_CONFIG.GOOD_EFFORT_THRESHOLD) {
+      void awardPracticeXP('grammar', PRACTICE_REWARD_CONFIG.GRAMMAR_LESSON_BONUS);
+    }
+
     // Also mark curriculum lesson as complete if we came from Learning Path
-    if (curriculumLessonId && score >= 60) {
+    if (curriculumLessonId && score >= STUDY_PAGE_CONFIG.GOOD_EFFORT_THRESHOLD) {
       completeCurriculumLesson(curriculumLessonId, score);
     }
     // Stay on exercises to show completion screen
