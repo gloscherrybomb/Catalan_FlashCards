@@ -50,6 +50,7 @@ import {
   DIFFICULTY_EFFECTS,
 } from '../config/adaptiveConstants';
 import { calculateSM2 } from './sm2Algorithm';
+import { todayKey, toDayKey } from '../utils/dateKeys';
 
 // =============================================================================
 // WEAK SPOT DETECTION
@@ -686,12 +687,12 @@ export function generateDailyRecommendations(
   dailyGoal: number
 ): DailyRecommendation {
   const recommendations: StudyRecommendation[] = [];
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayKey();
 
   // Check if studied today
   const hasStudiedToday =
     userProgress.lastStudyDate &&
-    userProgress.lastStudyDate.toISOString().split('T')[0] === today;
+    toDayKey(userProgress.lastStudyDate) === today;
 
   // Priority 1: Streak protection
   if (

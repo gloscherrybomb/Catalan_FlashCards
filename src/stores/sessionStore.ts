@@ -10,6 +10,27 @@ import { checkAchievements } from '../services/achievementService';
 import { updateDailyChallenges } from '../types/challenges';
 import { updateWeeklyChallenges } from '../types/weeklyChallenges';
 import { getPersistStorage } from '../utils/persistStorage';
+import { countMasteredCards } from '../utils/mastery';
+
+/** Shape of a session after a JSON round-trip: every Date is a string. */
+interface PersistedSessionState {
+  isActive?: boolean;
+  mode?: StudyMode;
+  cards?: Array<Omit<StudyCard, 'flashcard' | 'progress'> & {
+    flashcard: Omit<StudyCard['flashcard'], 'createdAt'> & { createdAt: string };
+    progress: Omit<StudyCard['progress'], 'nextReviewDate' | 'lastReviewDate'> & {
+      nextReviewDate: string;
+      lastReviewDate?: string;
+    };
+  }>;
+  currentIndex?: number;
+  results?: StudyResult[];
+  sessionStartTime?: number;
+  perfectStreak?: number;
+  sessionId?: string | null;
+  cardFormats?: Record<string, StudyMode>;
+  masteredAtStart?: number;
+}
 
 interface SessionState {
   isActive: boolean;
@@ -22,6 +43,20 @@ interface SessionState {
   perfectStreak: number;
   sessionId: string | null;
   cardFormats: Record<string, StudyMode>; // For mixed mode: cardId_direction -> format
+  /**
+   * True while endSession() is in flight. StudyPage ends the session from an
+   * effect, and endSession awaits several network round-trips (challenges,
+   * Firestore, achievements). Without this guard a re-render during those
+   * awaits could satisfy the same effect condition and end the session twice,
+   * double-awarding XP and achievements.
+   */
+  isEnding: boolean;
+  /**
+   * Cards mastered (both directions) at the moment this session began. The
+   * difference against the count at session end is what the weekly "master N
+   * cards" challenge consumes.
+   */
+  masteredAtStart: number;
 
   // Computed
   currentCard: StudyCard | null;
@@ -49,6 +84,33 @@ export interface SessionSummary {
   newAchievements: string[];
 }
 
+/** Base XP for a single answer, before any streak multiplier. */
+export function xpForQuality(quality: number): number {
+  if (quality === 5) return XP_VALUES.CARD_PERFECT;
+  if (quality >= 4) return XP_VALUES.CARD_CORRECT;
+  if (quality >= 3) return XP_VALUES.CARD_DIFFICULT;
+  return XP_VALUES.CARD_WRONG;
+}
+
+function buildSummary(
+  results: StudyResult[],
+  perfectStreak: number,
+  timeSpentMs: number,
+  newAchievements: string[]
+): SessionSummary {
+  const totalCards = results.length;
+  const correctAnswers = results.filter(r => r.isCorrect).length;
+  return {
+    totalCards,
+    correctAnswers,
+    accuracy: totalCards > 0 ? Math.round((correctAnswers / totalCards) * 100) : 0,
+    xpEarned: results.reduce((sum, r) => sum + xpForQuality(r.quality), 0),
+    timeSpentMs,
+    perfectStreak,
+    newAchievements,
+  };
+}
+
 export const useSessionStore = create<SessionState>()(
   persist(
     (set, get) => ({
@@ -62,6 +124,8 @@ export const useSessionStore = create<SessionState>()(
   perfectStreak: 0,
   sessionId: null,
   cardFormats: {},
+  isEnding: false,
+  masteredAtStart: 0,
 
   get currentCard() {
     const { cards, currentIndex } = get();
@@ -98,8 +162,9 @@ export const useSessionStore = create<SessionState>()(
       return;
     }
 
-    // Update streak at session start
-    useUserStore.getState().updateStreak();
+    // The streak is credited on the first answered card (see submitAnswer),
+    // not here. Opening the study screen and walking away should not count as
+    // having studied that day.
 
     // Assign formats for mixed mode
     const cardFormats: Record<string, StudyMode> = {};
@@ -134,6 +199,8 @@ export const useSessionStore = create<SessionState>()(
       perfectStreak: 0,
       sessionId: `session_${Date.now()}`,
       cardFormats,
+      isEnding: false,
+      masteredAtStart: countMasteredCards(cardStore.cardProgress),
     });
   },
 
@@ -145,6 +212,13 @@ export const useSessionStore = create<SessionState>()(
 
     const timeSpentMs = Date.now() - cardStartTime;
     const isCorrect = quality >= 3;
+
+    // Credit the study day on the first answered card of the session. Doing it
+    // here rather than at session start means the streak reflects work done,
+    // and updateStreak() is a no-op once it has already run today.
+    if (results.length === 0) {
+      await useUserStore.getState().updateStreak();
+    }
 
     const result: StudyResult = {
       cardId: currentCard.flashcard.id,
@@ -201,20 +275,26 @@ export const useSessionStore = create<SessionState>()(
   },
 
   endSession: async () => {
-    const { results, sessionStartTime, perfectStreak, cards } = get();
+    const { results, sessionStartTime, perfectStreak, cards, isEnding, masteredAtStart } = get();
+
+    if (isEnding) {
+      // Already finalising; return a summary of what we have rather than
+      // running the whole award pipeline a second time.
+      return buildSummary(results, perfectStreak, Date.now() - sessionStartTime, []);
+    }
+    set({ isEnding: true });
+
     const timeSpentMs = Date.now() - sessionStartTime;
 
     const totalCards = results.length;
     const correctAnswers = results.filter(r => r.isCorrect).length;
     const accuracy = totalCards > 0 ? Math.round((correctAnswers / totalCards) * 100) : 0;
+    const xpEarned = results.reduce((sum, r) => sum + xpForQuality(r.quality), 0);
 
-    // Calculate total XP
-    const xpEarned = results.reduce((sum, r) => {
-      if (r.quality === 5) return sum + XP_VALUES.CARD_PERFECT;
-      if (r.quality >= 4) return sum + XP_VALUES.CARD_CORRECT;
-      if (r.quality >= 3) return sum + XP_VALUES.CARD_DIFFICULT;
-      return sum + XP_VALUES.CARD_WRONG;
-    }, 0);
+    // How many cards this session pushed over the mastery threshold, measured
+    // against the snapshot taken when the session started.
+    const masteredAfter = countMasteredCards(useCardStore.getState().cardProgress);
+    const cardsMasteredThisSession = Math.max(0, masteredAfter - masteredAtStart);
 
     // Calculate daily challenge metrics
     const fastAnswers = results.filter(r => r.timeSpentMs < 3000 && r.isCorrect).length;
@@ -249,12 +329,14 @@ export const useSessionStore = create<SessionState>()(
     try {
       await updateWeeklyChallenges({
         cardsReviewed: totalCards,
-        cardsMastered: 0, // Will be tracked properly if needed
+        // These two were hardcoded to 0, so the "master N cards" and "practise
+        // speaking" weekly challenges could never progress, let alone complete.
+        cardsMastered: cardsMasteredThisSession,
         studiedToday: true,
         sessionAccuracy: accuracy,
         isPerfectSession: accuracy >= 90,
         fastAnswers,
-        speakingExercises: 0,
+        speakingExercises: results.filter(r => r.mode === 'speak').length,
         categoriesReviewed,
       });
     } catch (error) {
@@ -395,6 +477,7 @@ export const useSessionStore = create<SessionState>()(
       results: [],
       sessionId: null,
       cardFormats: {},
+      isEnding: false,
     });
 
     return summary;
@@ -412,6 +495,7 @@ export const useSessionStore = create<SessionState>()(
       perfectStreak: 0,
       sessionId: null,
       cardFormats: {},
+      isEnding: false,
     });
   },
 
@@ -439,6 +523,7 @@ export const useSessionStore = create<SessionState>()(
       results: [],
       sessionId: null,
       cardFormats: {},
+      isEnding: false,
     });
   },
 
@@ -461,7 +546,41 @@ export const useSessionStore = create<SessionState>()(
         perfectStreak: state.perfectStreak,
         sessionId: state.sessionId,
         cardFormats: state.cardFormats,
+        // Without this a resumed session measures its mastery delta against 0
+        // and over-credits the weekly "master N cards" challenge.
+        masteredAtStart: state.masteredAtStart,
+        // isEnding is deliberately NOT persisted: it is transient, and a tab
+        // closed mid-finalise would otherwise rehydrate permanently locked.
       }),
+      merge: (persistedState, current) => {
+        const persisted = persistedState as PersistedSessionState | undefined;
+
+        // JSON has no Date type, so every progress date in a persisted session
+        // rehydrates as a string. Card components and the SM-2 helpers expect
+        // real Dates, so revive them here rather than letting `.getTime()`
+        // blow up on a resumed session.
+        const cards: StudyCard[] = (persisted?.cards ?? []).map((card) => ({
+          ...card,
+          flashcard: {
+            ...card.flashcard,
+            createdAt: new Date(card.flashcard.createdAt),
+          },
+          progress: {
+            ...card.progress,
+            nextReviewDate: new Date(card.progress.nextReviewDate),
+            lastReviewDate: card.progress.lastReviewDate
+              ? new Date(card.progress.lastReviewDate)
+              : undefined,
+          },
+        })) as StudyCard[];
+
+        return {
+          ...current,
+          ...persisted,
+          cards,
+          isEnding: false,
+        };
+      },
     }
   )
 );

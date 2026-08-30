@@ -1,6 +1,7 @@
 // Daily Challenge Types and Definitions
 import { useUserStore } from '../stores/userStore';
 import { getDailyChallengesData, setDailyChallengesData, isDemoMode } from '../services/firebase';
+import { todayKey, toDayKey } from '../utils/dateKeys';
 
 export type ChallengeType =
   | 'review_cards'
@@ -131,7 +132,7 @@ export function generateDailyChallenges(): DailyChallenge[] {
 
   return selected.map((template, index) => ({
     ...template,
-    id: `daily-${now.toISOString().split('T')[0]}-${index}`,
+    id: `daily-${toDayKey(now)}-${index}`,
     description: template.description.replace('{target}', String(template.target)),
     current: 0,
     expiresAt: endOfDay,
@@ -159,7 +160,7 @@ export async function updateDailyChallenges(results: SessionResultsForChallenges
   const userId = useUserStore.getState().user?.uid;
   if (!userId || isDemoMode) return [];
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayKey();
   const stored = await getDailyChallengesData(userId);
 
   const challenges = stored?.date === today ? stored.challenges : generateDailyChallenges();
@@ -224,7 +225,7 @@ export async function getDailyChallenges(): Promise<DailyChallenge[]> {
   const userId = useUserStore.getState().user?.uid;
   if (!userId || isDemoMode) return [];
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayKey();
   const stored = await getDailyChallengesData(userId);
 
   if (stored?.date === today) {

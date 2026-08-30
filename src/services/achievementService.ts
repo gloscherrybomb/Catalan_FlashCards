@@ -4,6 +4,7 @@ import type { UserProgress } from '../types/user';
 import type { CardProgress, Flashcard } from '../types/flashcard';
 import { unlockAchievement, isDemoMode } from './firebase';
 import { logger } from './logger';
+import { countMasteredCards, isDirectionMastered } from '../utils/mastery';
 
 export interface AchievementContext {
   progress: UserProgress;
@@ -87,41 +88,6 @@ function isAchievementMet(req: AchievementRequirement, ctx: AchievementContext):
 }
 
 /**
- * Count the number of mastered cards (interval >= 21 days)
- * A card is considered mastered when both directions are mastered
- */
-function countMasteredCards(cardProgress: Map<string, CardProgress>): number {
-  const cardMastery = new Map<string, { engToCat: boolean; catToEng: boolean }>();
-
-  for (const [, progress] of cardProgress) {
-    const isMastered = progress.interval >= 21;
-    const cardId = progress.cardId;
-
-    if (!cardMastery.has(cardId)) {
-      cardMastery.set(cardId, { engToCat: false, catToEng: false });
-    }
-
-    const mastery = cardMastery.get(cardId)!;
-    if (progress.direction === 'english-to-catalan') {
-      mastery.engToCat = isMastered;
-    } else {
-      mastery.catToEng = isMastered;
-    }
-  }
-
-  // Count cards where at least one direction is mastered
-  // (being strict: both directions would be too hard initially)
-  let count = 0;
-  for (const mastery of cardMastery.values()) {
-    if (mastery.engToCat || mastery.catToEng) {
-      count++;
-    }
-  }
-
-  return count;
-}
-
-/**
  * Check if all cards in a category are mastered
  */
 function isCategoryMastered(
@@ -200,7 +166,7 @@ export function getAchievementProgress(
         const engToCat = cardProgress.get(engToCatKey);
         const catToEng = cardProgress.get(catToEngKey);
 
-        if ((engToCat?.interval ?? 0) >= 21 && (catToEng?.interval ?? 0) >= 21) {
+        if (isDirectionMastered(engToCat) && isDirectionMastered(catToEng)) {
           masteredInCategory++;
         }
       }

@@ -7,6 +7,7 @@ import { getPersistStorage } from '../utils/persistStorage';
 
 // Type for persisted state deserialization
 interface PersistedCardState {
+  flashcards?: Array<Omit<Flashcard, 'createdAt'> & { createdAt: string }>;
   cardProgress?: Array<[string, Omit<CardProgress, 'nextReviewDate' | 'lastReviewDate'> & {
     nextReviewDate: string;
     lastReviewDate?: string;
@@ -32,6 +33,7 @@ import {
 } from '../services/firebase';
 import { useUserStore } from './userStore';
 import { generateWeaknessDeck } from '../services/mistakeAnalysisService';
+import { countMasteredCards } from '../utils/mastery';
 
 interface CardState {
   flashcards: Flashcard[];
@@ -81,28 +83,53 @@ export const useCardStore = create<CardState>()(
       loadCards: async () => {
         set({ isLoading: true, error: null });
 
+        const userStore = useUserStore.getState();
+        const userId = userStore.user?.uid;
+
+        // Demo mode has no backend: seed from the starter deck the first time,
+        // then rely on the locally cached cards so imports survive a refresh.
+        if (isDemoMode) {
+          const { flashcards } = get();
+          set({
+            flashcards: flashcards.length > 0 ? flashcards : getStarterFlashcards(),
+            isLoading: false,
+          });
+          return;
+        }
+
+        if (!userId) {
+          set({ isLoading: false });
+          return;
+        }
+
         try {
-          const userStore = useUserStore.getState();
-          const userId = userStore.user?.uid;
+          const cards = await getFlashcards(userId);
+          const progressList = await getCardProgress(userId);
 
-          if (userId && !isDemoMode) {
-            const cards = await getFlashcards(userId);
-            const progressList = await getCardProgress(userId);
-
-            const progressMap = new Map<string, CardProgress>();
-            for (const p of progressList) {
-              progressMap.set(getProgressKey(p.cardId, p.direction), p);
-            }
-
-            set({ flashcards: cards, cardProgress: progressMap, isLoading: false });
-          } else if (isDemoMode) {
-            set({ flashcards: getStarterFlashcards(), isLoading: false });
-          } else {
-            set({ isLoading: false });
+          const progressMap = new Map<string, CardProgress>();
+          for (const p of progressList) {
+            progressMap.set(getProgressKey(p.cardId, p.direction), p);
           }
+
+          // Firestore is authoritative when reachable, so replace rather than
+          // merge - that is what keeps the local cache from accumulating
+          // duplicates of cards deleted on another device.
+          set({ flashcards: cards, cardProgress: progressMap, isLoading: false });
         } catch (error) {
-          set({ error: 'Failed to load cards', isLoading: false });
-          logger.error('Load cards error', 'CardStore', { error: String(error) });
+          // Offline, blocked, or rules misconfigured. Keep whatever the local
+          // cache rehydrated so the learner can still study; previously this
+          // left them staring at an empty deck.
+          const { flashcards } = get();
+          logger.error('Load cards error - falling back to local cache', 'CardStore', {
+            error: String(error),
+            cachedCards: flashcards.length,
+          });
+          set({
+            error: flashcards.length > 0
+              ? null
+              : 'Could not reach your saved cards. Check your connection and try again.',
+            isLoading: false,
+          });
         }
       },
 
@@ -304,16 +331,33 @@ export const useCardStore = create<CardState>()(
           return a.progress.nextReviewDate.getTime() - b.progress.nextReviewDate.getTime();
         });
 
-        // Ensure good mix: ~30% must be typing
+        // Aim for roughly MIN_TYPING_PERCENTAGE of the session to be typing cards.
+        //
+        // This previously read `slice(0, Math.max(minTyping, typingRequired.length))`,
+        // which takes *all* typing-required cards rather than capping at the
+        // target. Since requiresTyping() is true for any card with fewer than two
+        // successful reps, a new learner's every card qualified and the entire
+        // session became typing drills - the opposite of a mix, and a hard way to
+        // meet vocabulary for the first time. MIN_TYPING_PERCENTAGE had no effect.
         const typingRequired = studyCards.filter(c => c.requiresTyping);
         const typingOptional = studyCards.filter(c => !c.requiresTyping);
 
-        const minTyping = Math.ceil(limit * SESSION_CONFIG.MIN_TYPING_PERCENTAGE);
-        const typingCards = typingRequired.slice(0, Math.max(minTyping, typingRequired.length));
-        const remainingSlots = limit - typingCards.length;
-        const optionalCards = typingOptional.slice(0, remainingSlots);
+        const targetTyping = Math.ceil(limit * SESSION_CONFIG.MIN_TYPING_PERCENTAGE);
 
-        // Shuffle to mix typing and non-typing
+        // Take the typing quota, but backfill from typing cards when there aren't
+        // enough non-typing ones to fill the session (e.g. a brand new deck,
+        // where every card is typing-required and the alternative is a short
+        // session).
+        const typingCount = Math.min(
+          typingRequired.length,
+          Math.max(targetTyping, limit - typingOptional.length)
+        );
+
+        const typingCards = typingRequired.slice(0, typingCount);
+        const optionalCards = typingOptional.slice(0, limit - typingCards.length);
+
+        // Shuffle so typing and non-typing cards interleave rather than arriving
+        // in two blocks.
         const result = [...typingCards, ...optionalCards];
         for (let i = result.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -332,28 +376,25 @@ export const useCardStore = create<CardState>()(
           progress = createInitialProgress(cardId, direction);
         }
 
-        // Track if card was mastered before this review
-        const wasMastered = progress.interval >= MASTERY_CONFIG.MASTERED_INTERVAL_DAYS;
-
         const newProgress = calculateSM2(progress, quality);
-
-        // Check if card is now mastered after this review
-        const isNowMastered = newProgress.interval >= MASTERY_CONFIG.MASTERED_INTERVAL_DAYS;
-
-        // If card just became mastered, increment the counter
-        if (!wasMastered && isNowMastered) {
-          const userStore = useUserStore.getState();
-          const currentCardsLearned = userStore.progress?.cardsLearned || 0;
-          userStore.updateCardsLearned(currentCardsLearned + 1);
-        }
 
         const newProgressMap = new Map(cardProgress);
         newProgressMap.set(key, newProgress);
 
         set({ cardProgress: newProgressMap });
 
-        // Save to Firebase
         const userStore = useUserStore.getState();
+
+        // Recompute the mastered total from the progress map rather than
+        // incrementing a counter. The old approach only ever went up, so a card
+        // that lapsed below the threshold and later recovered was counted twice
+        // and one that lapsed was never subtracted.
+        const masteredCount = countMasteredCards(newProgressMap);
+        if (masteredCount !== userStore.progress.cardsLearned) {
+          await userStore.updateCardsLearned(masteredCount);
+        }
+
+        // Save to Firebase
         const userId = userStore.user?.uid;
         if (userId && !isDemoMode) {
           await updateCardProgress(userId, newProgress);
@@ -466,13 +507,23 @@ export const useCardStore = create<CardState>()(
       // Mnemonic editing
       updateCardMnemonic: async (cardId: string, mnemonic: string) => {
         const { flashcards } = get();
-        const newCards = flashcards.map(card =>
+        const updated = flashcards.map(card =>
           card.id === cardId ? { ...card, userMnemonic: mnemonic || undefined } : card
         );
-        set({ flashcards: newCards });
+        set({ flashcards: updated });
 
-        // Note: Firebase sync would be done here in production.
-        // For now, this remains in memory only.
+        // Mnemonics used to live in memory only, so the memory aid a learner
+        // had just written was gone on the next refresh. Cards are now cached
+        // locally, and synced to Firestore when signed in.
+        const card = updated.find(c => c.id === cardId);
+        const userId = useUserStore.getState().user?.uid;
+        if (card && userId && !isDemoMode) {
+          try {
+            await saveFlashcards(userId, [card]);
+          } catch (error) {
+            logger.error('Failed to sync mnemonic', 'CardStore', { error: String(error) });
+          }
+        }
       },
 
       // Deduplication: remove duplicate cards by normalized front text
@@ -552,8 +603,13 @@ export const useCardStore = create<CardState>()(
       name: 'catalan-cards-storage',
       storage: getPersistStorage(),
       partialize: (state) => ({
-        // Note: flashcards are NOT persisted locally - they come from Firebase only
-        // This prevents duplication between localStorage and Firebase
+        // Flashcards are cached locally as well as stored in Firestore.
+        // They used to be excluded to "prevent duplication", but the effect was
+        // that demo mode lost every imported card on refresh, an offline start
+        // showed an empty deck, and card progress persisted with no cards to
+        // attach it to. Firestore still wins whenever it is reachable
+        // (loadCards replaces rather than merges), so the cache cannot drift.
+        flashcards: state.flashcards,
         cardProgress: Array.from(state.cardProgress.entries()),
         mistakeHistory: state.mistakeHistory,
       }),
@@ -577,10 +633,14 @@ export const useCardStore = create<CardState>()(
           timestamp: new Date(mistake.timestamp),
         }));
 
+        const flashcards: Flashcard[] = (persisted?.flashcards ?? []).map((card) => ({
+          ...card,
+          createdAt: new Date(card.createdAt),
+        })) as Flashcard[];
+
         return {
           ...current,
-          // Don't restore flashcards from localStorage - they come from Firebase
-          flashcards: current.flashcards,
+          flashcards,
           cardProgress: new Map(cardProgressEntries),
           mistakeHistory,
         };

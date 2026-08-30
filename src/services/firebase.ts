@@ -27,7 +27,7 @@ import type { PlacementResult } from '../types/curriculum';
 import type { DailyChallenge } from '../types/challenges';
 import type { WeeklyChallenge } from '../types/weeklyChallenges';
 import type { NotificationSettings } from '../types/notifications';
-import type { UserProfile, UserProgress, DailyStats } from '../types/user';
+import type { UserProfile, UserProgress, UserSettings, DailyStats } from '../types/user';
 import type { UnlockedAchievement } from '../types/gamification';
 import type { CEFRLevel } from '../data/curriculum';
 
@@ -141,6 +141,20 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     ...data,
     createdAt: data.createdAt?.toDate() || new Date(),
   } as UserProfile;
+}
+
+/**
+ * Persist a user's settings.
+ *
+ * Merged into the existing profile document so it cannot clobber displayName,
+ * photoURL or createdAt.
+ */
+export async function updateUserSettings(userId: string, settings: UserSettings): Promise<void> {
+  await setDoc(
+    doc(db, 'users', userId, 'data', 'profile'),
+    { settings },
+    { merge: true }
+  );
 }
 
 // Progress functions

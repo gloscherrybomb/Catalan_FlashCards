@@ -30,6 +30,7 @@ import {
 } from '../types/adaptiveLearning';
 import type { Flashcard, CardProgress, MistakeRecord, ConfusionPair, StudyMode } from '../types/flashcard';
 import { ANALYSIS_CONFIG } from '../config/adaptiveConstants';
+import { toDayKey } from '../utils/dateKeys';
 
 interface AdaptiveLearningStore extends AdaptiveLearningState {
   // Actions
@@ -365,7 +366,7 @@ function calculateTrends(
   const dailyMap = new Map<string, { accuracy: number; cards: number; time: number; count: number }>();
 
   for (const session of recentSessions) {
-    const date = new Date(session.timestamp).toISOString().split('T')[0];
+    const date = toDayKey(session.timestamp);
     const existing = dailyMap.get(date) || { accuracy: 0, cards: 0, time: 0, count: 0 };
     dailyMap.set(date, {
       accuracy: existing.accuracy + session.accuracy,

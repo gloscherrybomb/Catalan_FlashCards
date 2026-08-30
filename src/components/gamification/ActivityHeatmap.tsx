@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { format, subDays, startOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
+import { format, subDays, eachDayOfInterval, isSameDay } from 'date-fns';
+import { toDayKey, getWeekStartDate } from '../../utils/dateKeys';
 
 interface DayActivity {
   date: Date;
@@ -34,13 +35,13 @@ function getActivityLevel(cardsReviewed: number): 0 | 1 | 2 | 3 | 4 {
 export function ActivityHeatmap({ activityData, weeks = 12 }: ActivityHeatmapProps) {
   const days = useMemo(() => {
     const today = new Date();
-    const startDate = startOfWeek(subDays(today, weeks * 7 - 1));
+    const startDate = getWeekStartDate(subDays(today, weeks * 7 - 1));
     const endDate = today;
 
     const allDays = eachDayOfInterval({ start: startDate, end: endDate });
 
     return allDays.map((date): DayActivity => {
-      const dateKey = format(date, 'yyyy-MM-dd');
+      const dateKey = toDayKey(date);
       const cardsReviewed = activityData[dateKey] || 0;
       return {
         date,
@@ -169,7 +170,7 @@ export function ActivityHeatmapCompact({ activityData }: { activityData: Record<
     const today = new Date();
     return Array.from({ length: 30 }, (_, i) => {
       const date = subDays(today, 29 - i);
-      const dateKey = format(date, 'yyyy-MM-dd');
+      const dateKey = toDayKey(date);
       const cardsReviewed = activityData[dateKey] || 0;
       return {
         date,

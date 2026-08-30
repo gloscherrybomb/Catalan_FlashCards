@@ -1,6 +1,7 @@
 // Weekly Challenge Types and Definitions
 import { useUserStore } from '../stores/userStore';
 import { getWeeklyChallengesData, setWeeklyChallengesData, isDemoMode } from '../services/firebase';
+import { todayKey, toDayKey, weekStartKey, getWeekStartDate } from '../utils/dateKeys';
 
 export type WeeklyChallengeType =
   | 'review_cards'
@@ -179,12 +180,7 @@ export const WEEKLY_CHALLENGE_TEMPLATES: Omit<WeeklyChallenge, 'id' | 'startsAt'
 
 // Helper functions
 export function getWeekStart(date: Date = new Date()): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
+  return getWeekStartDate(date);
 }
 
 export function getWeekEnd(date: Date = new Date()): Date {
@@ -217,7 +213,7 @@ export function generateWeeklyChallenges(): WeeklyChallenge[] {
 
   return selected.map((template, index) => ({
     ...template,
-    id: `weekly-${weekStart.toISOString().split('T')[0]}-${index}`,
+    id: `weekly-${toDayKey(weekStart)}-${index}`,
     description: template.description.replace('{target}', String(template.target)),
     current: 0,
     startsAt: weekStart,
@@ -248,7 +244,7 @@ export async function updateWeeklyChallenges(results: WeeklySessionResults): Pro
   const userId = useUserStore.getState().user?.uid;
   if (!userId || isDemoMode) return [];
 
-  const currentWeekStart = getWeekStart().toISOString().split('T')[0];
+  const currentWeekStart = weekStartKey();
   const stored = await getWeeklyChallengesData(userId);
 
   const challenges = stored?.weekStart === currentWeekStart
@@ -257,7 +253,7 @@ export async function updateWeeklyChallenges(results: WeeklySessionResults): Pro
   const daysStudied = stored?.weekStart === currentWeekStart ? stored.daysStudied : [];
 
   // Track study days
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayKey();
   const updatedDaysStudied = daysStudied.includes(today) ? daysStudied : [...daysStudied, today];
 
   // Track if all challenges were already complete before this update
@@ -335,7 +331,7 @@ export async function getWeeklyChallenges(): Promise<WeeklyChallenge[]> {
   const userId = useUserStore.getState().user?.uid;
   if (!userId || isDemoMode) return [];
 
-  const currentWeekStart = getWeekStart().toISOString().split('T')[0];
+  const currentWeekStart = weekStartKey();
   const stored = await getWeeklyChallengesData(userId);
 
   if (stored?.weekStart !== currentWeekStart) return [];
@@ -350,7 +346,7 @@ export async function initializeWeeklyChallenges(): Promise<WeeklyChallenge[]> {
   if (existing.length > 0) return existing;
 
   const newChallenges = generateWeeklyChallenges();
-  const weekStart = getWeekStart().toISOString().split('T')[0];
+  const weekStart = weekStartKey();
 
   await setWeeklyChallengesData(userId, {
     weekStart,

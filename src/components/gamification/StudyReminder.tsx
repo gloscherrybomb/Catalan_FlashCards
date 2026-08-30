@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { useUserStore } from '../../stores/userStore';
 import { getUiPreferences, updateUiPreferences, isDemoMode } from '../../services/firebase';
+import { todayKey } from '../../utils/dateKeys';
 
 interface StudyReminderProps {
   lastStudyDate: Date | null;
@@ -24,7 +25,7 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
       if (!userId || isDemoMode) return;
       try {
         const prefs = await getUiPreferences(userId);
-        const today = new Date().toISOString().split('T')[0];
+        const today = todayKey();
         const dismissedToday = prefs?.studyReminderDismissedDate === today;
         if (active) {
           setIsDismissed(dismissedToday);
@@ -45,7 +46,7 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
     setIsDismissed(true);
     if (userId && !isDemoMode) {
       void updateUiPreferences(userId, {
-        studyReminderDismissedDate: new Date().toISOString().split('T')[0],
+        studyReminderDismissedDate: todayKey(),
       });
     }
   };

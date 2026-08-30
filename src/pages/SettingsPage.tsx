@@ -16,6 +16,7 @@ import { Card, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { exportToCSV } from '../services/csvParser';
 import { NotificationSettings } from '../components/settings/NotificationSettings';
+import { todayKey } from '../utils/dateKeys';
 
 export function SettingsPage() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `catalan-flashcards-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `catalan-flashcards-${todayKey()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

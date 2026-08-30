@@ -10,6 +10,7 @@ import {
   createUserProfile,
   getUserProgress,
   updateUserProgress,
+  updateUserSettings,
   getUnlockedAchievements,
   signInWithGoogle,
   signOut,
@@ -22,6 +23,7 @@ import { useGrammarStore } from './grammarStore';
 import { useStoryStore } from './storyStore';
 import { getPersistStorage } from '../utils/persistStorage';
 import { notificationService } from '../services/notificationService';
+import { todayKey } from '../utils/dateKeys';
 
 // Module-scoped variable for auth unsubscribe (replaces window.__authUnsubscribe)
 // Exported for potential cleanup usage by the app
@@ -73,9 +75,32 @@ const DEFAULT_PROGRESS: UserProgress = {
   dailyActivity: {},
 };
 
-// Helper to get today's date key in YYYY-MM-DD format
-function getTodayKey(): string {
-  return new Date().toISOString().split('T')[0];
+// Day keys are local-time (see utils/dateKeys) so that "today" means the same
+// thing here as it does in the streak logic and the activity heatmap.
+
+/**
+ * Choose between locally-held progress and the copy Firestore returned.
+ *
+ * "Further along" is judged by total cards reviewed, which only ever grows.
+ * This stops a device that studied offline from being rolled back by a stale
+ * server document, and vice versa.
+ */
+function pickFurtherProgress(local: UserProgress, remote: UserProgress | null): UserProgress {
+  if (!remote) return local;
+  if ((local?.totalCardsReviewed ?? 0) > (remote.totalCardsReviewed ?? 0)) return local;
+  return remote;
+}
+
+/** Union of unlocked achievements; unlocking is monotonic, so never drop any. */
+function mergeAchievements(
+  local: UnlockedAchievement[],
+  remote: UnlockedAchievement[]
+): UnlockedAchievement[] {
+  const byId = new Map<string, UnlockedAchievement>();
+  for (const achievement of [...remote, ...local]) {
+    if (!byId.has(achievement.achievementId)) byId.set(achievement.achievementId, achievement);
+  }
+  return [...byId.values()];
 }
 
 export const useUserStore = create<UserState>()(
@@ -135,12 +160,12 @@ export const useUserStore = create<UserState>()(
                     const progress = await getUserProgress(user.uid);
                     const achievements = await getUnlockedAchievements(user.uid);
 
-                    set({
+                    set((state) => ({
                       profile,
-                      progress,
-                      achievements,
+                      progress: pickFurtherProgress(state.progress, progress),
+                      achievements: mergeAchievements(state.achievements, achievements),
                       isLoading: false,
-                    });
+                    }));
 
                     // Initialize curriculum progress from Firebase
                     await useCurriculumStore.getState().initializeFromFirebase(user.uid);
@@ -230,11 +255,14 @@ export const useUserStore = create<UserState>()(
             },
           };
 
+          // Keep whatever progress is already in the store (rehydrated from
+          // local storage). Resetting to DEFAULT_PROGRESS here meant that if
+          // the Firestore read below then failed - blocked, offline, rules
+          // misconfigured - the learner's XP, streak and achievements were
+          // already gone, with nothing left to restore them from.
           set({
             user,
             profile: basicProfile,
-            progress: DEFAULT_PROGRESS,
-            achievements: [],
             isAuthenticated: true,
             isLoading: false,
           });
@@ -260,12 +288,14 @@ export const useUserStore = create<UserState>()(
             const achievements = await getUnlockedAchievements(user.uid);
             logger.debug('Achievements fetched', 'UserStore', { count: achievements.length });
 
-            // Update with full Firestore data
-            set({
+            // Prefer whichever record has seen more work. A fresh Firestore
+            // document (new device, or an earlier failed write) must not
+            // silently roll back progress this browser already holds.
+            set((state) => ({
               profile: firestoreProfile,
-              progress: progress || DEFAULT_PROGRESS,
-              achievements,
-            });
+              progress: pickFurtherProgress(state.progress, progress),
+              achievements: mergeAchievements(state.achievements, achievements),
+            }));
             logger.debug('Updated with Firestore data', 'UserStore');
 
             // Initialize curriculum progress from Firebase
@@ -324,12 +354,12 @@ export const useUserStore = create<UserState>()(
         const newLevel = getLevelForXP(newXP).level;
 
         // Update daily XP tracking - ensure dailyActivity exists
-        const todayKey = getTodayKey();
+        const today = todayKey();
         const dailyActivity = progress.dailyActivity || {};
-        const todayActivity = dailyActivity[todayKey] || { cards: 0, xp: 0 };
+        const todayActivity = dailyActivity[today] || { cards: 0, xp: 0 };
         const updatedDailyActivity = {
           ...dailyActivity,
-          [todayKey]: {
+          [today]: {
             ...todayActivity,
             xp: (todayActivity.xp || 0) + bonusXP,
           },
@@ -417,7 +447,7 @@ export const useUserStore = create<UserState>()(
       },
 
       updateSettings: async (settings: Partial<UserSettings>) => {
-        const { profile } = get();
+        const { user, profile } = get();
         if (!profile) return;
 
         const newProfile = {
@@ -426,18 +456,29 @@ export const useUserStore = create<UserState>()(
         };
 
         set({ profile: newProfile });
+
+        // This used to update local state only. The profile is refetched from
+        // Firestore on the next sign-in, so every settings change silently
+        // reverted the next time the learner signed in on any device.
+        if (user && !isDemoMode) {
+          try {
+            await updateUserSettings(user.uid, newProfile.settings);
+          } catch (error) {
+            logger.error('Failed to persist settings', 'UserStore', { error: String(error) });
+          }
+        }
       },
 
       recordStudySession: async (cardsReviewed: number, correctAnswers: number, timeSpentMs: number) => {
         const { user, progress } = get();
 
         // Update daily activity - ensure dailyActivity exists
-        const todayKey = getTodayKey();
+        const today = todayKey();
         const dailyActivity = progress.dailyActivity || {};
-        const todayActivity = dailyActivity[todayKey] || { cards: 0, xp: 0 };
+        const todayActivity = dailyActivity[today] || { cards: 0, xp: 0 };
         const updatedDailyActivity = {
           ...dailyActivity,
-          [todayKey]: {
+          [today]: {
             cards: (todayActivity.cards || 0) + cardsReviewed,
             xp: todayActivity.xp || 0, // XP is tracked separately via addXP
           },

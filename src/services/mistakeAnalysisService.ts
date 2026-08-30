@@ -9,6 +9,7 @@ import type {
   StudyDirection
 } from '../types/flashcard';
 import { createInitialProgress } from './sm2Algorithm';
+import { toDayKey } from '../utils/dateKeys';
 
 /**
  * Analyzes error patterns from mistake history
@@ -189,10 +190,10 @@ export function getMistakeTrend(
   for (let i = 6; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = toDayKey(date);
 
     const dayMistakes = mistakes.filter(m => {
-      const mDate = new Date(m.timestamp).toISOString().split('T')[0];
+      const mDate = toDayKey(m.timestamp);
       return mDate === dateStr;
     });
 

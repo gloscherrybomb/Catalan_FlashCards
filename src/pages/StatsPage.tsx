@@ -21,6 +21,7 @@ import { useUserStore } from '../stores/userStore';
 import { useCardStore } from '../stores/cardStore';
 import { Card, CardTitle } from '../components/ui/Card';
 import { ProgressRing } from '../components/ui/ProgressRing';
+import { toDayKey } from '../utils/dateKeys';
 
 const COLORS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95D5B2', '#F9844A', '#6366F1'];
 
@@ -65,7 +66,7 @@ export function StatsPage() {
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split('T')[0];
+      const dateKey = toDayKey(date);
       const dayName = dayNames[date.getDay()];
       const activity = progress.dailyActivity?.[dateKey] || { cards: 0, xp: 0 };
 
