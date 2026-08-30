@@ -1,4 +1,5 @@
 import type { ExampleSentence } from '../types/flashcard';
+import { UNIT_SENTENCES } from './unitSentences';
 
 export interface SentenceCategory {
   id: string;
@@ -21,6 +22,16 @@ export interface SentenceData {
   grammarConcepts?: string[];
   // Related flashcard IDs
   relatedCardIds?: string[];
+  /**
+   * Dictionary forms of the vocabulary this sentence exists to demonstrate.
+   *
+   * Catalan is heavily inflected, so surface matching alone misses a great
+   * deal: a sentence reading "Em desperto a les set" teaches `despertar-se`,
+   * and "Prefereixo el te" teaches `preferir`, but neither contains the form
+   * printed on the card. Declaring the target explicitly is more reliable than
+   * trying to lemmatise, and it makes the pairing reviewable.
+   */
+  targetWords?: string[];
 }
 
 // Sentence categories
@@ -89,6 +100,62 @@ export const SENTENCE_CATEGORIES: SentenceCategory[] = [
     difficulty: 'advanced',
   },
   {
+    id: 'family',
+    name: 'Family & People',
+    nameCatalan: 'La família i la gent',
+    description: 'Talking about relatives, ages and relationships',
+    difficulty: 'beginner',
+  },
+  {
+    id: 'describing',
+    name: 'Describing Things',
+    nameCatalan: 'Descriure les coses',
+    description: 'Colours, sizes and everyday adjectives',
+    difficulty: 'beginner',
+  },
+  {
+    id: 'shopping',
+    name: 'Shopping & the Market',
+    nameCatalan: 'Compres i mercat',
+    description: 'Buying food, asking prices and quantities',
+    difficulty: 'beginner',
+  },
+  {
+    id: 'restaurant',
+    name: 'At the Restaurant',
+    nameCatalan: 'Al restaurant',
+    description: 'Ordering courses and describing flavours',
+    difficulty: 'beginner',
+  },
+  {
+    id: 'weather',
+    name: 'Weather & Seasons',
+    nameCatalan: 'El temps i les estacions',
+    description: 'Describing the weather and the time of year',
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'tourism',
+    name: 'Information & Services',
+    nameCatalan: 'Informació i serveis',
+    description: 'Asking for help, opening hours and bookings',
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'transport',
+    name: 'Public Transport',
+    nameCatalan: 'Transport públic',
+    description: 'Trains, buses, tickets and travelling around',
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'celebrations',
+    name: 'Festivals & Celebrations',
+    nameCatalan: 'Festes i celebracions',
+    description: 'Catalan traditions, holidays and good wishes',
+    difficulty: 'intermediate',
+  },
+  {
     id: 'conditionals',
     name: 'Hypotheticals',
     nameCatalan: 'Hipotètics',
@@ -98,7 +165,7 @@ export const SENTENCE_CATEGORIES: SentenceCategory[] = [
 ];
 
 // Example sentences organized by category
-export const EXAMPLE_SENTENCES: SentenceData[] = [
+const CORE_SENTENCES: SentenceData[] = [
   // Greetings & Introductions
   {
     id: 'greet-1',
@@ -132,7 +199,7 @@ export const EXAMPLE_SENTENCES: SentenceData[] = [
     categoryId: 'greetings',
     catalan: 'Estic molt bé, gràcies.',
     english: 'I am very well, thank you.',
-    vocabularyIndices: [0, 2, 4],
+    vocabularyIndices: [0, 2, 3],
     hasAudio: true,
     grammarConcepts: ['ser-vs-estar', 'adverbs'],
   },
@@ -441,7 +508,7 @@ export const EXAMPLE_SENTENCES: SentenceData[] = [
     categoryId: 'opinions',
     catalan: 'No m\'agrada gens el fred.',
     english: 'I don\'t like the cold at all.',
-    vocabularyIndices: [1, 2, 3, 5],
+    vocabularyIndices: [1, 2, 4],
     hasAudio: true,
     grammarConcepts: ['agradar', 'negation'],
   },
@@ -450,7 +517,7 @@ export const EXAMPLE_SENTENCES: SentenceData[] = [
     categoryId: 'opinions',
     catalan: 'Crec que tens raó.',
     english: 'I believe you are right.',
-    vocabularyIndices: [0, 3, 4],
+    vocabularyIndices: [0, 2, 3],
     hasAudio: true,
     grammarConcepts: ['opinions', 'expressions'],
   },
@@ -470,7 +537,7 @@ export const EXAMPLE_SENTENCES: SentenceData[] = [
     categoryId: 'past-events',
     catalan: 'Ahir vaig anar al cinema.',
     english: 'Yesterday I went to the cinema.',
-    vocabularyIndices: [0, 2, 5],
+    vocabularyIndices: [0, 2, 4],
     hasAudio: true,
     grammarConcepts: ['past-tense', 'anar'],
   },
@@ -600,11 +667,19 @@ export const EXAMPLE_SENTENCES: SentenceData[] = [
     categoryId: 'conditionals',
     catalan: 'M\'agradaria que vinguessis a la festa.',
     english: 'I would like you to come to the party.',
-    vocabularyIndices: [0, 3, 6],
+    vocabularyIndices: [0, 2, 5],
     hasAudio: true,
     grammarConcepts: ['conditional', 'subjunctive'],
   },
 ];
+
+/**
+ * All example sentences: the original core set plus the per-unit sentences.
+ *
+ * Kept in a separate module because the unit set is large and grows with the
+ * course; this file stays about the categories and the lookup helpers.
+ */
+export const EXAMPLE_SENTENCES: SentenceData[] = [...CORE_SENTENCES, ...UNIT_SENTENCES];
 
 // Helper functions
 export function getSentencesByCategory(categoryId: string): SentenceData[] {

@@ -14,51 +14,20 @@ import {
   ImageOff,
   CheckCircle2,
 } from 'lucide-react';
-import type { StudyCard, Flashcard } from '../../types/flashcard';
+import type { StudyCard } from '../../types/flashcard';
 import { CategoryIcon, Badge } from './CategoryIcon';
 import { audioService } from '../../services/audioService';
 import { imageService, type CachedImage } from '../../services/imageService';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ProgressBar } from '../ui/ProgressRing';
-import { EXAMPLE_SENTENCES, type SentenceData } from '../../data/exampleSentences';
+import { findExampleSentence } from '../../services/exampleSentenceMatcher';
 import { getCognates, getEtymology, getFalseFriend } from '../../data/etymology';
 
 interface VocabularyIntroProps {
   cards: StudyCard[];
   onComplete: () => void;
   unitTitle?: string;
-}
-
-// Find an example sentence that contains the target word
-function findExampleSentence(card: Flashcard): SentenceData | null {
-  // First try to find by matching the Catalan word in the sentence
-  const catalanWord = card.back.toLowerCase();
-  const englishWord = card.front.toLowerCase();
-
-  const match = EXAMPLE_SENTENCES.find(sentence => {
-    const catalanSentence = sentence.catalan.toLowerCase();
-    const englishSentence = sentence.english.toLowerCase();
-
-    // Check if the Catalan word appears as a complete word in the sentence
-    const words = catalanSentence.split(/\s+/);
-    const hasWord = words.some(w => {
-      // Remove common punctuation from the word
-      const cleaned = w.replace(/[.,!?;:'"]/g, '');
-      return cleaned === catalanWord;
-    });
-
-    // Also check English for compound phrases using word boundaries
-    const englishWords = englishSentence.split(/\s+/);
-    const hasEnglish = englishWords.some(w => {
-      const cleaned = w.replace(/[.,!?;:'"]/g, '');
-      return cleaned === englishWord;
-    });
-
-    return hasWord || hasEnglish;
-  });
-
-  return match || null;
 }
 
 // Escape special regex characters in a string

@@ -68,3 +68,32 @@ export function extractAllForms(text: string): string[] {
   const parts = stripped.split(/\s*\/\s*/);
   return parts.map(p => p.trim()).filter(p => p.length > 0);
 }
+
+/**
+ * Letters that can occur inside a Catalan word: the accented vowels, ç, ü/ï,
+ * the interpunct of `l·l`, and the hyphen of attached clitic pronouns.
+ *
+ * Deliberately not `\w`, which is ASCII-only and would treat `à` as a word
+ * boundary - the cause of several mis-matched example sentences.
+ */
+export const CATALAN_WORD_CHARS = "a-zA-ZàèéíïòóúüçÀÈÉÍÏÒÓÚÜÇ0-9·\\-";
+
+const CATALAN_SEPARATOR = new RegExp(`[^${CATALAN_WORD_CHARS}]+`);
+
+/**
+ * Split Catalan text into comparable word tokens.
+ *
+ * Two rules that pull in opposite directions, both needed:
+ *  - Apostrophes ARE boundaries: `l'aigua` is the elided article plus `aigua`,
+ *    so a card for "aigua" should match it.
+ *  - Hyphens are NOT: `conèixer-te` is a verb with an attached clitic, and the
+ *    `-te` there is not the noun `te` ("tea"). Splitting on it would recreate
+ *    the false match the old substring search produced.
+ */
+export function tokenise(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(CATALAN_SEPARATOR)
+    .map(t => t.replace(/^-+|-+$/g, ''))
+    .filter(Boolean);
+}
