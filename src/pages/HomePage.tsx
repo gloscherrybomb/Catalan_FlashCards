@@ -30,6 +30,10 @@ import { StreakWarning } from '../components/gamification/StudyReminder';
 import { isSameDay } from 'date-fns';
 import { logger } from '../services/logger';
 import { DailyGoalRing } from '../components/gamification/DailyGoalRing';
+import { useAdaptiveLearningStore } from '../stores/adaptiveLearningStore';
+import { WeakSpotAlerts } from '../components/adaptive/WeakSpotAlerts';
+import { ChallengesPanel } from '../components/gamification/ChallengesPanel';
+import { WordOfTheDay } from '../components/gamification/WordOfTheDay';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -92,6 +96,17 @@ export function HomePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const uniqueCardsDue = useMemo(() => getUniqueCardsDueCount(), [flashcards, cardProgress, getUniqueCardsDueCount]);
 
+  // Surfaced on the home page; the adaptive engine has been detecting these
+  // all along with nothing to display them.
+  const getCriticalWeakSpots = useAdaptiveLearningStore((state) => state.getCriticalWeakSpots);
+  const weakSpotsState = useAdaptiveLearningStore((state) => state.weakSpots);
+  const criticalWeakSpots = useMemo(
+    () => getCriticalWeakSpots(),
+    // weakSpots is the array the selector reads; ESLint cannot see that read.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [getCriticalWeakSpots, weakSpotsState]
+  );
+
   const handleStartLearningPath = useCallback(() => {
     navigate('/learning-path');
   }, [navigate]);
@@ -128,6 +143,25 @@ export function HomePage() {
             <Card>
               <DailyGoalRing compact />
             </Card>
+          </motion.div>
+        )}
+
+        {/* Word of the day, challenges and adaptive alerts. All were rendered
+            only by an older tabbed home page that nothing routed to, so they
+            were computed and updated but never shown. */}
+        {hasCards && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 space-y-6"
+          >
+            <WordOfTheDay />
+            <WeakSpotAlerts
+              weakSpots={criticalWeakSpots}
+              onPractice={() => navigate('/study?mode=weakness')}
+              maxDisplay={2}
+            />
+            <ChallengesPanel />
           </motion.div>
         )}
 

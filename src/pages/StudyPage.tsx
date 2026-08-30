@@ -38,6 +38,7 @@ import { CategoryIntro } from '../components/cards/CategoryIntro';
 import { hasCategoryIntroBeenShown } from '../services/categoryIntroStorage';
 import { Confetti } from '../components/ui/Confetti';
 import { DifficultyIndicator, SessionCompositionPreview } from '../components/adaptive';
+import { DailyRecommendations } from '../components/adaptive/DailyRecommendations';
 import type { StudyMode } from '../types/flashcard';
 import { SESSION_CONFIG, STUDY_PAGE_CONFIG, PRONUNCIATION_THRESHOLDS } from '../config/constants';
 import { useUserStore } from '../stores/userStore';
@@ -285,6 +286,7 @@ export function StudyPage() {
   // Adaptive learning state
   const difficultyProfile = useAdaptiveLearningStore((state) => state.difficultyProfile);
   const getSessionComposition = useAdaptiveLearningStore((state) => state.getSessionComposition);
+  const currentRecommendations = useAdaptiveLearningStore((state) => state.currentRecommendations);
 
   // Calculate session composition for preview
   const sessionComposition = useMemo(() => {
@@ -555,6 +557,17 @@ export function StudyPage() {
               ? `${dueCount} cards ready for review`
               : 'No cards due - great job!'}
           </p>
+
+          {/* What the adaptive engine suggests studying. It has been generating
+              these after every session with nothing to display them. */}
+          {currentRecommendations && (
+            <div className="mb-6">
+              <DailyRecommendations
+                recommendations={currentRecommendations}
+                onStartSession={() => handleStartSession(preferredMode)}
+              />
+            </div>
+          )}
 
           {/* Session composition preview */}
           {sessionComposition && (

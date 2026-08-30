@@ -9,6 +9,7 @@ import {
   Repeat,
   Sparkles,
   ArrowRight,
+  Eye,
 } from 'lucide-react';
 import {
   PieChart,
@@ -177,6 +178,13 @@ export function MistakePatterns() {
           leftIcon={<Target className="w-4 h-4" />}
         >
           Practice Weaknesses
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/mistakes')}
+          leftIcon={<Eye className="w-4 h-4" />}
+        >
+          Review Mistakes
         </Button>
       </motion.div>
 

@@ -1,6 +1,7 @@
 import { useUserStore } from '../../stores/userStore';
 import { getLevelForXP, LEVELS } from '../../types/gamification';
 import { LevelUpCelebration } from './LevelUpCelebration';
+import { StreakMilestone } from './StreakMilestone';
 
 /**
  * Shows the level-up celebration when the user store reports a crossing.
@@ -13,7 +14,40 @@ import { LevelUpCelebration } from './LevelUpCelebration';
  * games, grammar and conversation alike; a page-level mount would celebrate
  * only some of them.
  */
-export function LevelUpWatcher() {
+export function CelebrationWatcher() {
+  return (
+    <>
+      <LevelUpWatcher />
+      <StreakMilestoneWatcher />
+    </>
+  );
+}
+
+/**
+ * Shows the streak-milestone celebration.
+ *
+ * The XP bonus ladder at 7/14/30/60/100 days already existed and was applied
+ * silently inside addXP, so a learner's multiplier could improve without them
+ * ever being told.
+ */
+function StreakMilestoneWatcher() {
+  const pending = useUserStore((state) => state.pendingStreakMilestone);
+  const clear = useUserStore((state) => state.clearStreakMilestone);
+
+  if (!pending) return null;
+
+  return (
+    <StreakMilestone
+      show
+      streak={pending.streak}
+      milestone={pending.milestone}
+      multiplier={pending.multiplier}
+      onClose={clear}
+    />
+  );
+}
+
+function LevelUpWatcher() {
   const pendingLevelUp = useUserStore((state) => state.pendingLevelUp);
   const clearLevelUp = useUserStore((state) => state.clearLevelUp);
 

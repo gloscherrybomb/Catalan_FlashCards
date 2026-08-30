@@ -20,11 +20,14 @@ import {
   LineChart,
   Settings,
   MoreHorizontal,
+  Gift,
 } from 'lucide-react';
 import { useUserStore } from '../../stores/userStore';
 import { XPBar } from '../gamification/XPBar';
 import { StreakCounter } from '../gamification/StreakCounter';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { useRewardsStore } from '../../stores/rewardsStore';
+import { getRewardById } from '../../types/rewards';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
@@ -47,6 +50,7 @@ const MORE_NAV_ITEMS = [
   { path: '/stats', icon: BarChart3, label: 'Statistics' },
   { path: '/analytics', icon: LineChart, label: 'Analytics' },
   { path: '/achievements', icon: Trophy, label: 'Achievements' },
+  { path: '/rewards', icon: Gift, label: 'Rewards' },
   { path: '/import', icon: Upload, label: 'Import cards' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
@@ -84,6 +88,14 @@ export function Header() {
   const profile = useUserStore((state) => state.profile);
   const login = useUserStore((state) => state.login);
   const logout = useUserStore((state) => state.logout);
+
+  // A purchased avatar replaces the default icon; the free default has no
+  // emoji of its own, so the existing photo/icon fallback still applies.
+  const equippedAvatar = useRewardsStore((state) => state.equippedAvatar);
+  const avatarEmoji =
+    equippedAvatar && equippedAvatar !== 'avatar_default'
+      ? getRewardById(equippedAvatar)?.icon
+      : undefined;
 
   return (
     <header className="sticky top-0 z-40">
@@ -302,7 +314,15 @@ export function Header() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {profile?.photoURL ? (
+                    {avatarEmoji ? (
+                      <div
+                        className="w-8 h-8 bg-miro-yellow/20 rounded-full flex items-center justify-center border-2 border-miro-yellow shadow-sm text-lg"
+                        title="Your equipped avatar"
+                      >
+                        <span aria-hidden="true">{avatarEmoji}</span>
+                        <span className="sr-only">Equipped avatar</span>
+                      </div>
+                    ) : profile?.photoURL ? (
                       <img
                         src={profile.photoURL}
                         alt={profile.displayName}

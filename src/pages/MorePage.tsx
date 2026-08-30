@@ -12,6 +12,7 @@ import {
   MessageCircle,
   BookText,
   ChevronRight,
+  Gift,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 
@@ -75,6 +76,12 @@ const SECTIONS: Array<{
         icon: Trophy,
         label: 'Achievements',
         description: 'Badges you have unlocked',
+      },
+      {
+        path: '/rewards',
+        icon: Gift,
+        label: 'Rewards',
+        description: 'Spend XP on avatars, themes, card backs and power-ups',
       },
     ],
   },

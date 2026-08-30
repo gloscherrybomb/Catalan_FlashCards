@@ -8,8 +8,31 @@ import { Card } from '../components/ui/Card';
 import { MistakePatterns } from '../components/analytics/MistakePatterns';
 import { ReviewForecast } from '../components/analytics/ReviewForecast';
 import { RetentionBands } from '../components/analytics/RetentionBands';
+import { AdaptiveInsightsCard } from '../components/adaptive/AdaptiveInsightsCard';
+import { LearningStyleWidget } from '../components/adaptive/LearningStyleWidget';
+import { useAdaptiveLearningStore } from '../stores/adaptiveLearningStore';
+import { useNavigate } from 'react-router-dom';
 
 export function AnalyticsPage() {
+  const navigate = useNavigate();
+
+  // The adaptive engine has been running and computing these all along - it
+  // records every session and detects weak spots and a learning style - but
+  // nothing rendered the results, so the analysis was invisible.
+  const getActiveInsights = useAdaptiveLearningStore((state) => state.getActiveInsights);
+  const dismissInsight = useAdaptiveLearningStore((state) => state.dismissInsight);
+  const markInsightActionTaken = useAdaptiveLearningStore((state) => state.markInsightActionTaken);
+  const learningStyleProfile = useAdaptiveLearningStore((state) => state.learningStyleProfile);
+  const insightsVersion = useAdaptiveLearningStore((state) => state.insights);
+
+  const activeInsights = useMemo(
+    () => getActiveInsights(),
+    // insights is the underlying array the selector reads; it is the real
+    // invalidator even though ESLint cannot see the read.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [getActiveInsights, insightsVersion]
+  );
+
   const flashcards = useCardStore((state) => state.flashcards);
   const cardProgress = useCardStore((state) => state.cardProgress);
   const progress = useUserStore((state) => state.progress);
@@ -164,6 +187,21 @@ export function AnalyticsPage() {
           />
         </div>
 
+        {activeInsights.length > 0 && (
+          <div className="mb-6">
+            <AdaptiveInsightsCard
+              insights={activeInsights}
+              onDismiss={dismissInsight}
+              onAction={(insight) => {
+                markInsightActionTaken(insight.id);
+                // Insights are about what to practise, so acting on one should
+                // start practice rather than just tick it off.
+                navigate('/study?mode=weakness');
+              }}
+            />
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <RetentionBands cardProgress={cardProgress} />
 
@@ -217,6 +255,10 @@ export function AnalyticsPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {learningStyleProfile && (
+            <LearningStyleWidget profile={learningStyleProfile} />
+          )}
+
           {/* Time to Mastery */}
           <Card>
             <h2 className="text-xl font-bold text-miro-blue dark:text-ink-light mb-4 flex items-center gap-2">

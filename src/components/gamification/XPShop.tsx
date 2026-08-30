@@ -31,6 +31,14 @@ interface XPShopProps {
     equippedTheme: string | null;
     equippedCardBack: string | null;
   };
+  /**
+   * XP available to spend: lifetime XP minus what has already been spent.
+   *
+   * Not progress.xp, which is the lifetime total that drives levels - using it
+   * here would offer rewards the learner cannot actually pay for, because
+   * spending does not reduce it.
+   */
+  availableXP: number;
   onPurchase: (reward: Reward) => void;
   onEquip: (reward: Reward) => void;
 }
@@ -183,7 +191,7 @@ function RewardCard({
   );
 }
 
-export function XPShop({ userRewards, onPurchase, onEquip }: XPShopProps) {
+export function XPShop({ userRewards, availableXP, onPurchase, onEquip }: XPShopProps) {
   const [activeTab, setActiveTab] = useState<RewardType | 'all'>('all');
   const progress = useUserStore((state) => state.progress);
 
@@ -242,7 +250,7 @@ export function XPShop({ userRewards, onPurchase, onEquip }: XPShopProps) {
         <div className="bg-miro-yellow/20 rounded-xl px-4 py-2 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-miro-orange" />
           <span className="font-bold text-xl text-miro-blue dark:text-ink-light">
-            {progress.xp.toLocaleString()}
+            {availableXP.toLocaleString()}
           </span>
           <span className="text-sm text-miro-blue/60 dark:text-ink-light/60">XP</span>
         </div>
@@ -284,7 +292,7 @@ export function XPShop({ userRewards, onPurchase, onEquip }: XPShopProps) {
                 reward={reward}
                 isOwned={ownedIds.has(reward.id)}
                 isEquipped={isEquipped(reward)}
-                canAfford={progress.xp >= reward.xpCost}
+                canAfford={availableXP >= reward.xpCost}
                 canUnlock={!reward.unlockLevel || progress.level >= reward.unlockLevel}
                 onPurchase={() => onPurchase(reward)}
                 onEquip={() => onEquip(reward)}

@@ -11,6 +11,8 @@ import { MnemonicHint } from './MnemonicHint';
 import { stripBracketedContent } from '../../utils/textUtils';
 import { EXAMPLE_SENTENCES, type SentenceData } from '../../data/exampleSentences';
 import { getRelatedGrammar, grammarLessonExists } from '../../utils/grammarMapping';
+import { useRewardsStore } from '../../stores/rewardsStore';
+import { getRewardById } from '../../types/rewards';
 
 // Find an example sentence containing the target word
 function findExampleSentence(word: string, catalanWord: string): SentenceData | null {
@@ -128,6 +130,13 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
   // Tag whichever face holds Catalan, so a screen reader pronounces it with
   // Catalan phonetics instead of reading it as English. Which side that is
   // flips with the study direction.
+  // A purchased card back has to appear somewhere, or the shop sells nothing.
+  const equippedCardBack = useRewardsStore((state) => state.equippedCardBack);
+  const cardBackClass =
+    equippedCardBack && equippedCardBack !== 'cardback_default'
+      ? getRewardById(equippedCardBack)?.preview ?? ''
+      : '';
+
   const frontLang = direction === 'english-to-catalan' ? 'en' : 'ca';
   const backLang = direction === 'english-to-catalan' ? 'ca' : 'en';
 
@@ -198,7 +207,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
         >
           {/* Front of card */}
           <div className="absolute inset-0 backface-hidden">
-            <div className="w-full h-full bg-white dark:bg-gray-800 rounded-3xl border-3 border-miro-blue dark:border-ink-light/50 shadow-playful p-6 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className={`w-full h-full bg-white dark:bg-gray-800 rounded-3xl border-3 border-miro-blue dark:border-ink-light/50 shadow-playful p-6 flex flex-col items-center justify-center relative overflow-hidden ${cardBackClass}`}>
               {/* Decorative elements */}
               <CardDecoration category={flashcard.category} />
 

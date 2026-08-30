@@ -2,7 +2,9 @@ import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { MobileNav } from './MobileNav';
 import { AchievementToastContainer } from '../gamification/AchievementToast';
-import { LevelUpWatcher } from '../gamification/LevelUpWatcher';
+import { CelebrationWatcher } from '../gamification/CelebrationWatcher';
+import { useRewardsStore } from '../../stores/rewardsStore';
+import { getRewardById } from '../../types/rewards';
 
 // Floating decorative blobs component
 function FloatingShapes() {
@@ -36,8 +38,13 @@ function FloatingShapes() {
 }
 
 export function Layout() {
+  // Equipping a theme has to change something, or the shop sells nothing.
+  // getRewardById(...)?.preview is the CSS class (see index.css).
+  const equippedTheme = useRewardsStore((state) => state.equippedTheme);
+  const themeClass = equippedTheme ? getRewardById(equippedTheme)?.preview ?? '' : '';
+
   return (
-    <div className="min-h-screen bg-canvas dark:bg-canvas-dark relative">
+    <div className={`min-h-screen bg-canvas dark:bg-canvas-dark relative ${themeClass}`}>
       {/* Floating decorative elements */}
       <FloatingShapes />
 
@@ -64,9 +71,10 @@ export function Layout() {
       {/* Toast notifications */}
       <AchievementToastContainer />
 
-      {/* Level-up celebration. Mounted here rather than on a page because XP is
-          awarded from study, games, grammar and conversation alike. */}
-      <LevelUpWatcher />
+      {/* Level-up and streak-milestone celebrations. Mounted here rather than
+          on a page because XP and streaks advance from study, games, grammar
+          and conversation alike. */}
+      <CelebrationWatcher />
     </div>
   );
 }

@@ -17,6 +17,8 @@ import { CategoryIcon, Badge } from '../components/cards/CategoryIcon';
 import { MnemonicEditor } from '../components/cards/MnemonicEditor';
 import { getMasteryLevel } from '../services/sm2Algorithm';
 import type { Flashcard } from '../types/flashcard';
+import { MasteryBadge } from '../components/cards/MasteryBadge';
+import type { MasteryLevel } from '../types/flashcard';
 
 export function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -157,6 +159,20 @@ export function BrowsePage() {
                               variant={card.gender}
                             />
                           )}
+                          {/* The mastery level was tracked per direction and
+                              shown nowhere. Uses the weaker of the two, since a
+                              card is only as learned as its harder direction. */}
+                          <MasteryBadge
+                            level={Math.min(
+                              engToCat.masteryLevel ?? 0,
+                              catToEng.masteryLevel ?? 0
+                            ) as MasteryLevel}
+                            consecutiveCorrect={Math.min(
+                              engToCat.consecutiveCorrect ?? 0,
+                              catToEng.consecutiveCorrect ?? 0
+                            )}
+                            size="sm"
+                          />
                         </div>
                         <p className="text-gray-500 truncate">{card.back}</p>
                       </div>

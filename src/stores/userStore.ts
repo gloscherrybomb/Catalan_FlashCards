@@ -51,6 +51,12 @@ interface UserState {
    * silence while a full celebration component sat unused.
    */
   pendingLevelUp: { from: number; to: number } | null;
+  /**
+   * Set when the streak crosses one of the XP-bonus milestones, cleared once
+   * celebrated. The bonuses at 7/14/30/60/100 days already existed and were
+   * applied silently, so the learner was never told a multiplier had changed.
+   */
+  pendingStreakMilestone: { streak: number; milestone: number; multiplier: number } | null;
   profile: UserProfile | null;
   progress: UserProgress;
   achievements: UnlockedAchievement[];
@@ -69,6 +75,8 @@ interface UserState {
   addAchievements: (newAchievements: UnlockedAchievement[]) => void;
   updateCardsLearned: (count: number) => Promise<void>;
   clearLevelUp: () => void;
+  clearStreakMilestone: () => void;
+  grantStreakFreeze: () => Promise<void>;
   recordSpeakingAttempt: (wasExcellent: boolean) => Promise<void>;
 }
 
@@ -90,6 +98,19 @@ const DEFAULT_PROGRESS: UserProgress = {
 
 // Day keys are local-time (see utils/dateKeys) so that "today" means the same
 // thing here as it does in the streak logic and the activity heatmap.
+
+/** Streak lengths that change the XP multiplier, ascending. */
+const STREAK_MILESTONES = [7, 14, 30, 60, 100];
+
+/** The XP multiplier a given streak earns. */
+function streakMultiplier(streak: number): number {
+  if (streak >= 100) return XP_VALUES.STREAK_BONUS_100;
+  if (streak >= 60) return XP_VALUES.STREAK_BONUS_60;
+  if (streak >= 30) return XP_VALUES.STREAK_BONUS_30;
+  if (streak >= 14) return XP_VALUES.STREAK_BONUS_14;
+  if (streak >= 7) return XP_VALUES.STREAK_BONUS_7;
+  return 1;
+}
 
 /**
  * Choose between locally-held progress and the copy Firestore returned.
@@ -121,6 +142,7 @@ export const useUserStore = create<UserState>()(
     (set, get) => ({
       user: null,
       pendingLevelUp: null,
+      pendingStreakMilestone: null,
       profile: null,
       progress: DEFAULT_PROGRESS,
       achievements: [],
@@ -356,14 +378,14 @@ export const useUserStore = create<UserState>()(
         const { user, progress } = get();
 
         // Apply streak bonus
-        let multiplier = 1;
-        if (progress.currentStreak >= 100) multiplier = XP_VALUES.STREAK_BONUS_100;
-        else if (progress.currentStreak >= 60) multiplier = XP_VALUES.STREAK_BONUS_60;
-        else if (progress.currentStreak >= 30) multiplier = XP_VALUES.STREAK_BONUS_30;
-        else if (progress.currentStreak >= 14) multiplier = XP_VALUES.STREAK_BONUS_14;
-        else if (progress.currentStreak >= 7) multiplier = XP_VALUES.STREAK_BONUS_7;
+        const multiplier = streakMultiplier(progress.currentStreak);
 
-        const bonusXP = Math.round(amount * multiplier);
+        // The XP-boost power-up stacks with the streak bonus. Imported lazily
+        // to avoid a store import cycle (rewards reads userStore).
+        const { useRewardsStore } = await import('./rewardsStore');
+        const boost = useRewardsStore.getState().getXPMultiplier();
+
+        const bonusXP = Math.round(amount * multiplier * boost);
         const newXP = (progress.xp || 0) + bonusXP;
         const newLevel = getLevelForXP(newXP).level;
 
@@ -444,7 +466,22 @@ export const useUserStore = create<UserState>()(
           newProgress.lastStreakFreezeUsed = new Date();
         }
 
-        set({ progress: { ...progress, ...newProgress } });
+        // Announce a milestone crossing. The bonus multipliers were already
+        // being applied in addXP; nothing ever told the learner about them.
+        const crossed = STREAK_MILESTONES.find(
+          m => newStreak >= m && progress.currentStreak < m
+        );
+
+        set({
+          progress: { ...progress, ...newProgress },
+          pendingStreakMilestone: crossed
+            ? {
+                streak: newStreak,
+                milestone: crossed,
+                multiplier: streakMultiplier(newStreak),
+              }
+            : get().pendingStreakMilestone,
+        });
 
         if (user && !isDemoMode) {
           await updateUserProgress(user.uid, newProgress);
@@ -549,6 +586,20 @@ export const useUserStore = create<UserState>()(
       },
 
       clearLevelUp: () => set({ pendingLevelUp: null }),
+
+      clearStreakMilestone: () => set({ pendingStreakMilestone: null }),
+
+      /** Restores the streak freeze that updateStreak consumes. */
+      grantStreakFreeze: async () => {
+        const { user, progress } = get();
+        const newProgress: Partial<UserProgress> = { streakFreezeAvailable: true };
+
+        set({ progress: { ...progress, ...newProgress } });
+
+        if (user && !isDemoMode) {
+          await updateUserProgress(user.uid, newProgress);
+        }
+      },
 
       updateCardsLearned: async (count: number) => {
         const { user, progress } = get();

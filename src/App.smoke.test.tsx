@@ -74,6 +74,8 @@ const ROUTES = [
   '/drills',
   '/settings',
   '/more',
+  '/rewards',
+  '/mistakes',
 ];
 
 function renderAt(path: string) {

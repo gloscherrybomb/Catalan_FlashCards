@@ -32,6 +32,8 @@ const StoriesPage = lazy(() => import('./pages/StoriesPage').then(m => ({ defaul
 const ConversationPage = lazy(() => import('./pages/ConversationPage').then(m => ({ default: m.ConversationPage })));
 const GamesPage = lazy(() => import('./pages/GamesPage').then(m => ({ default: m.GamesPage })));
 const PracticeDrillsPage = lazy(() => import('./pages/PracticeDrillsPage').then(m => ({ default: m.PracticeDrillsPage })));
+const MistakeReviewPage = lazy(() => import('./pages/MistakeReviewPage').then(m => ({ default: m.MistakeReviewPage })));
+const RewardsPage = lazy(() => import('./pages/RewardsPage').then(m => ({ default: m.RewardsPage })));
 const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow').then(m => ({ default: m.OnboardingFlow })));
 const MorePage = lazy(() => import('./pages/MorePage').then(m => ({ default: m.MorePage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
@@ -176,6 +178,8 @@ function AppContent() {
                   <Route path="/games" element={<GamesPage />} />
                   <Route path="/drills" element={<PracticeDrillsPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/rewards" element={<RewardsPage />} />
+                  <Route path="/mistakes" element={<MistakeReviewPage />} />
                   <Route path="/more" element={<MorePage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
