@@ -1,3 +1,4 @@
+import { EXTENDED_CURRICULUM_UNITS } from './curriculumExtended';
 // Curriculum Data for Structured Learning Path
 // Based on "Colloquial Catalan: The Complete Course for Beginners"
 
@@ -46,7 +47,7 @@ export interface PlacementQuestion {
 }
 
 // CURRICULUM UNITS - Based on "Colloquial Catalan" 20-unit course
-export const CURRICULUM_UNITS: CurriculumUnit[] = [
+const CORE_CURRICULUM_UNITS: CurriculumUnit[] = [
   // === A1 LEVEL: BEGINNER (Units 1-8) ===
   {
     id: 'unit-1-welcome',
@@ -1020,6 +1021,16 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     options: ['Development', 'Entertainment', 'Achievement', 'Movement'],
     correctAnswer: 'Development',
   },
+];
+
+/**
+ * The full learning path: the original twenty units plus the A2 and B1 units
+ * built from the extended vocabulary. Without the second half, units 21 to 50
+ * are flashcards with no route into them.
+ */
+export const CURRICULUM_UNITS: CurriculumUnit[] = [
+  ...CORE_CURRICULUM_UNITS,
+  ...EXTENDED_CURRICULUM_UNITS,
 ];
 
 // Helper functions
