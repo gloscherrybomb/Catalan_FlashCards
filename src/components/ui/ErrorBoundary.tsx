@@ -6,6 +6,19 @@ import { Button } from './Button';
 
 interface Props {
   children: ReactNode;
+  /**
+   * When this value changes the boundary clears itself.
+   *
+   * Pass the current route so navigating away from a page that threw recovers
+   * on its own. Without it a single broken route latches the boundary and the
+   * only way out is a full reload.
+   */
+  resetKey?: string;
+  /**
+   * Render a scoped panel rather than taking over the screen, so the header and
+   * navigation survive and the learner can move somewhere else.
+   */
+  inline?: boolean;
 }
 
 interface State {
@@ -19,8 +32,15 @@ export class ErrorBoundary extends Component<Props, State> {
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
+  }
+
+  componentDidUpdate(prevProps: Props): void {
+    // Recover when the caller signals a new context (typically a route change).
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false, error: null });
+    }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
@@ -28,6 +48,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = (): void => {
+    // An inline boundary can retry in place; a full-screen one has lost enough
+    // context that reloading is the honest option.
+    if (this.props.inline) {
+      this.setState({ hasError: false, error: null });
+      return;
+    }
     this.setState({ hasError: false, error: null });
     window.location.reload();
   };
@@ -39,6 +65,26 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.inline) {
+        return (
+          <div className="max-w-md mx-auto px-4 py-16 text-center" role="alert">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-miro-red/10 flex items-center justify-center">
+              <AlertTriangle className="w-7 h-7 text-miro-red" aria-hidden="true" />
+            </div>
+            <h2 className="text-xl font-display font-bold text-miro-blue dark:text-ink-light mb-2">
+              This page ran into a problem
+            </h2>
+            <p className="text-sm text-miro-blue/60 dark:text-ink-light/60 mb-6">
+              The rest of the app is fine — you can try again, or pick something
+              else from the menu.
+            </p>
+            <Button onClick={this.handleReset} leftIcon={<RefreshCw className="w-4 h-4" />}>
+              Try again
+            </Button>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen bg-canvas dark:bg-canvas-dark flex items-center justify-center p-4">
           <motion.div

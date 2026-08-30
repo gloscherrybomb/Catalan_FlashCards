@@ -42,12 +42,21 @@ export default tseslint.config(
       ],
       // Firestore payloads are genuinely dynamic in places; warn rather than block.
       '@typescript-eslint/no-explicit-any': 'warn',
+      // Use services/logger instead: it suppresses debug/info in production and
+      // keeps a history buffer, neither of which a bare console call does.
+      'no-console': 'error',
     },
   },
   {
     // Node-side Cloud Functions and build config.
     files: ['functions/**/*.ts', '*.config.{js,ts}'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // The logger is the one place console belongs - it is what everything else
+    // is meant to call instead.
+    files: ['src/services/logger.ts'],
+    rules: { 'no-console': 'off' },
   },
   {
     files: ['**/*.{test,spec}.{ts,tsx}', 'src/test/**'],

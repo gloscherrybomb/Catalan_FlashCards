@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { logger } from './services/logger';
 import { Layout } from './components/layout/Layout';
@@ -47,6 +47,7 @@ function AppContent() {
   // Re-evaluated after loading, because the decision depends on whether this
   // learner already has cards or review history.
   const [onboardingDone, setOnboardingDone] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     let mounted = true;
@@ -139,27 +140,32 @@ function AppContent() {
         <Route
           path="*"
           element={
-            <Suspense fallback={<RouteFallback />}>
-              <Routes>
-                <Route path="/study" element={<StudyPage />} />
-                <Route path="/browse" element={<BrowsePage />} />
-                <Route path="/import" element={<ImportPage />} />
-                <Route path="/stats" element={<StatsPage />} />
-                <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/achievements" element={<AchievementsPage />} />
-                <Route path="/grammar" element={<GrammarPage />} />
-                <Route path="/grammar/:lessonId" element={<GrammarPage />} />
-                <Route path="/learn" element={<LearningPathPage />} />
-                <Route path="/learning-path" element={<LearningPathPage />} />
-                <Route path="/stories" element={<StoriesPage />} />
-                <Route path="/conversation" element={<ConversationPage />} />
-                <Route path="/games" element={<GamesPage />} />
-                <Route path="/drills" element={<PracticeDrillsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/more" element={<MorePage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Suspense>
+            /* Scoped to the route: a page that throws no longer takes the
+               header and navigation down with it, and moving to another route
+               clears the boundary automatically. */
+            <ErrorBoundary inline resetKey={location.pathname}>
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/study" element={<StudyPage />} />
+                  <Route path="/browse" element={<BrowsePage />} />
+                  <Route path="/import" element={<ImportPage />} />
+                  <Route path="/stats" element={<StatsPage />} />
+                  <Route path="/analytics" element={<AnalyticsPage />} />
+                  <Route path="/achievements" element={<AchievementsPage />} />
+                  <Route path="/grammar" element={<GrammarPage />} />
+                  <Route path="/grammar/:lessonId" element={<GrammarPage />} />
+                  <Route path="/learn" element={<LearningPathPage />} />
+                  <Route path="/learning-path" element={<LearningPathPage />} />
+                  <Route path="/stories" element={<StoriesPage />} />
+                  <Route path="/conversation" element={<ConversationPage />} />
+                  <Route path="/games" element={<GamesPage />} />
+                  <Route path="/drills" element={<PracticeDrillsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/more" element={<MorePage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
           }
         />
       </Route>

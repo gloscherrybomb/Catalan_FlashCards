@@ -201,7 +201,7 @@ function VocabIntroCard({
 
           {/* Catalan translation - visible immediately */}
           <div className="flex items-center justify-center gap-3">
-            <p className="text-3xl font-bold text-miro-green">
+            <p lang="ca" className="text-3xl font-bold text-miro-green">
               {flashcard.back}
             </p>
             <button

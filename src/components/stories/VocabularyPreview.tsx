@@ -19,6 +19,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ProgressBar } from '../ui/ProgressRing';
 import { addStoryVocabToLibrary } from '../../utils/libraryHelpers';
+import { logger } from '../../services/logger';
 
 interface VocabularyPreviewProps {
   story: Story;
@@ -284,7 +285,9 @@ export function VocabularyPreview({
       try {
         await addStoryVocabToLibrary(vocabulary, story.title);
       } catch (error) {
-        console.error('Failed to add vocab to library:', error);
+        logger.error('Failed to add story vocabulary to library', 'VocabularyPreview', {
+          error: String(error),
+        });
       } finally {
         setIsAddingToLibrary(false);
         onComplete();
@@ -294,7 +297,11 @@ export function VocabularyPreview({
 
   const handleSkip = () => {
     // Still add vocab to library when skipping
-    addStoryVocabToLibrary(vocabulary, story.title).catch(console.error);
+    addStoryVocabToLibrary(vocabulary, story.title).catch((error) => {
+      logger.error('Failed to add story vocabulary to library', 'VocabularyPreview', {
+        error: String(error),
+      });
+    });
     onSkip?.();
   };
 

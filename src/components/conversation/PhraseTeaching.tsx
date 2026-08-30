@@ -18,6 +18,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ProgressBar } from '../ui/ProgressRing';
 import { addConversationPhrasesToLibrary } from '../../utils/libraryHelpers';
+import { logger } from '../../services/logger';
 
 interface PhraseTeachingProps {
   scenario: ConversationScenario;
@@ -169,7 +170,9 @@ export function PhraseTeaching({
       try {
         await addConversationPhrasesToLibrary(phrases, scenario.title);
       } catch (error) {
-        console.error('Failed to add phrases to library:', error);
+        logger.error('Failed to add phrases to library', 'PhraseTeaching', {
+          error: String(error),
+        });
       } finally {
         setIsAddingToLibrary(false);
         onComplete();

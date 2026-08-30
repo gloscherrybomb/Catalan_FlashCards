@@ -125,6 +125,11 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
   const back = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
   const frontLabel = direction === 'english-to-catalan' ? 'English' : 'Catala';
   const backLabel = direction === 'english-to-catalan' ? 'Catala' : 'English';
+  // Tag whichever face holds Catalan, so a screen reader pronounces it with
+  // Catalan phonetics instead of reading it as English. Which side that is
+  // flips with the study direction.
+  const frontLang = direction === 'english-to-catalan' ? 'en' : 'ca';
+  const backLang = direction === 'english-to-catalan' ? 'ca' : 'en';
 
   // Find example sentence for context
   const exampleSentence = useMemo(
@@ -261,6 +266,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                     initial={{ scale: 0.95 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.3 }}
+                    lang={frontLang}
                   >
                     {front}
                   </motion.h2>
@@ -335,6 +341,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.3, duration: 0.3 }}
+                    lang={backLang}
                   >
                     {back}
                   </motion.h2>

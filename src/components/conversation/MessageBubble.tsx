@@ -55,7 +55,9 @@ export function MessageBubble({ message, showTranslation = false }: MessageBubbl
             }
           `}
         >
-          <p className="text-sm leading-relaxed">{message.content}</p>
+          {/* lang="ca" so a screen reader uses Catalan phonetics rather than
+              reading Catalan with English pronunciation rules. */}
+          <p lang="ca" className="text-sm leading-relaxed">{message.content}</p>
 
           {/* Translation toggle for assistant messages */}
           {!isUser && message.translation && (

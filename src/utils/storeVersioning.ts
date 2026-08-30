@@ -4,6 +4,8 @@
  * Provides a migration framework for localStorage schema changes,
  * ensuring backwards compatibility when the data structure evolves.
  */
+import { logger } from '../services/logger';
+
 
 /**
  * Versioned storage wrapper
@@ -93,7 +95,10 @@ export function createVersionedStorage<T>(
           try {
             data = migration(data);
           } catch (error) {
-            console.error(`Migration to version ${nextVersion} failed:`, error);
+            logger.error('Store migration failed', 'StoreVersioning', {
+              version: nextVersion,
+              error: String(error),
+            });
             // Return null to fall back to defaults
             return null;
           }

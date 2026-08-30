@@ -28,6 +28,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { StreakWarning } from '../components/gamification/StudyReminder';
 import { isSameDay } from 'date-fns';
+import { logger } from '../services/logger';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -510,7 +511,9 @@ function EmptyStateWithStarter() {
       const count = await loadStarterVocabulary();
       setLoadedCount(count);
     } catch (error) {
-      console.error('Failed to load starter vocabulary:', error);
+      logger.error('Failed to load starter vocabulary', 'HomePage', {
+        error: String(error),
+      });
     } finally {
       setIsLoading(false);
     }
