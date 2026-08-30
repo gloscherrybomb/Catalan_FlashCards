@@ -44,17 +44,21 @@ export function calculateSM2(
   let newInterval = progress.interval;
   let newReps = progress.repetitions;
 
+  // SM-2 updates the ease factor on every grade, not only on success. This
+  // used to sit inside the success branch, so failing a card never made it
+  // harder: its ease stayed at the 2.5 default however often it was missed,
+  // intervals grew as fast as an easy card's, and isStrugglingCard - the
+  // signal that decides which cards demand typed recall - could never fire.
+  newEF = Math.max(
+    SM2_CONFIG.MIN_EASE_FACTOR,
+    progress.easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+  );
+
   if (q < 3) {
-    // Failed - reset repetitions
+    // Failed - back to the start of the ladder.
     newReps = 0;
     newInterval = 1;
   } else {
-    // Success - update ease factor
-    newEF = Math.max(
-      SM2_CONFIG.MIN_EASE_FACTOR,
-      progress.easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
-    );
-
     if (newReps === 0) {
       newInterval = 1;
     } else if (newReps === 1) {

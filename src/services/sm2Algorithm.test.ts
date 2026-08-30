@@ -5,6 +5,7 @@ import {
   isDueForReview,
   isNewCard,
   isStrugglingCard,
+  requiresTyping,
   getMasteryLevel,
   qualityFromTypingResult,
   qualityFromMultipleChoice,
@@ -280,5 +281,35 @@ describe('SM-2 Algorithm', () => {
     it('should return 3 for slow correct', () => {
       expect(qualityFromMultipleChoice(true, 5000)).toBe(3);
     });
+  });
+});
+
+describe('ease factor on failure', () => {
+  it('lowers the ease factor when a card is failed', () => {
+    const progress = createInitialProgress('card-1', 'english-to-catalan');
+
+    const failed = calculateSM2(progress, 1);
+
+    expect(failed.easeFactor).toBeLessThan(SM2_CONFIG.DEFAULT_EASE_FACTOR);
+  });
+
+  it('marks a repeatedly failed card as struggling', () => {
+    let progress = createInitialProgress('card-2', 'english-to-catalan');
+
+    // Three blackouts in a row is the clearest signal a card is not sticking.
+    progress = calculateSM2(progress, 0);
+    progress = calculateSM2(progress, 0);
+    progress = calculateSM2(progress, 0);
+
+    expect(isStrugglingCard(progress)).toBe(true);
+    expect(requiresTyping(progress)).toBe(true);
+  });
+
+  it('never drops the ease factor below the configured floor', () => {
+    let progress = createInitialProgress('card-3', 'english-to-catalan');
+
+    for (let i = 0; i < 20; i++) progress = calculateSM2(progress, 0);
+
+    expect(progress.easeFactor).toBe(SM2_CONFIG.MIN_EASE_FACTOR);
   });
 });
