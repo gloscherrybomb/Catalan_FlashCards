@@ -181,7 +181,7 @@ export const STARTER_VOCABULARY: StarterCard[] = [
   // Common Phrases (18 words)
   { front: "I don't understand", back: 'No entenc', category: 'Phrases' },
   { front: 'I speak a little Catalan', back: 'Parlo una mica de català', category: 'Phrases' },
-  { front: 'Do you speak English?', back: 'Parles anglès?', category: 'Phrases', notes: 'Informal' },
+  { front: 'Do you speak English? (informal)', back: 'Parles anglès?', category: 'Phrases', notes: 'Informal' },
   { front: 'What is your name?', back: 'Com et dius?', category: 'Phrases', notes: 'Informal' },
   { front: 'My name is...', back: 'Em dic...', category: 'Phrases' },
   { front: 'Nice to meet you', back: 'Encantat/da', category: 'Phrases', notes: 'Masc/Fem ending' },

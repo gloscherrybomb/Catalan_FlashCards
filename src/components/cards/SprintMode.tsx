@@ -4,7 +4,6 @@ import { Zap, Trophy, X } from 'lucide-react';
 import type { StudyCard } from '../../types/flashcard';
 import { Button } from '../ui/Button';
 import { Confetti } from '../ui/Confetti';
-import { stripBracketedContent } from '../../utils/textUtils';
 
 interface SprintModeProps {
   cards: StudyCard[];
@@ -61,16 +60,18 @@ export function SprintMode({
   const currentCard = cards[currentIndex];
   const isComplete = currentIndex >= cards.length;
 
+  // Both faces are display-only here, so they keep the parenthetical that says
+  // which of two answers the prompt is asking for.
   const front = currentCard
-    ? stripBracketedContent(currentCard.direction === 'english-to-catalan'
+    ? (currentCard.direction === 'english-to-catalan'
         ? currentCard.flashcard.front
-        : currentCard.flashcard.back)
+        : currentCard.flashcard.back).trim()
     : '';
 
   const back = currentCard
-    ? stripBracketedContent(currentCard.direction === 'english-to-catalan'
+    ? (currentCard.direction === 'english-to-catalan'
         ? currentCard.flashcard.back
-        : currentCard.flashcard.front)
+        : currentCard.flashcard.front).trim()
     : '';
 
   const advance = useCallback(() => {
@@ -81,7 +82,7 @@ export function SprintMode({
 
   const recordAnswer = useCallback(
     (isCorrect: boolean, timeSpent: number, answer: string, delayMs: number) => {
-      if (!currentCard) return;
+      if (!currentCard || showAnswer) return;
 
       setResults((prev) => [
         ...prev,
@@ -98,13 +99,13 @@ export function SprintMode({
       onAnswer(sprintQuality(isCorrect, timeSpent, timeLimit));
 
       if (isCorrect) {
+        // Updaters must stay pure - React double-invokes them under
+        // StrictMode - so the streak is derived here rather than inside one.
+        const nextStreak = streak + 1;
         setTotalCorrect((prev) => prev + 1);
-        setStreak((prev) => {
-          const next = prev + 1;
-          setBestStreak((best) => Math.max(best, next));
-          if (next === 5 || next === 10) setShowConfetti(true);
-          return next;
-        });
+        setStreak(nextStreak);
+        setBestStreak((best) => Math.max(best, nextStreak));
+        if (nextStreak === 5 || nextStreak === 10) setShowConfetti(true);
       } else {
         setStreak(0);
       }
@@ -112,7 +113,7 @@ export function SprintMode({
       setShowAnswer(true);
       setTimeout(advance, delayMs);
     },
-    [currentCard, onAnswer, timeLimit, advance]
+    [currentCard, showAnswer, streak, onAnswer, timeLimit, advance]
   );
 
   const handleTimeout = useCallback(() => {
@@ -124,24 +125,25 @@ export function SprintMode({
     recordAnswer(isCorrect, timeLimit - timeLeft, isCorrect ? 'correct' : 'wrong', 1000);
   };
 
-  // Timer countdown. handleTimeout is a dependency: without it the interval
-  // closed over the first render's copy and timing out always graded the
-  // *first* card, whatever was on screen.
+  // The interval only counts down. Expiry used to be handled inside the
+  // setTimeLeft updater, which graded the card twice: React deliberately
+  // double-invokes updaters under StrictMode to expose impure ones, so every
+  // timeout fired onAnswer twice - two SM-2 results and double XP for one card.
   useEffect(() => {
     if (isComplete || showAnswer || isPaused) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 0) {
-          handleTimeout();
-          return timeLimit;
-        }
-        return prev - 0.1;
-      });
+      setTimeLeft((prev) => Math.max(0, prev - 0.1));
     }, 100);
 
     return () => clearInterval(timer);
-  }, [currentIndex, showAnswer, isComplete, isPaused, timeLimit, handleTimeout]);
+  }, [currentIndex, showAnswer, isComplete, isPaused]);
+
+  // Grading is a side effect, so it belongs in an effect of its own.
+  useEffect(() => {
+    if (isComplete || showAnswer || isPaused || timeLeft > 0) return;
+    handleTimeout();
+  }, [timeLeft, isComplete, showAnswer, isPaused, handleTimeout]);
 
   // Completion screen
   if (isComplete) {

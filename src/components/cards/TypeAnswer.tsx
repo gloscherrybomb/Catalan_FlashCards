@@ -39,7 +39,9 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
     inputRef.current?.focus();
   }, [flashcard.id, direction]);
 
-  const question = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.front : flashcard.back);
+  // Keep the parenthetical on the prompt - it is what tells the learner which
+  // of two answers is wanted. Only the expected answer is stripped.
+  const question = (direction === 'english-to-catalan' ? flashcard.front : flashcard.back).trim();
   const correctAnswer = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
   const questionLabel = direction === 'english-to-catalan' ? 'English' : 'Català';
   const answerLabel = direction === 'english-to-catalan' ? 'Català' : 'English';

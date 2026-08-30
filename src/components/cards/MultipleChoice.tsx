@@ -58,7 +58,8 @@ export function MultipleChoice({ studyCard, onAnswer }: MultipleChoiceProps) {
     return allOptions.sort(() => Math.random() - 0.5);
   }, [flashcard, direction, flashcards]);
 
-  const questionDisplay = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.front : flashcard.back);
+  // The prompt keeps its disambiguating note; the options are compared stripped.
+  const questionDisplay = (direction === 'english-to-catalan' ? flashcard.front : flashcard.back).trim();
   const questionLabel = direction === 'english-to-catalan' ? 'English' : 'Català';
   const answerLabel = direction === 'english-to-catalan' ? 'Català' : 'English';
 

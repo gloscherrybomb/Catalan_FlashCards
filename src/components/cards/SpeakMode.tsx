@@ -43,7 +43,7 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
 
   // For pronunciation practice, we always speak Catalan
   const textToSpeak = stripBracketedContent(flashcard.back); // Catalan text
-  const translationHint = stripBracketedContent(flashcard.front); // English translation
+  const translationHint = flashcard.front.trim(); // English prompt, note and all
 
   // Check for speech recognition support
   const isSupported = speechRecognitionService.isSupported();

@@ -123,8 +123,15 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
     };
   }, [flashcard.id, flashcard.front, flashcard.imageUrl, flashcard.imageThumbUrl, flashcard.imageAttribution]);
 
-  const front = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.front : flashcard.back);
-  const back = stripBracketedContent(direction === 'english-to-catalan' ? flashcard.back : flashcard.front);
+  // The parenthetical IS the question. "welcome (to a man)" and "welcome (to a
+  // woman)" are separate cards wanting benvingut and benvinguda; stripping the
+  // note from the prompt showed both as plain "welcome" and made the card a coin
+  // flip. 18 English prompts collided this way. Speech and grading still use the
+  // stripped form - "(to a man)" cannot be pronounced.
+  const front = direction === 'english-to-catalan' ? flashcard.front : flashcard.back;
+  const back = direction === 'english-to-catalan' ? flashcard.back : flashcard.front;
+  const frontSpoken = stripBracketedContent(front);
+  const backSpoken = stripBracketedContent(back);
   const frontLabel = direction === 'english-to-catalan' ? 'English' : 'Catala';
   const backLabel = direction === 'english-to-catalan' ? 'Catala' : 'English';
   // Tag whichever face holds Catalan, so a screen reader pronounces it with
@@ -216,7 +223,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
               <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-miro-red/20 blob-2" />
 
               <div className="absolute top-4 left-4">
-                <CategoryIcon category={flashcard.category} word={front} size="md" />
+                <CategoryIcon category={flashcard.category} word={frontSpoken} size="md" />
               </div>
 
               <span className="absolute top-4 right-4 text-xs font-bold text-miro-blue/50 dark:text-ink-light/50 uppercase tracking-wider">
@@ -296,11 +303,11 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
 
                   <div className="flex flex-col items-center gap-1">
                     <motion.button
-                      onClick={(e) => handlePlayAudio(e, front, direction === 'catalan-to-english')}
+                      onClick={(e) => handlePlayAudio(e, frontSpoken, direction === 'catalan-to-english')}
                       className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-miro-blue/70 dark:text-ink-light/70 hover:text-miro-red hover:bg-miro-red/10 rounded-xl transition-colors font-medium"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      aria-label={`Listen to pronunciation of "${front}"`}
+                      aria-label={`Listen to pronunciation of "${frontSpoken}"`}
                     >
                       <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse text-miro-red' : ''}`} aria-hidden="true" />
                       Listen
@@ -356,11 +363,11 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                   </motion.h2>
                   <div className="flex flex-col items-center gap-1">
                     <motion.button
-                      onClick={(e) => handlePlayAudio(e, back, direction === 'english-to-catalan')}
+                      onClick={(e) => handlePlayAudio(e, backSpoken, direction === 'english-to-catalan')}
                       className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white dark:bg-gray-800/10 rounded-xl transition-colors font-medium"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      aria-label={`Listen to pronunciation of "${back}"`}
+                      aria-label={`Listen to pronunciation of "${backSpoken}"`}
                     >
                       <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse' : ''}`} aria-hidden="true" />
                       Listen

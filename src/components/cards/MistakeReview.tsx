@@ -114,10 +114,10 @@ export function MistakeReview({ mistakes, onComplete, onPracticeAgain }: Mistake
                 <div className="flex items-center justify-between">
                   <div className="text-left">
                     <p className="font-medium text-gray-800 dark:text-white">
-                      {stripBracketedContent(mistake.flashcard.front)}
+                      {mistake.flashcard.front}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {stripBracketedContent(mistake.flashcard.back)}
+                      {mistake.flashcard.back}
                     </p>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
@@ -159,9 +159,11 @@ export function MistakeReview({ mistakes, onComplete, onPracticeAgain }: Mistake
     );
   }
 
-  const questionText = stripBracketedContent(currentMistake.direction === 'english-to-catalan'
+  // The prompt keeps its parenthetical; the answer is fed to speech synthesis,
+  // so that one is stripped.
+  const questionText = (currentMistake.direction === 'english-to-catalan'
     ? currentMistake.flashcard.front
-    : currentMistake.flashcard.back);
+    : currentMistake.flashcard.back).trim();
 
   const answerText = stripBracketedContent(currentMistake.direction === 'english-to-catalan'
     ? currentMistake.flashcard.back
