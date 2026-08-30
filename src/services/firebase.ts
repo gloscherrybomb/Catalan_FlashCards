@@ -224,9 +224,11 @@ export async function updateUserProgress(userId: string, progress: Partial<UserP
   await setDoc(ref, updateData, { merge: true });
 }
 
-// Helper function to remove undefined values from an object
-function removeUndefinedFields<T extends Record<string, any>>(obj: T): Partial<T> {
-  const cleaned: Record<string, any> = {};
+/**
+ * Strip undefined values before writing to Firestore, which rejects them.
+ */
+function removeUndefinedFields<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const cleaned: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
       cleaned[key] = value;
@@ -369,6 +371,36 @@ export interface UIPreferencesData {
   studyReminderDismissedDate?: string;
 }
 
+/**
+ * A challenge as it comes back from Firestore: dates may be Timestamps (written
+ * by this app) or ISO strings (written by an older version), so both are
+ * handled at the boundary rather than trusted.
+ */
+type FirestoreChallenge = Record<string, unknown> & {
+  expiresAt?: Timestamp | string;
+  startsAt?: Timestamp | string;
+  completedAt?: Timestamp | string | null;
+};
+
+/**
+ * Coerce a Firestore date field to a Date.
+ *
+ * Handles both shapes the app has written over time: a Timestamp (current) and
+ * an ISO string (older versions). Returns undefined for a missing or
+ * unparseable value rather than an Invalid Date, which would otherwise
+ * propagate silently into challenge expiry comparisons.
+ */
+function toOptionalDate(value: Timestamp | string | null | undefined): Date | undefined {
+  if (value == null) return undefined;
+  const date = value instanceof Timestamp ? value.toDate() : new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+/** As above, but for a field the app requires; falls back to the epoch-safe now. */
+function toDate(value: Timestamp | string | null | undefined): Date {
+  return toOptionalDate(value) ?? new Date();
+}
+
 function serializeDailyChallenge(challenge: DailyChallenge) {
   return {
     ...challenge,
@@ -377,15 +409,12 @@ function serializeDailyChallenge(challenge: DailyChallenge) {
   };
 }
 
-function deserializeDailyChallenge(challenge: any): DailyChallenge {
+/** Firestore returns Timestamps where the app expects Dates. */
+function deserializeDailyChallenge(challenge: FirestoreChallenge): DailyChallenge {
   return {
     ...challenge,
-    expiresAt: challenge.expiresAt?.toDate ? challenge.expiresAt.toDate() : new Date(challenge.expiresAt),
-    completedAt: challenge.completedAt?.toDate
-      ? challenge.completedAt.toDate()
-      : challenge.completedAt
-        ? new Date(challenge.completedAt)
-        : undefined,
+    expiresAt: toDate(challenge.expiresAt),
+    completedAt: toOptionalDate(challenge.completedAt),
   } as DailyChallenge;
 }
 
@@ -398,16 +427,12 @@ function serializeWeeklyChallenge(challenge: WeeklyChallenge) {
   };
 }
 
-function deserializeWeeklyChallenge(challenge: any): WeeklyChallenge {
+function deserializeWeeklyChallenge(challenge: FirestoreChallenge): WeeklyChallenge {
   return {
     ...challenge,
-    startsAt: challenge.startsAt?.toDate ? challenge.startsAt.toDate() : new Date(challenge.startsAt),
-    expiresAt: challenge.expiresAt?.toDate ? challenge.expiresAt.toDate() : new Date(challenge.expiresAt),
-    completedAt: challenge.completedAt?.toDate
-      ? challenge.completedAt.toDate()
-      : challenge.completedAt
-        ? new Date(challenge.completedAt)
-        : undefined,
+    startsAt: toDate(challenge.startsAt),
+    expiresAt: toDate(challenge.expiresAt),
+    completedAt: toOptionalDate(challenge.completedAt),
   } as WeeklyChallenge;
 }
 
@@ -415,7 +440,10 @@ export async function getDailyChallengesData(userId: string): Promise<DailyChall
   const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'dailyChallenges'));
   if (!docSnap.exists()) return null;
 
-  const data = docSnap.data() as DailyChallengesData;
+  // The document holds raw Firestore data - dates are Timestamps, not Dates -
+  // so it is read at that shape and converted, rather than asserted to be the
+  // already-deserialised type.
+  const data = docSnap.data() as { date: string; challenges?: FirestoreChallenge[] };
   return {
     date: data.date,
     challenges: (data.challenges || []).map(deserializeDailyChallenge),
@@ -434,7 +462,11 @@ export async function getWeeklyChallengesData(userId: string): Promise<WeeklyCha
   const docSnap = await getDoc(doc(db, 'users', userId, 'data', 'weeklyChallenges'));
   if (!docSnap.exists()) return null;
 
-  const data = docSnap.data() as WeeklyChallengesData;
+  const data = docSnap.data() as {
+    weekStart: string;
+    daysStudied?: string[];
+    challenges?: FirestoreChallenge[];
+  };
   return {
     weekStart: data.weekStart,
     daysStudied: data.daysStudied || [],

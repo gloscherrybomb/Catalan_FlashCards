@@ -66,6 +66,9 @@ export function HomePage() {
       total += p.total;
     });
     return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+    // getLevelProgress reads lessonProgress from the store, so it is the real
+    // invalidator even though ESLint cannot see the read.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getLevelProgress, lessonProgress]);
 
   // Find current unit info
@@ -82,6 +85,9 @@ export function HomePage() {
 
   // Calculate cards due
   const getUniqueCardsDueCount = useCardStore((state) => state.getUniqueCardsDueCount);
+  // getUniqueCardsDueCount reads flashcards and cardProgress from the store, so
+  // those are the real invalidators even though ESLint cannot see the reads.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const uniqueCardsDue = useMemo(() => getUniqueCardsDueCount(), [flashcards, cardProgress, getUniqueCardsDueCount]);
 
   const handleStartLearningPath = useCallback(() => {

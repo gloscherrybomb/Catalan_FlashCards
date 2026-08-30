@@ -44,6 +44,27 @@ const speechSynthesisMock = {
 };
 Object.defineProperty(window, 'speechSynthesis', { value: speechSynthesisMock });
 
+
+// Mock matchMedia - jsdom does not implement it, and ThemeProvider calls it to
+// detect the system colour scheme, so any component test that renders the app
+// shell throws without this.
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),    // deprecated, still called by some libraries
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }),
+});
+
+// Mock scrollIntoView - jsdom has no layout, and chat/study views call it.
+Element.prototype.scrollIntoView = vi.fn();
+
 // Reset mocks between tests
 beforeEach(() => {
   vi.clearAllMocks();

@@ -46,6 +46,9 @@ export function PracticeDrillsPage() {
   const getWeaknessDeck = useCardStore((state) => state.getWeaknessDeck);
   const mistakeHistory = useCardStore((state) => state.mistakeHistory);
 
+  // getCategoryStats reads flashcards from the store, so flashcards is the real
+  // invalidator even though ESLint cannot see that read.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const categoryStats = useMemo(() => getCategoryStats(), [getCategoryStats, flashcards]);
   const weaknessDeck = useMemo(() => getWeaknessDeck(30), [getWeaknessDeck]);
 

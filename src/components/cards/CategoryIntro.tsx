@@ -16,6 +16,7 @@ import {
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { audioService } from '../../services/audioService';
+import { markCategoryIntroShown } from '../../services/categoryIntroStorage';
 
 interface CategoryIntroProps {
   category: string;
@@ -207,38 +208,6 @@ const DEFAULT_CATEGORY_INFO: CategoryInfo = {
   learningTip: 'Take your time with each word. Try to visualize it and connect it to what you already know.',
   exampleWords: [],
 };
-
-// Storage key for tracking shown category intros
-const SHOWN_INTROS_KEY = 'catalan_shown_category_intros';
-
-/**
- * Check if a category intro has been shown before
- */
-export function hasCategoryIntroBeenShown(category: string): boolean {
-  try {
-    const shown = localStorage.getItem(SHOWN_INTROS_KEY);
-    const shownCategories: string[] = shown ? JSON.parse(shown) : [];
-    return shownCategories.includes(category);
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Mark a category intro as shown
- */
-export function markCategoryIntroShown(category: string): void {
-  try {
-    const shown = localStorage.getItem(SHOWN_INTROS_KEY);
-    const shownCategories: string[] = shown ? JSON.parse(shown) : [];
-    if (!shownCategories.includes(category)) {
-      shownCategories.push(category);
-      localStorage.setItem(SHOWN_INTROS_KEY, JSON.stringify(shownCategories));
-    }
-  } catch {
-    // Ignore storage errors
-  }
-}
 
 export function CategoryIntro({
   category,

@@ -49,13 +49,16 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
   const isSupported = speechRecognitionService.isSupported();
 
   useEffect(() => {
-    // Check microphone permission on mount
-    checkPermission();
+    // Check microphone permission on mount.
+    void checkPermission();
 
     return () => {
       speechRecognitionService.abort();
       audioService.stop();
     };
+    // Mount-only setup. checkPermission is declared below and only reads
+    // isSupported, which cannot change for a given browser.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkPermission = async () => {

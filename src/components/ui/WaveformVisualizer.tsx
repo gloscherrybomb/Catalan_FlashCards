@@ -32,6 +32,10 @@ export function WaveformVisualizer({
     return () => {
       cleanup();
     };
+    // Deliberately keyed on isActive alone. Including audioContext would loop:
+    // initAudio sets it, the effect re-runs, sees it set, tears the graph down,
+    // sets it back to null, and re-runs again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
   useEffect(() => {
@@ -40,6 +44,10 @@ export function WaveformVisualizer({
     } else {
       cancelAnimationFrame(animationRef.current);
     }
+    // draw() re-reads analyser and dataArray from state on every frame, so
+    // listing it here would restart the animation loop rather than keep it in
+    // step with the audio graph.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, analyser, dataArray]);
 
   const initAudio = async () => {
