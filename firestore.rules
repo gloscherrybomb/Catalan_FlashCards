@@ -2,12 +2,68 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only access their own data
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
 
-    // Deny all other access by default
+    // A light abuse guard. Rules cannot measure a document's byte size, but a
+    // field count keeps a compromised or buggy client from turning the project
+    // into free unbounded storage. Every legitimate document here is far
+    // smaller than this.
+    //
+    // Only ever applied to create and update: request.resource does not exist
+    // on a read or a delete, and evaluating it there fails the rule and denies
+    // the owner access to their own data.
+    function isReasonableSize() {
+      return request.resource.data.size() < 200;
+    }
+
+    match /users/{userId} {
+
+      // The user's own top-level document.
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isReasonableSize();
+
+      // Collections the client legitimately owns and maintains.
+      // Enumerated rather than matched with {document=**}: a wildcard let a
+      // signed-in user create arbitrary collections under their own tree, and
+      // Google sign-in accepts any Google account, so that was open to anyone
+      // on the internet who found the site.
+      match /data/{docId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isReasonableSize();
+      }
+      match /cards/{cardId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isReasonableSize();
+      }
+      match /cardProgress/{progressId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isReasonableSize();
+      }
+      match /achievements/{achievementId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isReasonableSize();
+      }
+      match /dailyStats/{date} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isReasonableSize();
+      }
+
+      // Server-owned. This holds the conversation-practice daily quota, written
+      // by the Cloud Function through the Admin SDK, which bypasses these rules
+      // entirely. The client may read its own usage to display remaining
+      // messages, but must never write it: under the previous catch-all rule a
+      // user could simply delete this document and reset their own daily cap,
+      // spending the project owner's API credits without limit.
+      match /usage/{usageId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
+      }
+    }
+
+    // Deny everything else by default.
     match /{document=**} {
       allow read, write: if false;
     }
