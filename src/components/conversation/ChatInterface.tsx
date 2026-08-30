@@ -14,8 +14,9 @@ import {
   type ConversationScenario,
   type ConversationContext,
   startConversation,
-  processUserMessage,
+  processUserMessageAsync,
 } from '../../services/conversationService';
+import { logger } from '../../services/logger';
 
 interface ChatInterfaceProps {
   scenario: ConversationScenario;
@@ -29,6 +30,9 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
   const [showTranslations, setShowTranslations] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  // Null until the first exchange tells us which tutor answered.
+  const [usingLiveTutor, setUsingLiveTutor] = useState<boolean | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,37 +43,70 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
   }, [context.messages]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
 
     const userInput = input.trim();
+    const contextAtSend = context;
     setInput('');
     setShowSuggestions(false);
+    setNotice(null);
 
-    // Process the message
-    const { userMsg, assistantMsg } = processUserMessage(context, userInput);
-
-    // Add user message immediately
-    setContext(prev => ({
-      ...prev,
-      messages: [...prev.messages, userMsg],
-    }));
-
-    // Simulate typing delay
+    // Echo the learner's message straight away; corrections are attached once
+    // the tutor has looked at it.
+    const pendingUserMessage = {
+      id: crypto.randomUUID(),
+      role: 'user' as const,
+      content: userInput,
+      timestamp: new Date(),
+    };
+    setContext(prev => ({ ...prev, messages: [...prev.messages, pendingUserMessage] }));
     setIsTyping(true);
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-    setIsTyping(false);
 
-    // Add assistant response
-    setContext(prev => ({
-      ...prev,
-      messages: [...prev.messages, assistantMsg],
-    }));
-
-    // Play audio for response
     try {
-      await audioService.speakCatalan(assistantMsg.content);
-    } catch {
-      // Audio is a nice-to-have here; a failure must not break the chat flow.
+      const { userMsg, assistantMsg, usedLiveTutor } = await processUserMessageAsync(
+        contextAtSend,
+        userInput
+      );
+      setUsingLiveTutor(usedLiveTutor);
+
+      // The offline path answers instantly, which reads as canned. A short
+      // pause makes it feel like a reply rather than a lookup.
+      if (!usedLiveTutor) {
+        await new Promise(resolve => setTimeout(resolve, 700 + Math.random() * 600));
+      }
+
+      setContext(prev => ({
+        ...prev,
+        // Replace the echoed message with the graded one.
+        messages: [
+          ...prev.messages.filter(m => m.id !== pendingUserMessage.id),
+          userMsg,
+          assistantMsg,
+        ],
+      }));
+
+      try {
+        await audioService.speakCatalan(assistantMsg.content);
+      } catch {
+        // Audio is a nice-to-have here; a failure must not break the chat flow.
+      }
+    } catch (error) {
+      const code = (error as { code?: string })?.code;
+      setNotice(
+        code === 'functions/resource-exhausted'
+          ? (error as { message?: string }).message ??
+            "You've reached today's practice limit."
+          : 'Could not reach the tutor. Please try again.'
+      );
+      logger.error('Chat turn failed', 'ChatInterface', { error: String(error) });
+      // Drop the un-answered message so the thread doesn't dead-end.
+      setContext(prev => ({
+        ...prev,
+        messages: prev.messages.filter(m => m.id !== pendingUserMessage.id),
+      }));
+      setInput(userInput);
+    } finally {
+      setIsTyping(false);
     }
   };
 
@@ -168,13 +205,34 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
             className="flex items-center gap-2"
           >
             <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 border border-gray-200 dark:border-gray-700">
-              <div className="flex gap-1">
+              <div className="flex gap-1" role="status" aria-label="Tutor is replying">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </motion.div>
+        )}
+
+        {notice && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            role="alert"
+            className="mx-auto max-w-sm text-center px-4 py-3 rounded-xl bg-miro-yellow/15 border border-miro-yellow/40 text-sm text-miro-blue dark:text-ink-light"
+          >
+            {notice}
+          </motion.div>
+        )}
+
+        {/* Say plainly which tutor is answering: the offline fallback cannot
+            react to what was actually written, and pretending otherwise would
+            make its generic replies look like the tutor ignoring the learner. */}
+        {usingLiveTutor === false && (
+          <p className="text-center text-xs text-miro-blue/50 dark:text-ink-light/50 px-4">
+            Offline practice mode — replies are pre-written and your Catalan
+            isn&rsquo;t being checked. Sign in and reconnect for live corrections.
+          </p>
         )}
 
         <div ref={messagesEndRef} />

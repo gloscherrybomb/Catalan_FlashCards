@@ -41,9 +41,20 @@ export function Layout() {
       <FloatingShapes />
 
       {/* Main content */}
+      {/*
+        Keyboard users otherwise have to tab through the entire header and its
+        overflow menu on every navigation to reach the page itself.
+      */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-miro-blue focus:text-white focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       <div className="relative z-10">
         <Header />
-        <main className="pb-24 md:pb-8">
+        <main id="main-content" tabIndex={-1} className="pb-24 md:pb-8">
           <Outlet />
         </main>
         <MobileNav />

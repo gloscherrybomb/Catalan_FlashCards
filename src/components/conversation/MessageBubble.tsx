@@ -16,6 +16,7 @@ export function MessageBubble({ message, showTranslation = false }: MessageBubbl
 
   const isUser = message.role === 'user';
   const hasCorrections = message.corrections && message.corrections.length > 0;
+  const hasNewVocabulary = message.newVocabulary && message.newVocabulary.length > 0;
 
   const handlePlayAudio = async () => {
     if (isPlaying) return;
@@ -128,6 +129,29 @@ export function MessageBubble({ message, showTranslation = false }: MessageBubbl
                 <p className="text-xs opacity-80">{correction.explanation}</p>
               </div>
             ))}
+          </motion.div>
+        )}
+
+        {/* Vocabulary the tutor introduced in this reply. The field existed on
+            the message type but nothing rendered it, so the words the tutor
+            picked out were being thrown away. */}
+        {!isUser && hasNewVocabulary && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-2 p-2 rounded-lg bg-miro-green/10 border border-miro-green/25"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-miro-green mb-1">
+              New words
+            </p>
+            <ul className="space-y-0.5">
+              {message.newVocabulary!.map((word) => (
+                <li key={word.catalan} className="text-xs text-miro-blue dark:text-ink-light">
+                  <span className="font-semibold">{word.catalan}</span>
+                  <span className="opacity-70"> — {word.english}</span>
+                </li>
+              ))}
+            </ul>
           </motion.div>
         )}
       </div>

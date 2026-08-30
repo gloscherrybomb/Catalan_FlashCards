@@ -1,4 +1,9 @@
-// Conversation service for AI-powered Catalan conversation practice
+// Conversation service for Catalan conversation practice.
+//
+// Two tiers: a Claude-backed tutor via Cloud Functions when available, and an
+// offline keyword-matching fallback for demo mode and network failures.
+import { chatWithTutorFunction, isDemoMode } from './firebase';
+import { logger } from './logger';
 
 export interface ConversationScenario {
   id: string;
@@ -635,4 +640,104 @@ export function processUserMessage(
   };
 
   return { userMsg, assistantMsg };
+}
+
+// =============================================================================
+// LIVE TUTOR (Claude-backed)
+// =============================================================================
+
+/**
+ * Ask the Claude-backed tutor for a reply.
+ *
+ * Everything above this point is a keyword lookup table: it cannot respond to
+ * what the learner actually wrote, repeats itself quickly, and its "grammar
+ * correction" is a short list of hardcoded string rules. That remains as the
+ * offline fallback, but when the Cloud Function is available the tutor reacts
+ * to the real message and explains real mistakes.
+ *
+ * Returns null when the tutor is unreachable - not configured, signed out,
+ * offline, or over the daily cap - so the caller can fall back rather than
+ * showing an error for something optional.
+ */
+export async function requestTutorReply(
+  context: ConversationContext,
+  userMessage: string
+): Promise<{
+  reply: string;
+  translation: string;
+  corrections: GrammarCorrection[];
+  newVocabulary: { catalan: string; english: string }[];
+} | null> {
+  if (isDemoMode) return null;
+
+  const scenario = getScenarioById(context.scenarioId);
+
+  try {
+    const result = await chatWithTutorFunction({
+      scenarioId: context.scenarioId,
+      scenarioTitle: scenario?.title ?? 'A friendly conversation',
+      level: context.level,
+      history: context.messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+      userMessage,
+    });
+
+    const data = result.data;
+    return {
+      reply: data.reply,
+      translation: data.translation,
+      corrections: data.corrections ?? [],
+      newVocabulary: data.newVocabulary ?? [],
+    };
+  } catch (error) {
+    // A quota message is worth surfacing; everything else falls back quietly.
+    const code = (error as { code?: string })?.code;
+    if (code === 'functions/resource-exhausted') {
+      throw error;
+    }
+    logger.warn('Tutor unavailable, using offline responses', 'ConversationService', {
+      error: String(error),
+    });
+    return null;
+  }
+}
+
+/**
+ * Process a turn, preferring the live tutor and falling back to the offline
+ * keyword responses.
+ */
+export async function processUserMessageAsync(
+  context: ConversationContext,
+  userMessage: string
+): Promise<{
+  userMsg: ConversationMessage;
+  assistantMsg: ConversationMessage;
+  usedLiveTutor: boolean;
+}> {
+  const live = await requestTutorReply(context, userMessage);
+
+  if (live) {
+    return {
+      userMsg: {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: userMessage,
+        corrections: live.corrections.length > 0 ? live.corrections : undefined,
+        timestamp: new Date(),
+      },
+      assistantMsg: {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: live.reply,
+        translation: live.translation,
+        newVocabulary: live.newVocabulary.length > 0 ? live.newVocabulary : undefined,
+        timestamp: new Date(),
+      },
+      usedLiveTutor: true,
+    };
+  }
+
+  return { ...processUserMessage(context, userMessage), usedLiveTutor: false };
 }

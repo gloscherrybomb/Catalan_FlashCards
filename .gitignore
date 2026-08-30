@@ -51,3 +51,6 @@ coverage/
 # OS / sync cruft
 desktop.ini
 Thumbs.db
+
+# Cloud Functions build output (rebuilt by the firebase.json predeploy hook)
+functions/lib/

@@ -72,6 +72,32 @@ export const generateAudioFunction = httpsCallable<GenerateAudioRequest, Generat
   'generateAudio'
 );
 
+// Claude-backed conversation tutor.
+export interface TutorRequest {
+  scenarioId: string;
+  scenarioTitle: string;
+  level: 'A1' | 'A2' | 'B1' | 'B2';
+  history: Array<{ role: 'user' | 'assistant'; content: string }>;
+  userMessage: string;
+}
+
+export interface TutorResponse {
+  reply: string;
+  translation: string;
+  corrections: Array<{
+    original: string;
+    corrected: string;
+    explanation: string;
+    type: 'grammar' | 'spelling' | 'word-choice' | 'accent';
+  }>;
+  newVocabulary: Array<{ catalan: string; english: string }>;
+}
+
+export const chatWithTutorFunction = httpsCallable<TutorRequest, TutorResponse>(
+  functions,
+  'chatWithTutor'
+);
+
 // Auth functions
 export async function signInWithGoogle(): Promise<User> {
   try {

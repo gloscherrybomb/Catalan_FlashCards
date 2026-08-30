@@ -140,3 +140,6 @@ export const generateAudio = functions
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
     return { url: publicUrl, cached: false };
   });
+
+// Claude-backed conversation practice (see conversation.ts).
+export { chatWithTutor } from "./conversation";

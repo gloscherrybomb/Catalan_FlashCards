@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import { logger } from './services/logger';
 import { Layout } from './components/layout/Layout';
 import { RouteFallback } from './components/ui/RouteFallback';
@@ -150,9 +151,21 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
+      {/*
+        Honour the OS "reduce motion" setting across the whole app.
+
+        index.css already neutralises CSS animation for these users, but Framer
+        Motion drives transforms from JavaScript and ignores that stylesheet
+        entirely - so with animation in 87 components, someone who asked for
+        less motion was still getting all of it. reducedMotion="user" makes
+        Framer Motion drop transform and layout animations while keeping
+        opacity changes, so the interface stays legible without moving.
+      */}
+      <MotionConfig reducedMotion="user">
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </MotionConfig>
     </ErrorBoundary>
   );
 }
