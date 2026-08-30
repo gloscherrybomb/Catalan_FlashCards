@@ -34,9 +34,9 @@ interface CurriculumState {
   currentUnitId: string | null;
   currentLessonId: string | null;
 
-  // Placement test state
+  // Placement test state. In-progress answers are intentionally not persisted:
+  // a half-finished test should not follow the learner across a reload.
   placementAnswers: Record<string, string>;
-  placementInProgress: boolean;
 
   // User tracking for Firebase sync
   currentUserId: string | null;
@@ -151,7 +151,6 @@ export const useCurriculumStore = create<CurriculumState>()(
       currentUnitId: null,
       currentLessonId: null,
       placementAnswers: {},
-      placementInProgress: false,
       currentUserId: null,
 
       initializeFromFirebase: async (userId: string) => {
@@ -394,7 +393,6 @@ export const useCurriculumStore = create<CurriculumState>()(
       // Placement test
       startPlacementTest: () => {
         set({
-          placementInProgress: true,
           placementAnswers: {},
         });
       },
@@ -442,7 +440,6 @@ export const useCurriculumStore = create<CurriculumState>()(
 
         set({
           placementResult: result,
-          placementInProgress: false,
           currentLevel: level,
           placementAnswers: {},
         });
@@ -456,7 +453,6 @@ export const useCurriculumStore = create<CurriculumState>()(
       resetPlacement: () => {
         set({
           placementResult: null,
-          placementInProgress: false,
           placementAnswers: {},
         });
       },
@@ -477,13 +473,23 @@ export const useCurriculumStore = create<CurriculumState>()(
           currentUnitId: null,
           currentLessonId: null,
           placementAnswers: {},
-          placementInProgress: false,
         });
       },
     }),
     {
       name: 'catalan-curriculum-storage',
       storage: getPersistStorage(),
+      /**
+       * The whole state used to persist, including currentUserId and the
+       * in-flight placement answers. The first is identity rather than
+       * progress; the second is a half-finished test that should not survive a
+       * reload.
+       */
+      partialize: (state) => ({
+        lessonProgress: state.lessonProgress,
+        currentLevel: state.currentLevel,
+        placementResult: state.placementResult,
+      }),
     }
   )
 );

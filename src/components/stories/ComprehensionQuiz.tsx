@@ -4,7 +4,6 @@ import { Check, X, ChevronRight, Trophy, RefreshCcw } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import type { Story, ComprehensionQuestion } from '../../data/stories';
-import { useStoryStore } from '../../stores/storyStore';
 
 interface ComprehensionQuizProps {
   story: Story;
@@ -25,8 +24,6 @@ export function ComprehensionQuiz({ story, onComplete, onReread }: Comprehension
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isComplete, setIsComplete] = useState(false);
 
-  const { answerQuestion } = useStoryStore();
-
   const currentQuestion: ComprehensionQuestion = story.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === story.questions.length - 1;
 
@@ -34,7 +31,6 @@ export function ComprehensionQuiz({ story, onComplete, onReread }: Comprehension
     if (showExplanation) return;
 
     setSelectedAnswer(index);
-    answerQuestion(currentQuestion.id, index);
 
     const isCorrect = index === currentQuestion.correctIndex;
 

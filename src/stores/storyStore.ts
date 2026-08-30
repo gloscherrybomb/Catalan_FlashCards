@@ -20,7 +20,6 @@ interface StoryState {
   storyProgress: Record<string, StoryProgress>;
   currentStoryId: string | null;
   currentParagraphIndex: number;
-  quizAnswers: Record<string, number>; // questionId -> selectedIndex
   currentUserId: string | null;
 
   // Reading preferences
@@ -34,7 +33,6 @@ interface StoryState {
   nextParagraph: () => void;
   previousParagraph: () => void;
   goToParagraph: (index: number) => void;
-  answerQuestion: (questionId: string, answerIndex: number) => void;
   completeStory: (storyId: string, quizScore: number) => void;
   addLearnedWord: (storyId: string, word: string) => void;
 
@@ -78,7 +76,6 @@ export const useStoryStore = create<StoryState>()(
       storyProgress: {},
       currentStoryId: null,
       currentParagraphIndex: 0,
-      quizAnswers: {},
       showTranslations: false,
       fontSize: 'medium',
       currentUserId: null,
@@ -124,7 +121,6 @@ export const useStoryStore = create<StoryState>()(
         set({
           currentStoryId: storyId,
           currentParagraphIndex: 0,
-          quizAnswers: {},
           storyProgress: updatedProgress,
         });
         syncToFirebase(currentUserId, updatedProgress);
@@ -146,14 +142,6 @@ export const useStoryStore = create<StoryState>()(
         set({ currentParagraphIndex: index });
       },
 
-      answerQuestion: (questionId: string, answerIndex: number) => {
-        set(state => ({
-          quizAnswers: {
-            ...state.quizAnswers,
-            [questionId]: answerIndex,
-          },
-        }));
-      },
 
       completeStory: (storyId: string, quizScore: number) => {
         const { storyProgress, currentUserId } = get();
@@ -174,7 +162,6 @@ export const useStoryStore = create<StoryState>()(
           storyProgress: updatedProgress,
           currentStoryId: null,
           currentParagraphIndex: 0,
-          quizAnswers: {},
         });
         syncToFirebase(currentUserId, updatedProgress);
       },
@@ -247,7 +234,6 @@ export const useStoryStore = create<StoryState>()(
         set({
           currentStoryId: null,
           currentParagraphIndex: 0,
-          quizAnswers: {},
         });
       },
 
@@ -257,7 +243,6 @@ export const useStoryStore = create<StoryState>()(
           storyProgress: {},
           currentStoryId: null,
           currentParagraphIndex: 0,
-          quizAnswers: {},
         });
         syncToFirebase(currentUserId, {});
       },
@@ -265,6 +250,18 @@ export const useStoryStore = create<StoryState>()(
     {
       name: 'catalan-story-storage',
       storage: getPersistStorage(),
+      /**
+       * The whole state used to persist, including currentUserId. That is
+       * identity, not progress: on a shared device a stale id could survive
+       * into another person's session before auth resolved. Reading position is
+       * transient too - reopening the app should not silently drop you back
+       * mid-story.
+       */
+      partialize: (state) => ({
+        storyProgress: state.storyProgress,
+        showTranslations: state.showTranslations,
+        fontSize: state.fontSize,
+      }),
     }
   )
 );
