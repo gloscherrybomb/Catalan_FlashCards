@@ -49,7 +49,7 @@ export function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Settings</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-ink-light mb-6">Settings</h1>
 
       {/* Profile section */}
       <motion.div
@@ -74,8 +74,8 @@ export function SettingsPage() {
                 </div>
               )}
               <div>
-                <p className="font-bold text-gray-800">{profile.displayName}</p>
-                <p className="text-sm text-gray-500">{profile.email}</p>
+                <p className="font-bold text-gray-800 dark:text-ink-light">{profile.displayName}</p>
+                <p className="text-sm text-gray-500 dark:text-ink-light/60">{profile.email}</p>
                 <p className="text-xs text-gray-400 mt-1">
                   Level {progress.level} • {progress.xp} XP
                 </p>
@@ -83,7 +83,7 @@ export function SettingsPage() {
             </div>
           ) : (
             <div className="mt-4 text-center py-4">
-              <p className="text-gray-500 mb-4">
+              <p className="text-gray-500 dark:text-ink-light/60 mb-4">
                 Sign in to sync your progress across devices
               </p>
               <Button onClick={() => navigate('/')}>Sign In</Button>
@@ -104,13 +104,13 @@ export function SettingsPage() {
           <div className="mt-4 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-800">Daily Goal</p>
-                <p className="text-sm text-gray-500">Cards to review per day</p>
+                <p className="font-medium text-gray-800 dark:text-ink-light">Daily Goal</p>
+                <p className="text-sm text-gray-500 dark:text-ink-light/60">Cards to review per day</p>
               </div>
               <select
                 value={profile?.settings.dailyGoal || 20}
                 onChange={(e) => updateSettings({ dailyGoal: Number(e.target.value) })}
-                className="px-3 py-2 rounded-lg border border-gray-200 focus:border-primary focus:outline-none"
+                className="px-3 py-2 rounded-lg border border-gray-200 dark:border-ink-light/15 focus:border-primary focus:outline-none"
               >
                 <option value={10}>10 cards</option>
                 <option value={20}>20 cards</option>
@@ -121,13 +121,13 @@ export function SettingsPage() {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-800">Preferred Mode</p>
-                <p className="text-sm text-gray-500">Default study mode</p>
+                <p className="font-medium text-gray-800 dark:text-ink-light">Preferred Mode</p>
+                <p className="text-sm text-gray-500 dark:text-ink-light/60">Default study mode</p>
               </div>
               <select
                 value={profile?.settings.preferredMode || 'mixed'}
                 onChange={(e) => updateSettings({ preferredMode: e.target.value as 'mixed' | 'flip' | 'multiple-choice' | 'type-answer' })}
-                className="px-3 py-2 rounded-lg border border-gray-200 focus:border-primary focus:outline-none"
+                className="px-3 py-2 rounded-lg border border-gray-200 dark:border-ink-light/15 focus:border-primary focus:outline-none"
               >
                 <option value="mixed">Mixed</option>
                 <option value="flip">Flip Cards</option>
@@ -193,23 +193,23 @@ export function SettingsPage() {
           <div className="mt-4 space-y-3">
             <button
               onClick={() => navigate('/import')}
-              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:bg-gray-900 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Upload size={20} className="text-gray-400" />
-                <span className="font-medium text-gray-700">Import Cards</span>
+                <span className="font-medium text-gray-700 dark:text-ink-light/80">Import Cards</span>
               </div>
               <ChevronRight size={20} className="text-gray-400" />
             </button>
 
             <button
               onClick={handleExport}
-              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:bg-gray-900 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Download size={20} className="text-gray-400" />
                 <div className="text-left">
-                  <span className="font-medium text-gray-700 block">Export Cards</span>
+                  <span className="font-medium text-gray-700 dark:text-ink-light/80 block">Export Cards</span>
                   <span className="text-sm text-gray-400">
                     {flashcards.length} cards
                   </span>
@@ -229,12 +229,12 @@ export function SettingsPage() {
                 }
               }}
               disabled={isDeduping}
-              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:bg-gray-900 transition-colors disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
                 <Trash2 size={20} className="text-orange-400" />
                 <div className="text-left">
-                  <span className="font-medium text-gray-700 block">
+                  <span className="font-medium text-gray-700 dark:text-ink-light/80 block">
                     {isDeduping ? 'Removing...' : 'Remove Duplicates'}
                   </span>
                   <span className="text-sm text-gray-400">
@@ -262,25 +262,25 @@ export function SettingsPage() {
           <CardTitle>Your Stats</CardTitle>
 
           <div className="mt-4 grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-gray-800">{flashcards.length}</p>
-              <p className="text-sm text-gray-500">Total Cards</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">{flashcards.length}</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Total Cards</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-gray-800">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">
                 {progress.totalCardsReviewed}
               </p>
-              <p className="text-sm text-gray-500">Reviews</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Reviews</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-gray-800">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">
                 {progress.currentStreak}
               </p>
-              <p className="text-sm text-gray-500">Current Streak</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Current Streak</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-gray-800">{progress.xp}</p>
-              <p className="text-sm text-gray-500">Total XP</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">{progress.xp}</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Total XP</p>
             </div>
           </div>
         </Card>

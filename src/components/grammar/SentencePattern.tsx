@@ -32,7 +32,7 @@ export function SentencePattern({ pattern, compact = false }: SentencePatternPro
       <button
         onClick={() => compact && setIsExpanded(!isExpanded)}
         className={`w-full p-4 flex items-center justify-between ${
-          compact ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''
+          compact ? 'cursor-pointer hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50' : ''
         }`}
         disabled={!compact}
       >

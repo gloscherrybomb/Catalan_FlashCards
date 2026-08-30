@@ -183,7 +183,7 @@ function LessonDetail({ lesson, curriculumLessonId }: { lesson: GrammarLesson; c
           <div className="flex items-center gap-3 mb-6">
             <button
               onClick={() => setShowExercises(false)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+              className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-800 rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-miro-blue dark:text-ink-light" />
             </button>
@@ -218,7 +218,7 @@ function LessonDetail({ lesson, curriculumLessonId }: { lesson: GrammarLesson; c
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => navigate('/grammar')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+            className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-800 rounded-xl transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-miro-blue dark:text-ink-light" />
           </button>

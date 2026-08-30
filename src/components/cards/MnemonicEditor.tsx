@@ -83,7 +83,7 @@ export function MnemonicEditor({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-miro-yellow rounded-xl flex items-center justify-center">
-                <Lightbulb className="w-5 h-5 text-gray-800" />
+                <Lightbulb className="w-5 h-5 text-gray-800 dark:text-ink-light" />
               </div>
               <div>
                 <h3 className="font-bold text-gray-800 dark:text-white">Memory Hook</h3>
@@ -92,9 +92,9 @@ export function MnemonicEditor({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-500 dark:text-ink-light/60" />
             </button>
           </div>
         </div>
@@ -240,7 +240,7 @@ export function MnemonicEditor({
             fullWidth
             onClick={handleSave}
             leftIcon={<Save className="w-4 h-4" />}
-            className="bg-gradient-to-r from-miro-yellow to-miro-orange text-gray-800"
+            className="bg-gradient-to-r from-miro-yellow to-miro-orange text-gray-800 dark:text-ink-light"
           >
             Save Mnemonic
           </Button>

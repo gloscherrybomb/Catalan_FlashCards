@@ -205,7 +205,7 @@ export function SprintMode({
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={onExit}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+          className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-800 rounded-lg"
         >
           <X className="w-6 h-6 text-gray-600 dark:text-gray-400" />
         </button>

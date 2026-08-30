@@ -104,7 +104,7 @@ export function WordOfTheDay() {
                 <p className="text-xs text-gray-400 mt-1">{wordOfTheDay.notes}</p>
               )}
               <div className="mt-2 flex items-center justify-center gap-2">
-                <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500">
+                <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 dark:text-ink-light/60">
                   {wordOfTheDay.category}
                 </span>
                 {wordOfTheDay.gender && (
@@ -133,8 +133,8 @@ export function WordOfTheDay() {
       </div>
 
       {/* Decorative elements - positioned within bounds to avoid overflow */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full blur-lg translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white dark:bg-gray-800/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-16 h-16 bg-white dark:bg-gray-800/10 rounded-full blur-lg translate-y-1/2 -translate-x-1/2" />
     </motion.div>
   );
 }

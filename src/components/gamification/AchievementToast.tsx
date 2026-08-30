@@ -30,21 +30,21 @@ export function AchievementToast({ achievement, onDismiss }: AchievementToastPro
       className="fixed top-4 right-4 z-50"
     >
       <div className={`bg-gradient-to-r ${rarityColors[achievement.rarity]} rounded-2xl p-1 shadow-2xl`}>
-        <div className="bg-white rounded-xl p-4 flex items-center gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-4">
           <div className="text-4xl">{achievement.icon}</div>
           <div className="flex-1">
             <p className="text-xs font-medium text-primary uppercase tracking-wide">
               Achievement Unlocked!
             </p>
-            <p className="font-bold text-gray-800">{achievement.name}</p>
-            <p className="text-sm text-gray-500">{achievement.description}</p>
+            <p className="font-bold text-gray-800 dark:text-ink-light">{achievement.name}</p>
+            <p className="text-sm text-gray-500 dark:text-ink-light/60">{achievement.description}</p>
             <p className="text-xs text-primary font-medium mt-1">
               +{achievement.xpReward} XP
             </p>
           </div>
           <button
             onClick={onDismiss}
-            className="p-1 hover:bg-gray-100 rounded-full"
+            className="p-1 hover:bg-gray-100 dark:bg-gray-800 rounded-full"
           >
             <X size={16} className="text-gray-400" />
           </button>

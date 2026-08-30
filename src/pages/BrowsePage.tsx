@@ -66,13 +66,13 @@ export function BrowsePage() {
       case 'mastered': return 'bg-green-100 text-green-700';
       case 'reviewing': return 'bg-blue-100 text-blue-700';
       case 'learning': return 'bg-yellow-100 text-yellow-700';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-ink-light/80';
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Your Cards</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-ink-light mb-6">Your Cards</h1>
 
       {/* Search and filter */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -86,7 +86,7 @@ export function BrowsePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search cards..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-ink-light/15 focus:border-primary focus:outline-none"
           />
         </div>
 
@@ -94,7 +94,7 @@ export function BrowsePage() {
           <select
             value={selectedCategory || ''}
             onChange={(e) => setSelectedCategory(e.target.value || null)}
-            className="appearance-none w-full sm:w-48 px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-primary focus:outline-none bg-white"
+            className="appearance-none w-full sm:w-48 px-4 py-3 pr-10 rounded-xl border border-gray-200 dark:border-ink-light/15 focus:border-primary focus:outline-none bg-white dark:bg-gray-800"
           >
             <option value="">All Categories</option>
             {categories.map(cat => (
@@ -109,7 +109,7 @@ export function BrowsePage() {
       </div>
 
       {/* Stats */}
-      <div className="mb-6 flex items-center gap-4 text-sm text-gray-500">
+      <div className="mb-6 flex items-center gap-4 text-sm text-gray-500 dark:text-ink-light/60">
         <span>{filteredCards.length} cards</span>
         {selectedCategory && (
           <button
@@ -150,7 +150,7 @@ export function BrowsePage() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-800 truncate">
+                          <p className="font-medium text-gray-800 dark:text-ink-light truncate">
                             {card.front}
                           </p>
                           {card.gender && (
@@ -174,7 +174,7 @@ export function BrowsePage() {
                             size="sm"
                           />
                         </div>
-                        <p className="text-gray-500 truncate">{card.back}</p>
+                        <p className="text-gray-500 dark:text-ink-light/60 truncate">{card.back}</p>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -198,16 +198,16 @@ export function BrowsePage() {
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="pt-4 mt-4 border-t border-gray-100">
+                          <div className="pt-4 mt-4 border-t border-gray-100 dark:border-ink-light/10">
                             {card.notes && (
-                              <p className="text-sm text-gray-600 mb-4 italic">
+                              <p className="text-sm text-gray-600 dark:text-ink-light/70 mb-4 italic">
                                 {card.notes}
                               </p>
                             )}
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                              <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-500 mb-1">English → Català</p>
+                              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                <p className="text-xs text-gray-500 dark:text-ink-light/60 mb-1">English → Català</p>
                                 <span className={`px-2 py-0.5 rounded text-xs ${getMasteryColor(masteryEng)}`}>
                                   {masteryEng}
                                 </span>
@@ -215,8 +215,8 @@ export function BrowsePage() {
                                   {engToCat.totalReviews} reviews
                                 </p>
                               </div>
-                              <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-500 mb-1">Català → English</p>
+                              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                                <p className="text-xs text-gray-500 dark:text-ink-light/60 mb-1">Català → English</p>
                                 <span className={`px-2 py-0.5 rounded text-xs ${getMasteryColor(masteryCat)}`}>
                                   {masteryCat}
                                 </span>
@@ -273,10 +273,10 @@ export function BrowsePage() {
       ) : (
         <div className="text-center py-12">
           <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-ink-light mb-2">
             {searchQuery || selectedCategory ? 'No matching cards' : 'No cards yet'}
           </h2>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-ink-light/60">
             {searchQuery || selectedCategory
               ? 'Try adjusting your search or filters'
               : 'Import some flashcards to get started'}
@@ -292,14 +292,14 @@ export function BrowsePage() {
       >
         {cardToDelete && (
           <div>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-ink-light/70 mb-4">
               Are you sure you want to delete this card? This will also remove
               all learning progress.
             </p>
 
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="font-medium text-gray-800">{cardToDelete.front}</p>
-              <p className="text-gray-500">{cardToDelete.back}</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6">
+              <p className="font-medium text-gray-800 dark:text-ink-light">{cardToDelete.front}</p>
+              <p className="text-gray-500 dark:text-ink-light/60">{cardToDelete.back}</p>
             </div>
 
             <div className="flex gap-3">

@@ -74,7 +74,7 @@ export function AchievementsPage() {
   };
 
   const rarityBg: Record<string, string> = {
-    common: 'bg-gray-100',
+    common: 'bg-gray-100 dark:bg-gray-800',
     uncommon: 'bg-green-50',
     rare: 'bg-blue-50',
     epic: 'bg-purple-50',
@@ -83,8 +83,8 @@ export function AchievementsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">Achievements</h1>
-      <p className="text-gray-500 mb-8">
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-ink-light mb-2">Achievements</h1>
+      <p className="text-gray-500 dark:text-ink-light/60 mb-8">
         {achievements.length} of {ACHIEVEMENTS.length} unlocked
       </p>
 
@@ -101,7 +101,7 @@ export function AchievementsPage() {
               <p className={`text-lg font-bold bg-gradient-to-r ${rarityColors[rarity]} bg-clip-text text-transparent`}>
                 {unlocked}/{total}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{rarity}</p>
+              <p className="text-xs text-gray-500 dark:text-ink-light/60 capitalize">{rarity}</p>
             </Card>
           );
         })}
@@ -115,7 +115,7 @@ export function AchievementsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-ink-light mb-4">
             {categoryNames[category]}
           </h2>
 
@@ -133,7 +133,7 @@ export function AchievementsPage() {
                   className={`relative rounded-2xl p-4 transition-all ${
                     isUnlocked
                       ? rarityBg[achievement.rarity]
-                      : 'bg-gray-50 opacity-60'
+                      : 'bg-gray-50 dark:bg-gray-900 opacity-60'
                   }`}
                 >
                   {/* Rarity indicator */}
@@ -146,7 +146,7 @@ export function AchievementsPage() {
                   <div className="flex items-center gap-4">
                     <div
                       className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl ${
-                        isUnlocked ? 'bg-white shadow-sm' : 'bg-gray-200'
+                        isUnlocked ? 'bg-white dark:bg-gray-800 shadow-sm' : 'bg-gray-200'
                       }`}
                     >
                       {isUnlocked ? achievement.icon : <Lock size={24} className="text-gray-400" />}
@@ -154,14 +154,14 @@ export function AchievementsPage() {
 
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className={`font-bold ${isUnlocked ? 'text-gray-800' : 'text-gray-400'}`}>
+                        <h3 className={`font-bold ${isUnlocked ? 'text-gray-800 dark:text-ink-light' : 'text-gray-400'}`}>
                           {achievement.name}
                         </h3>
                         {isUnlocked && (
                           <Check size={16} className="text-green-500" />
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-ink-light/60">
                         {achievement.description}
                       </p>
                       <div className="flex items-center gap-2 mt-1">

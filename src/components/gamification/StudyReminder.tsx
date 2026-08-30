@@ -116,7 +116,7 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
           }`}>
             <button
               onClick={dismissReminder}
-              className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:text-ink-light/70 dark:hover:text-gray-300"
             >
               <X className="w-4 h-4" />
             </button>

@@ -90,7 +90,7 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }: ModalPr
                 <h2 id="modal-title" className="text-xl font-bold text-miro-blue dark:text-ink-light">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-800 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />

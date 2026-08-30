@@ -81,7 +81,7 @@ export function DailyChallenges({ challenges, onChallengeClick }: DailyChallenge
               className={`relative p-3 rounded-xl border-2 transition-all cursor-pointer
                 ${isComplete
                   ? 'border-success/30 bg-success/5 dark:bg-success/10'
-                  : 'border-gray-100 dark:border-gray-700 hover:border-primary/30 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                  : 'border-gray-100 dark:border-gray-700 hover:border-primary/30 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800/50'
                 }`}
             >
               <div className="flex items-start gap-3">
@@ -136,7 +136,7 @@ export function DailyChallenges({ challenges, onChallengeClick }: DailyChallenge
               {/* Bonus multiplier badge */}
               {challenge.bonusMultiplier > 1 && !isComplete && (
                 <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-accent text-xs font-bold
-                              text-gray-800 rounded-full shadow-sm">
+                              text-gray-800 dark:text-ink-light rounded-full shadow-sm">
                   {challenge.bonusMultiplier}x bonus
                 </div>
               )}

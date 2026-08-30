@@ -185,8 +185,8 @@ export function HomePage() {
         >
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-miro-blue via-miro-blue to-indigo-600 p-8 md:p-10 text-white shadow-2xl shadow-miro-blue/25">
             {/* Geometric decorations */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-gray-800/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white dark:bg-gray-800/5 rounded-full translate-y-1/2 -translate-x-1/4" />
             <div className="absolute top-1/2 right-1/4 w-4 h-4 bg-miro-yellow rounded-full animate-pulse" />
             <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-miro-green rounded-full animate-ping" />
 
@@ -210,7 +210,7 @@ export function HomePage() {
               {/* Progress Stats */}
               <div className="flex flex-wrap gap-6 mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-800/10 backdrop-blur flex items-center justify-center">
                     <Target className="w-6 h-6 text-miro-yellow" />
                   </div>
                   <div>
@@ -220,7 +220,7 @@ export function HomePage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-800/10 backdrop-blur flex items-center justify-center">
                     <BookOpen className="w-6 h-6 text-miro-green" />
                   </div>
                   <div>
@@ -230,7 +230,7 @@ export function HomePage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-800/10 backdrop-blur flex items-center justify-center">
                     <Flame className="w-6 h-6 text-miro-red" />
                   </div>
                   <div>

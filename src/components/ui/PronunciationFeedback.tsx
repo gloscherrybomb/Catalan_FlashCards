@@ -255,7 +255,7 @@ export function PronunciationFeedback({
             <Button
               variant="ghost"
               onClick={onContinue}
-              className="flex-1 text-gray-500"
+              className="flex-1 text-gray-500 dark:text-ink-light/60"
             >
               Skip
             </Button>

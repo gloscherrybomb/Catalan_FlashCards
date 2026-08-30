@@ -979,16 +979,16 @@ export function StudyPage() {
             resetSession();
             setShowModeSelect(true);
           }}
-          className="p-2 hover:bg-gray-100 rounded-lg"
+          className="p-2 hover:bg-gray-100 dark:bg-gray-800 rounded-lg"
         >
-          <ArrowLeft size={24} className="text-gray-600" />
+          <ArrowLeft size={24} className="text-gray-600 dark:text-ink-light/70" />
         </button>
 
         <div className="flex-1 mx-4">
           <ProgressBar progress={progress} height={8} />
         </div>
 
-        <span className="text-sm font-medium text-gray-600">
+        <span className="text-sm font-medium text-gray-600 dark:text-ink-light/70">
           {currentIndex + 1}/{cards.length}
         </span>
       </div>
@@ -1051,7 +1051,7 @@ export function StudyPage() {
       {/* Direction indicator */}
       {currentCard && (
         <div className="mt-6 text-center">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600">
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-600 dark:text-ink-light/70">
             {currentCard.direction === 'english-to-catalan'
               ? 'English → Català'
               : 'Català → English'}

@@ -31,7 +31,7 @@ export function StoryCard({ story, progress, index, onClick }: StoryCardProps) {
       case 'A2': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
       case 'B1': return 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400';
       case 'B2': return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-ink-light/80';
     }
   };
 

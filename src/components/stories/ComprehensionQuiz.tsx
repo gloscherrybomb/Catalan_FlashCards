@@ -97,7 +97,7 @@ export function ComprehensionQuiz({ story, onComplete, onReread }: Comprehension
               }
             `}
           >
-            <Trophy className={`w-12 h-12 ${isPassing ? 'text-miro-blue' : 'text-gray-600'}`} />
+            <Trophy className={`w-12 h-12 ${isPassing ? 'text-miro-blue' : 'text-gray-600 dark:text-ink-light/70'}`} />
           </motion.div>
 
           <motion.div

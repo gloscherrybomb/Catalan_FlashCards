@@ -101,7 +101,7 @@ export function MessageBubble({ message, showTranslation = false }: MessageBubbl
             className={`p-1.5 rounded-full transition-colors ${
               isPlaying
                 ? 'bg-miro-red/20 text-miro-red'
-                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                : 'text-gray-400 hover:text-gray-600 dark:text-ink-light/70 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
             }`}
             title="Listen"
           >

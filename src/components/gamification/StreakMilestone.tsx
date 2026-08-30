@@ -122,7 +122,7 @@ export function StreakMilestone({
 
               {/* Bonus info */}
               <motion.div
-                className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center"
+                className="bg-white dark:bg-gray-800/20 backdrop-blur-sm rounded-xl p-4 text-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}

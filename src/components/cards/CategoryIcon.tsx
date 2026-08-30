@@ -70,7 +70,7 @@ export function CategoryIcon({ category, word, size = 'md' }: CategoryIconProps)
     }
   }
 
-  const colors = CATEGORY_COLORS[category] || { bg: 'bg-gray-100', icon: 'text-gray-600' };
+  const colors = CATEGORY_COLORS[category] || { bg: 'bg-gray-100 dark:bg-gray-800', icon: 'text-gray-600 dark:text-ink-light/70' };
 
   const sizes = {
     sm: { container: 'w-8 h-8', icon: 16 },
@@ -114,7 +114,7 @@ export function Badge({ text, variant = 'neutral' }: BadgeProps) {
   const variants = {
     masculine: 'bg-blue-100 text-blue-700',
     feminine: 'bg-pink-100 text-pink-700',
-    neutral: 'bg-gray-100 text-gray-700',
+    neutral: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-ink-light/80',
   };
 
   return (

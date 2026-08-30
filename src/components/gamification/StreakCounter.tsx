@@ -83,7 +83,7 @@ export function StreakCard() {
     >
       {/* Decorative elements */}
       <div className="absolute -top-4 -right-4 w-16 h-16 bg-miro-yellow/20 blob" />
-      <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-white/10 blob-2" />
+      <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-white dark:bg-gray-800/10 blob-2" />
       <motion.span
         className="absolute top-3 right-3 text-xl text-white/30"
         animate={{ rotate: [0, 10, -10, 0] }}
@@ -98,11 +98,11 @@ export function StreakCard() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 relative z-10">
-        <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+        <div className="bg-white dark:bg-gray-800/15 backdrop-blur-sm rounded-xl p-3 border border-white/20">
           <p className="text-white/70 text-xs mb-1 font-medium">Current</p>
           <p className="text-2xl font-display font-bold">{streak} days</p>
         </div>
-        <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+        <div className="bg-white dark:bg-gray-800/15 backdrop-blur-sm rounded-xl p-3 border border-white/20">
           <p className="text-white/70 text-xs mb-1 font-medium">Best</p>
           <p className="text-2xl font-display font-bold">{progress.longestStreak} days</p>
         </div>

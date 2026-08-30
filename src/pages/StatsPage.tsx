@@ -82,7 +82,7 @@ export function StatsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Statistics</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-ink-light mb-6">Statistics</h1>
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -95,10 +95,10 @@ export function StatsPage() {
             <div className="w-12 h-12 mx-auto mb-2 bg-primary/10 rounded-xl flex items-center justify-center">
               <BarChart3 size={24} className="text-primary" />
             </div>
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">
               {progress.totalCardsReviewed}
             </p>
-            <p className="text-sm text-gray-500">Cards Reviewed</p>
+            <p className="text-sm text-gray-500 dark:text-ink-light/60">Cards Reviewed</p>
           </Card>
         </motion.div>
 
@@ -111,8 +111,8 @@ export function StatsPage() {
             <div className="w-12 h-12 mx-auto mb-2 bg-green-100 rounded-xl flex items-center justify-center">
               <Target size={24} className="text-green-600" />
             </div>
-            <p className="text-2xl font-bold text-gray-800">{accuracy}%</p>
-            <p className="text-sm text-gray-500">Accuracy</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">{accuracy}%</p>
+            <p className="text-sm text-gray-500 dark:text-ink-light/60">Accuracy</p>
           </Card>
         </motion.div>
 
@@ -125,8 +125,8 @@ export function StatsPage() {
             <div className="w-12 h-12 mx-auto mb-2 bg-blue-100 rounded-xl flex items-center justify-center">
               <Clock size={24} className="text-blue-600" />
             </div>
-            <p className="text-2xl font-bold text-gray-800">{totalHours}h</p>
-            <p className="text-sm text-gray-500">Study Time</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">{totalHours}h</p>
+            <p className="text-sm text-gray-500 dark:text-ink-light/60">Study Time</p>
           </Card>
         </motion.div>
 
@@ -139,10 +139,10 @@ export function StatsPage() {
             <div className="w-12 h-12 mx-auto mb-2 bg-purple-100 rounded-xl flex items-center justify-center">
               <Award size={24} className="text-purple-600" />
             </div>
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-2xl font-bold text-gray-800 dark:text-ink-light">
               {progress.cardsLearned}
             </p>
-            <p className="text-sm text-gray-500">Cards Mastered</p>
+            <p className="text-sm text-gray-500 dark:text-ink-light/60">Cards Mastered</p>
           </Card>
         </motion.div>
       </div>
@@ -241,10 +241,10 @@ export function StatsPage() {
                 return (
                   <div key={category}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium text-gray-700">{category}</span>
-                      <span className="text-gray-500">{progress}%</span>
+                      <span className="font-medium text-gray-700 dark:text-ink-light/80">{category}</span>
+                      <span className="text-gray-500 dark:text-ink-light/60">{progress}%</span>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <motion.div
                         className="h-full bg-gradient-to-r from-secondary to-primary rounded-full"
                         initial={{ width: 0 }}
@@ -279,11 +279,11 @@ export function StatsPage() {
                 size={100}
                 color={uniqueCardsDue > 30 ? '#F9844A' : uniqueCardsDue > 10 ? '#FFE66D' : '#95D5B2'}
               >
-                <span className="text-2xl font-bold text-gray-800">{uniqueCardsDue}</span>
+                <span className="text-2xl font-bold text-gray-800 dark:text-ink-light">{uniqueCardsDue}</span>
               </ProgressRing>
               <div>
-                <p className="font-medium text-gray-800">Cards due today</p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="font-medium text-gray-800 dark:text-ink-light">Cards due today</p>
+                <p className="text-sm text-gray-500 dark:text-ink-light/60 mt-1">
                   {dueCount} reviews ({uniqueCardsDue} cards × 2 directions)
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
@@ -311,25 +311,25 @@ export function StatsPage() {
         <Card>
           <CardTitle>Study Habits</CardTitle>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <p className="text-xl font-bold text-gray-800">{avgTimePerCard}s</p>
-              <p className="text-sm text-gray-500">Avg. per card</p>
+            <div className="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+              <p className="text-xl font-bold text-gray-800 dark:text-ink-light">{avgTimePerCard}s</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Avg. per card</p>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <p className="text-xl font-bold text-gray-800">
+            <div className="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+              <p className="text-xl font-bold text-gray-800 dark:text-ink-light">
                 {progress.longestStreak}
               </p>
-              <p className="text-sm text-gray-500">Best streak</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Best streak</p>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <p className="text-xl font-bold text-gray-800">
+            <div className="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+              <p className="text-xl font-bold text-gray-800 dark:text-ink-light">
                 {flashcards.length}
               </p>
-              <p className="text-sm text-gray-500">Total cards</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Total cards</p>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <p className="text-xl font-bold text-gray-800">{progress.xp}</p>
-              <p className="text-sm text-gray-500">Total XP</p>
+            <div className="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+              <p className="text-xl font-bold text-gray-800 dark:text-ink-light">{progress.xp}</p>
+              <p className="text-sm text-gray-500 dark:text-ink-light/60">Total XP</p>
             </div>
           </div>
         </Card>

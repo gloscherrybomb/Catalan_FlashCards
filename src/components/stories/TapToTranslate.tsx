@@ -125,7 +125,7 @@ export function TapToTranslate({
             cursor-pointer transition-colors rounded px-0.5 -mx-0.5
             ${isVocab
               ? 'text-miro-blue dark:text-miro-yellow hover:bg-miro-yellow/30 dark:hover:bg-miro-yellow/20 underline decoration-dotted decoration-miro-blue/40 dark:decoration-miro-yellow/40 underline-offset-4'
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
             }
           `}
         >
@@ -172,9 +172,9 @@ export function TapToTranslate({
                 </span>
                 <button
                   onClick={handlePlayAudio}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                  className="p-1 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-full"
                 >
-                  <Volume2 className={`w-4 h-4 ${isPlaying ? 'text-miro-red animate-pulse' : 'text-gray-500'}`} />
+                  <Volume2 className={`w-4 h-4 ${isPlaying ? 'text-miro-red animate-pulse' : 'text-gray-500 dark:text-ink-light/60'}`} />
                 </button>
               </div>
 

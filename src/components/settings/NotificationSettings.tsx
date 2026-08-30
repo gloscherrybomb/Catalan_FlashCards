@@ -149,7 +149,7 @@ export function NotificationSettings() {
               >
                 <span
                   className={`
-                    absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow
+                    absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white dark:bg-gray-800 transition-transform shadow
                     ${settings.enabled ? 'translate-x-6' : 'translate-x-0'}
                   `}
                 />
@@ -222,7 +222,7 @@ export function NotificationSettings() {
               {/* Quiet Hours */}
               <Card className="p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Clock className="w-4 h-4 text-gray-500" />
+                  <Clock className="w-4 h-4 text-gray-500 dark:text-ink-light/60" />
                   <h4 className="font-medium text-gray-900 dark:text-white">
                     Quiet Hours
                   </h4>
@@ -244,7 +244,7 @@ export function NotificationSettings() {
                       </option>
                     ))}
                   </select>
-                  <span className="text-gray-500">to</span>
+                  <span className="text-gray-500 dark:text-ink-light/60">to</span>
                   <select
                     value={settings.quietHoursEnd}
                     onChange={(e) =>
@@ -317,7 +317,7 @@ function ToggleRow({
       >
         <span
           className={`
-            absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow
+            absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white dark:bg-gray-800 transition-transform shadow
             ${enabled ? 'translate-x-5' : 'translate-x-0'}
           `}
         />

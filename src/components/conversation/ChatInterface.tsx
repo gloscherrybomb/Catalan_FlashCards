@@ -134,7 +134,7 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -157,7 +157,7 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
             className={`p-2 rounded-lg transition-colors ${
               showTranslations
                 ? 'bg-miro-blue text-white'
-                : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+                : 'text-gray-500 dark:text-ink-light/60 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
             }`}
             title={showTranslations ? 'Hide translations' : 'Show translations'}
           >

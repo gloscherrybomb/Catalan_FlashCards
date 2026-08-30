@@ -147,17 +147,17 @@ export function MnemonicHint({
                     <p className="text-xs text-white/60 uppercase tracking-wide mb-1">Related Words</p>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {mnemonicData.cognate.spanish && (
-                        <span className="text-xs bg-white/10 px-2 py-0.5 rounded">
+                        <span className="text-xs bg-white dark:bg-gray-800/10 px-2 py-0.5 rounded">
                           ES: {mnemonicData.cognate.spanish}
                         </span>
                       )}
                       {mnemonicData.cognate.french && (
-                        <span className="text-xs bg-white/10 px-2 py-0.5 rounded">
+                        <span className="text-xs bg-white dark:bg-gray-800/10 px-2 py-0.5 rounded">
                           FR: {mnemonicData.cognate.french}
                         </span>
                       )}
                       {mnemonicData.cognate.italian && (
-                        <span className="text-xs bg-white/10 px-2 py-0.5 rounded">
+                        <span className="text-xs bg-white dark:bg-gray-800/10 px-2 py-0.5 rounded">
                           IT: {mnemonicData.cognate.italian}
                         </span>
                       )}

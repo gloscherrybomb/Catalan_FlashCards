@@ -65,3 +65,39 @@ describe('tailwind colour tokens', () => {
     expect(validTokens().has('ink-dark')).toBe(true);
   });
 });
+
+/**
+ * Guards against elements styled for light mode only.
+ *
+ * A hard-coded `text-gray-800` or `bg-white` with no dark counterpart renders
+ * dark-on-dark: technically present, effectively invisible. This was widespread
+ * - 153 occurrences across 30 files, including most of the Settings, Stats and
+ * Browse pages - and none of it was caught by types, lint or the build.
+ */
+describe('dark mode coverage', () => {
+  const LIGHT_ONLY =
+    /\b(bg-white|bg-gray-50|bg-gray-100|bg-gray-200|text-gray-500|text-gray-600|text-gray-700|text-gray-800|text-gray-900|border-gray-100|border-gray-200|border-gray-300)\b/g;
+
+  it('pairs every light-mode colour with a dark variant', () => {
+    const offenders: string[] = [];
+
+    for (const file of sourceFiles('src')) {
+      if (!file.endsWith('.tsx')) continue;
+
+      readFileSync(file, 'utf8')
+        .split('\n')
+        .forEach((line, index) => {
+          for (const [, cls] of line.matchAll(LIGHT_ONLY)) {
+            const utility = cls.split('-')[0]; // bg | text | border
+            // A dark: variant of the same utility on the same element counts.
+            if (!new RegExp(`dark:${utility}-`).test(line)) {
+              offenders.push(`${file.replace(/^src\//, '')}:${index + 1} ${cls}`);
+            }
+          }
+        });
+    }
+
+    expect(offenders).toEqual([]);
+  });
+});
+

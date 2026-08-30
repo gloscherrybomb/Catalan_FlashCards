@@ -255,7 +255,7 @@ export function DailyRecommendations({
           transition={{ duration: 2, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-4 left-8 w-4 h-4 rounded-full bg-white/50"
+          className="absolute bottom-4 left-8 w-4 h-4 rounded-full bg-white dark:bg-gray-800/50"
           animate={{ x: [-3, 3, -3] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         />
@@ -272,7 +272,7 @@ export function DailyRecommendations({
 
         <div className="relative">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-white/90 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-800/90 flex items-center justify-center shadow-lg">
               <Sparkles className="w-6 h-6 text-miro-orange" />
             </div>
             <div>
@@ -287,12 +287,12 @@ export function DailyRecommendations({
 
           {/* Quick stats */}
           <div className="flex flex-wrap items-center gap-4 mt-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 text-miro-blue">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-gray-800/80 text-miro-blue">
               <Clock className="w-4 h-4" />
               <span className="text-sm font-medium">{suggestedDuration} min suggested</span>
             </div>
             {focusAreas.length > 0 && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 text-miro-blue">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-gray-800/80 text-miro-blue">
                 <Target className="w-4 h-4" />
                 <span className="text-sm font-medium">Focus: {focusAreas[0]}</span>
               </div>
@@ -310,7 +310,7 @@ export function DailyRecommendations({
                     <motion.div
                       key={slot}
                       whileHover={{ scale: 1.05 }}
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90"
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-gray-800/90"
                     >
                       <span className={config.color}>{config.icon}</span>
                       <span className="text-xs font-medium text-miro-blue">

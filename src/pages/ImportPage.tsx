@@ -273,7 +273,7 @@ Grammar,I am,Jo sóc,Verb: Ser"
                   setPreviewContent(null);
                   setPasteContent('');
                 }}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                className="p-1 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded"
               >
                 <X size={20} className="text-gray-400" />
               </button>

@@ -357,7 +357,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                   <div className="flex flex-col items-center gap-1">
                     <motion.button
                       onClick={(e) => handlePlayAudio(e, back, direction === 'english-to-catalan')}
-                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors font-medium"
+                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white dark:bg-gray-800/10 rounded-xl transition-colors font-medium"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       aria-label={`Listen to pronunciation of "${back}"`}
@@ -376,7 +376,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="text-sm text-white/90 text-center mb-4 bg-white/10 px-4 py-2 rounded-xl"
+                      className="text-sm text-white/90 text-center mb-4 bg-white dark:bg-gray-800/10 px-4 py-2 rounded-xl"
                     >
                       {flashcard.notes}
                     </motion.p>
@@ -412,7 +412,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                     e.stopPropagation();
                     navigate(`/grammar/${relatedGrammar.lessonId}`);
                   }}
-                  className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 hover:text-white text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800/10 hover:bg-white/20 rounded-lg text-white/80 hover:text-white text-sm font-medium transition-colors"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
