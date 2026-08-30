@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Catalan FlashCards',
         short_name: 'Catalan Cards',
@@ -30,7 +30,9 @@ export default defineConfig({
             type: 'image/png',
           },
           {
-            src: '/pwa-512x512.png',
+            // Maskable art is inset to the safe zone; using the standard icon
+            // here would let Android's adaptive mask clip its edges.
+            src: '/pwa-maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -81,5 +83,27 @@ export default defineConfig({
     alias: {
       '@': '/src',
     },
+  },
+  build: {
+    // The app previously shipped as one ~1.9MB chunk. Routes are now lazy, and
+    // these vendor groups keep the big third-party libraries in separately
+    // cacheable files so a code change doesn't invalidate all of them.
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-firebase': [
+            'firebase/app',
+            'firebase/auth',
+            'firebase/firestore',
+            'firebase/functions',
+            'firebase/storage',
+          ],
+          'vendor-charts': ['recharts'],
+          'vendor-motion': ['framer-motion'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 700,
   },
 })

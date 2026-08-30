@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { logger } from '../services/logger';
 import {
   Upload,
   CheckCircle,
@@ -88,6 +89,7 @@ export function ImportPage() {
 
       setPreviewContent(content);
     } catch (error) {
+      logger.error('Failed to read import file', 'ImportPage', { error: String(error) });
       setResult({ success: false, count: 0, error: 'Failed to read file' });
     }
   };

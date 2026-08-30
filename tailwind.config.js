@@ -94,6 +94,8 @@ export default {
         'star-burst': 'starBurst 0.6s ease-out forwards',
         'slide-up': 'slideUp 0.5s ease-out',
         'scale-in': 'scaleIn 0.3s ease-out',
+        // Holds at opacity 0 for 300ms so fast route chunks never flash a loader.
+        'fade-in-delayed': 'fadeInDelayed 0.6s ease-out',
       },
       keyframes: {
         float: {
@@ -124,6 +126,10 @@ export default {
         scaleIn: {
           '0%': { transform: 'scale(0.9)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        fadeInDelayed: {
+          '0%, 50%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
       },
       borderRadius: {

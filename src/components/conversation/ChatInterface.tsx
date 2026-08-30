@@ -68,8 +68,8 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
     // Play audio for response
     try {
       await audioService.speakCatalan(assistantMsg.content);
-    } catch (e) {
-      // Ignore audio errors
+    } catch {
+      // Audio is a nice-to-have here; a failure must not break the chat flow.
     }
   };
 

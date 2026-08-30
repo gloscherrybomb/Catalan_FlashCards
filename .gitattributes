@@ -1,0 +1,31 @@
+# Normalise line endings: LF in the repository, native in the working tree.
+# Without this, editing on Windows/OneDrive rewrites whole files as CRLF and
+# every file shows as fully modified with no content change.
+* text=auto eol=lf
+
+# Explicitly text
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.jsx   text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.svg   text eol=lf
+*.rules text eol=lf
+
+# Binary - never touch
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.mp3   binary
+*.wav   binary
+
+# Windows/OneDrive cruft that should never have been tracked
+desktop.ini -text

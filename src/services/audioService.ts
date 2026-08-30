@@ -132,7 +132,9 @@ class AudioService {
         await this.speakWithCloudTTS(cleanText, language, options.playbackRate);
         return;
       } catch (error) {
-        logger.warn('Cloud TTS failed, falling back to Web Speech API', 'AudioService');
+        logger.warn('Cloud TTS failed, falling back to Web Speech API', 'AudioService', {
+          error: String(error),
+        });
       }
     }
 
@@ -312,7 +314,9 @@ class AudioService {
           const result = await generateAudioFunction({ text: cleanText, language: langCode });
           this.audioUrlCache.set(cacheKey, result.data.url);
         } catch (error) {
-          logger.warn(`Failed to preload audio: ${text}`, 'AudioService');
+          logger.warn(`Failed to preload audio: ${text}`, 'AudioService', {
+            error: String(error),
+          });
         }
       }
     });

@@ -47,3 +47,7 @@ coverage/
 .eslintcache
 
 .vercel
+
+# OS / sync cruft
+desktop.ini
+Thumbs.db

@@ -834,29 +834,39 @@ export function generateSessionComposition(
   // Get weakness card IDs
   const weaknessCardIds = new Set(weakSpots.flatMap(w => w.affectedCardIds));
 
-  // Count due cards
+  // Count what is actually available, in both directions, so the preview can
+  // never promise more cards than the deck can supply.
+  const now = new Date();
   let dueCards = 0;
   let newCards = 0;
 
   for (const card of flashcards) {
-    const engKey = `${card.id}_english-to-catalan`;
-    const engProgress = cardProgress.get(engKey);
+    for (const direction of ['english-to-catalan', 'catalan-to-english'] as const) {
+      const progress = cardProgress.get(`${card.id}_${direction}`);
 
-    if (!engProgress || engProgress.repetitions === 0) {
-      newCards++;
-    } else if (engProgress.nextReviewDate <= new Date()) {
-      dueCards++;
+      if (!progress || progress.repetitions === 0) {
+        newCards++;
+      } else if (new Date(progress.nextReviewDate) <= now) {
+        dueCards++;
+      }
     }
   }
 
-  // Calculate composition
-  const totalCards = Math.min(targetCards, flashcards.length * 2);
-  const newCardCount = Math.min(Math.ceil(totalCards * newCardRatio), newCards);
+  // Calculate composition, clamping every bucket to what actually exists.
+  const requestedCards = Math.min(targetCards, flashcards.length * 2);
+  const newCardCount = Math.min(Math.ceil(requestedCards * newCardRatio), newCards);
   const weaknessCardCount = Math.min(
-    Math.ceil(totalCards * RECOMMENDATION_CONFIG.WEAKNESS_CARD_RATIO),
+    Math.ceil(requestedCards * RECOMMENDATION_CONFIG.WEAKNESS_CARD_RATIO),
     weaknessCardIds.size
   );
-  const reviewCardCount = totalCards - newCardCount - weaknessCardCount;
+  const reviewCardCount = Math.max(
+    0,
+    Math.min(requestedCards - newCardCount - weaknessCardCount, dueCards)
+  );
+
+  // The real session size is the sum of the buckets, not the request, so the
+  // percentages shown in the preview add up to the deck the learner will get.
+  const totalCards = newCardCount + reviewCardCount + weaknessCardCount;
 
   // Category breakdown (simplified)
   const categoryBreakdown: Record<string, number> = {};

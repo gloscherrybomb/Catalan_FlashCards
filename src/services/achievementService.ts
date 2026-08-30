@@ -165,9 +165,10 @@ export function getAchievementProgress(
     case 'cards_reviewed':
       return Math.min(100, Math.round((progress.totalCardsReviewed / req.count) * 100));
 
-    case 'cards_mastered':
+    case 'cards_mastered': {
       const mastered = countMasteredCards(cardProgress);
       return Math.min(100, Math.round((mastered / req.count) * 100));
+    }
 
     case 'perfect_streak':
       return Math.min(100, Math.round((perfectStreak / req.count) * 100));
@@ -187,7 +188,7 @@ export function getAchievementProgress(
       }
       return 0;
 
-    case 'category_mastered':
+    case 'category_mastered': {
       const categoryCards = flashcards.filter(c => c.category === req.category);
       if (categoryCards.length === 0) return 0;
 
@@ -205,6 +206,7 @@ export function getAchievementProgress(
       }
 
       return Math.round((masteredInCategory / categoryCards.length) * 100);
+    }
 
     default:
       return 0;

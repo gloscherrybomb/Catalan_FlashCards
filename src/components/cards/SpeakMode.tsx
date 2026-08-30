@@ -131,6 +131,7 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
       });
       setIsListening(true);
     } catch (err) {
+      logger.warn('Speech recognition failed to start', 'SpeakMode', { error: String(err) });
       setError('Failed to start recording. Please check microphone access.');
     }
   }, []);
