@@ -1,3 +1,4 @@
+import { EXTENDED_STORIES } from './storiesExtended';
 // Story Data for Reading Comprehension
 
 export type StoryLevel = 'A1' | 'A2' | 'B1' | 'B2';
@@ -39,7 +40,7 @@ export interface Story {
 }
 
 // A1 Level Stories - Simple present tense, basic vocabulary
-export const STORIES: Story[] = [
+const CORE_STORIES: Story[] = [
   {
     id: 'a1-first-day',
     title: 'My First Day',
@@ -640,6 +641,13 @@ export const STORIES: Story[] = [
     ],
   },
 ];
+
+
+/**
+ * The reading library: the original seven plus the graded set that makes a
+ * path from A1 to B1 possible. Seven stories is about one afternoon.
+ */
+export const STORIES: Story[] = [...CORE_STORIES, ...EXTENDED_STORIES];
 
 // Helper functions
 export function getStoriesByLevel(level: StoryLevel): Story[] {
