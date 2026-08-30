@@ -18,7 +18,7 @@ import { tokenise } from '../utils/textUtils';
  */
 
 /** A sentence as authored: target words by name, not by index. */
-interface AuthoredSentence {
+export interface AuthoredSentence {
   id: string;
   categoryId: string;
   catalan: string;
@@ -43,7 +43,7 @@ interface AuthoredSentence {
  * ones, so every index after it would be off by one and the exercise would
  * blank the wrong word.
  */
-function withIndices(authored: AuthoredSentence): SentenceData {
+export function withIndices(authored: AuthoredSentence): SentenceData {
   const words = authored.catalan.split(/\s+/).filter(Boolean);
 
   const indices = authored.targetWords.flatMap((target) => {
@@ -83,12 +83,12 @@ function withIndices(authored: AuthoredSentence): SentenceData {
 
 const AUTHORED: AuthoredSentence[] = [
   // ---------------------------------------------------------------- Unit 1
-  { id: 'u1-1', categoryId: 'greetings', catalan: 'Hola! Què tal?', english: 'Hello! How are things?', targetWords: ['hola'] },
+  { id: 'u1-1', categoryId: 'greetings', catalan: 'Hola! Com va?', english: 'Hello! How are things?', targetWords: ['hola'] },
   { id: 'u1-2', categoryId: 'greetings', catalan: 'Bon dia, senyora Puig.', english: 'Good morning, Mrs Puig.', targetWords: ['bon dia'] },
   { id: 'u1-3', categoryId: 'greetings', catalan: 'Bona tarda, passi endavant.', english: 'Good afternoon, do come in.', targetWords: ['bona tarda'] },
   { id: 'u1-4', categoryId: 'greetings', catalan: 'Bona nit, que descansis.', english: 'Good night, sleep well.', targetWords: ['bona nit'] },
   { id: 'u1-16', categoryId: 'greetings', catalan: 'Bon vespre! Ja s’ha fet fosc.', english: 'Good evening! It has got dark already.', targetWords: ['bon vespre'] },
-  { id: 'u1-5', categoryId: 'greetings', catalan: 'Adéu, ens veiem aviat.', english: 'Goodbye, see you soon.', targetWords: ['adéu'] },
+  { id: 'u1-5', categoryId: 'greetings', catalan: 'Adeu, ens veiem aviat.', english: 'Goodbye, see you soon.', targetWords: ['adeu'] },
   { id: 'u1-6', categoryId: 'greetings', catalan: 'Ja me’n vaig. Fins després!', english: "I'm off now. See you later!", targetWords: ['fins després'] },
   { id: 'u1-7', categoryId: 'greetings', catalan: 'Fins demà a la feina!', english: 'See you tomorrow at work!', targetWords: ['fins demà'] },
   { id: 'u1-8', categoryId: 'greetings', catalan: 'Benvingut a Barcelona, Marc.', english: 'Welcome to Barcelona, Marc.', targetWords: ['benvingut'] },
@@ -103,9 +103,9 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u2-2', categoryId: 'greetings', catalan: 'I tu, com et dius?', english: 'And you, what is your name?', targetWords: ['com et dius'] },
   { id: 'u2-3', categoryId: 'greetings', catalan: 'Em dic Laura i soc de Girona.', english: 'My name is Laura and I am from Girona.', targetWords: ['em dic'] },
   { id: 'u2-4', categoryId: 'greetings', catalan: 'Soc professor de música.', english: 'I am a music teacher.', targetWords: ['soc'] },
-  { id: 'u2-5', categoryId: 'greetings', catalan: 'Encantat de conèixe’l.', english: 'Very pleased to meet you.', targetWords: ['encantat'] },
+  { id: 'u2-5', categoryId: 'greetings', catalan: 'Encantat de conèixer-lo.', english: 'Very pleased to meet you.', targetWords: ['encantat'] },
   { id: 'u2-6', categoryId: 'greetings', catalan: 'Encantada! Jo soc la Maria.', english: 'Pleased to meet you! I am Maria.', targetWords: ['encantada'] },
-  { id: 'u2-7', categoryId: 'greetings', catalan: 'Hola Pere, com estàs avui?', english: 'Hi Pere, how are you today?', targetWords: ['com estàs'] },
+  { id: 'u2-7', categoryId: 'greetings', catalan: 'Hola, Pere, com estàs avui?', english: 'Hi Pere, how are you today?', targetWords: ['com estàs'] },
   { id: 'u2-8', categoryId: 'greetings', catalan: 'Bon dia, senyor Roca, com està?', english: 'Good morning, Mr Roca, how are you?', targetWords: ['com està'], grammarConcepts: ['formal-address'] },
   { id: 'u2-9', categoryId: 'greetings', catalan: 'Estic molt bé, gràcies.', english: 'I am very well, thank you.', targetWords: ['molt bé'] },
   { id: 'u2-10', categoryId: 'greetings', catalan: 'Jo estic bé. I tu?', english: 'I am fine. And you?', targetWords: ['i tu'] },
@@ -145,7 +145,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u4-2', categoryId: 'food', catalan: 'Vull anar a la platja demà.', english: 'I want to go to the beach tomorrow.', targetWords: ['vull'] },
   { id: 'u4-3', categoryId: 'food', catalan: 'Vols venir amb nosaltres?', english: 'Do you want to come with us?', targetWords: ['vols'] },
   { id: 'u4-4', categoryId: 'food', catalan: 'Què vols per sopar?', english: 'What do you want for dinner?', targetWords: ['què vols'] },
-  { id: 'u4-5', categoryId: 'food', catalan: 'Vaig a prendre un cafè.', english: 'I am going to have a coffee.', targetWords: ['prendre'] },
+  { id: 'u4-5', categoryId: 'food', catalan: 'Ara prendré un cafè.', english: 'I am going to have a coffee.', targetWords: ['prendre'] },
   { id: 'u4-6', categoryId: 'food', catalan: 'Vols alguna cosa per beure?', english: 'Do you want something to drink?', targetWords: ['alguna cosa', 'beure'] },
   { id: 'u4-7', categoryId: 'food', catalan: 'No vull res, gràcies.', english: 'I do not want anything, thank you.', targetWords: ['res'] },
   { id: 'u4-8', categoryId: 'food', catalan: 'M’agrada menjar a poc a poc.', english: 'I like to eat slowly.', targetWords: ['menjar'] },
@@ -380,7 +380,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u13-14', categoryId: 'daily-life', catalan: 'Em rento les dents tres cops al dia.', english: 'I brush my teeth three times a day.', targetWords: ['rentar-se les dents'] },
   { id: 'u13-15', categoryId: 'daily-life', catalan: 'Em vesteixo de pressa al matí.', english: 'I get dressed quickly in the morning.', targetWords: ['vestir-se'] },
   { id: 'u13-16', categoryId: 'daily-life', catalan: 'Vaig a dormir a les onze.', english: 'I go to bed at eleven.', targetWords: ['anar a dormir'] },
-  { id: 'u13-17', categoryId: 'daily-life', catalan: 'El diumenge m’agrada descansar.', english: 'On Sundays I like to rest.', targetWords: ['descansar'] },
+  { id: 'u13-17', categoryId: 'daily-life', catalan: 'Els diumenges m’agrada descansar.', english: 'On Sundays I like to rest.', targetWords: ['descansar'] },
   { id: 'u13-18', categoryId: 'daily-life', catalan: 'M’agrada llegir abans de dormir.', english: 'I like to read before sleeping.', targetWords: ['llegir'] },
   { id: 'u13-19', categoryId: 'daily-life', catalan: 'No m’agrada mirar la televisió.', english: 'I do not like watching television.', targetWords: ['mirar la televisió'] },
   { id: 'u13-20', categoryId: 'daily-life', catalan: 'Estudio català dues hores al dia.', english: 'I study Catalan two hours a day.', targetWords: ['estudiar'] },
@@ -400,7 +400,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u14-9', categoryId: 'past-events', catalan: 'He vist una pel·lícula molt bona.', english: 'I have seen a very good film.', targetWords: ['he vist'], grammarConcepts: ['perfect-tense'] },
   { id: 'u14-10', categoryId: 'past-events', catalan: 'Vull sortir aquesta nit.', english: 'I want to go out tonight.', targetWords: ['sortir'] },
   { id: 'u14-11', categoryId: 'past-events', catalan: 'El tren ha d’arribar a les vuit.', english: 'The train should arrive at eight.', targetWords: ['arribar'] },
-  { id: 'u14-12', categoryId: 'past-events', catalan: 'Vaig visitar el museu Picasso.', english: 'I visited the Picasso museum.', targetWords: ['visitar'] },
+  { id: 'u14-12', categoryId: 'past-events', catalan: 'Vaig visitar el Museu Picasso.', english: 'I visited the Picasso museum.', targetWords: ['visitar'] },
   { id: 'u14-13', categoryId: 'past-events', catalan: 'No hi he estat mai.', english: 'I have never been there.', targetWords: ['mai'] },
   { id: 'u14-14', categoryId: 'past-events', catalan: 'He comprat pa i llet.', english: 'I have bought bread and milk.', targetWords: ['he comprat'], grammarConcepts: ['perfect-tense'] },
   { id: 'u14-15', categoryId: 'past-events', catalan: 'He parlat amb la teva germana.', english: 'I have spoken with your sister.', targetWords: ['he parlat'], grammarConcepts: ['perfect-tense'] },
@@ -416,7 +416,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u15-1', categoryId: 'opinions', catalan: 'Què en penses, tu?', english: 'What do you think about it?', targetWords: ['pensar'] },
   { id: 'u15-2', categoryId: 'opinions', catalan: 'No m’ho puc creure!', english: 'I cannot believe it!', targetWords: ['creure'] },
   { id: 'u15-3', categoryId: 'opinions', catalan: 'Penso que tens raó.', english: 'I think you are right.', targetWords: ['penso que'] },
-  { id: 'u15-4', categoryId: 'opinions', catalan: 'Al meu parer, és una bona idea.', english: 'In my opinion, it is a good idea.', targetWords: ['al meu parer'] },
+  { id: 'u15-4', categoryId: 'opinions', catalan: 'A parer meu, és una bona idea.', english: 'In my opinion, it is a good idea.', targetWords: ['a parer meu'] },
   { id: 'u15-5', categoryId: 'opinions', catalan: 'Potser vindrem més tard.', english: 'Perhaps we will come later.', targetWords: ['potser'] },
   { id: 'u15-6', categoryId: 'opinions', catalan: 'És clar que hi anirem!', english: 'Of course we will go!', targetWords: ['és clar'] },
   { id: 'u15-7', categoryId: 'opinions', catalan: 'De veritat? No en tenia ni idea.', english: 'Really? I had no idea.', targetWords: ['de veritat'] },
@@ -451,7 +451,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u16-15', categoryId: 'past-events', catalan: 'Vaig llegir aquesta novel·la l’any passat.', english: 'I read this novel last year.', targetWords: ['vaig llegir'], grammarConcepts: ['preterite'] },
   { id: 'u16-16', categoryId: 'past-events', catalan: 'Vaig marxar abans que acabés.', english: 'I left before it finished.', targetWords: ['vaig marxar'], grammarConcepts: ['preterite'] },
   { id: 'u16-17', categoryId: 'past-events', catalan: 'En aquells dies no hi havia mòbils.', english: 'In those days there were no mobile phones.', targetWords: ['en aquells dies'] },
-  { id: 'u16-18', categoryId: 'past-events', catalan: 'Hi havia una vegada un rei molt savi.', english: 'Once upon a time there was a very wise king.', targetWords: ['hi havia una vegada'] },
+  { id: 'u16-18', categoryId: 'past-events', catalan: 'Una vegada hi havia un rei molt savi.', english: 'Once upon a time there was a very wise king.', targetWords: ['hi havia una vegada'] },
   { id: 'u16-19', categoryId: 'past-events', catalan: 'De sobte va començar a ploure.', english: 'Suddenly it started to rain.', targetWords: ['de sobte'] },
   { id: 'u16-20', categoryId: 'past-events', catalan: 'Finalment vam trobar l’hotel.', english: 'Finally we found the hotel.', targetWords: ['finalment'] },
 
@@ -512,7 +512,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u19-7', categoryId: 'transport', catalan: 'He comprat el bitllet a la màquina.', english: 'I bought the ticket at the machine.', targetWords: ['bitllet'] },
   { id: 'u19-8', categoryId: 'transport', catalan: 'El tren surt de l’andana tres.', english: 'The train leaves from platform three.', targetWords: ['andana'] },
   { id: 'u19-9', categoryId: 'transport', catalan: 'Hem de pujar al vagó del davant.', english: 'We have to get on the front carriage.', targetWords: ['pujar'] },
-  { id: 'u19-10', categoryId: 'transport', catalan: 'Has de baixar a la propera parada.', english: 'You have to get off at the next stop.', targetWords: ['baixar'] },
+  { id: 'u19-10', categoryId: 'transport', catalan: 'Has de baixar a la parada següent.', english: 'You have to get off at the next stop.', targetWords: ['baixar'] },
   { id: 'u19-11', categoryId: 'transport', catalan: 'El tramvia passa cada deu minuts.', english: 'The tram comes every ten minutes.', targetWords: ['tramvia'] },
   { id: 'u19-12', categoryId: 'transport', catalan: 'L’avió aterra a les sis.', english: 'The plane lands at six.', targetWords: ['avió'] },
   { id: 'u19-13', categoryId: 'transport', catalan: 'L’aeroport és lluny del centre.', english: 'The airport is far from the centre.', targetWords: ['aeroport'] },
@@ -531,7 +531,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u20-4', categoryId: 'celebrations', catalan: 'M’agrada molt la música catalana.', english: 'I really like Catalan music.', targetWords: ['música'] },
   { id: 'u20-5', categoryId: 'celebrations', catalan: 'El ball va durar fins a la matinada.', english: 'The dance lasted until dawn.', targetWords: ['ball'] },
   { id: 'u20-6', categoryId: 'celebrations', catalan: 'Sap ballar molt bé la sardana.', english: 'She can dance the sardana very well.', targetWords: ['ballar', 'sardana'] },
-  { id: 'u20-7', categoryId: 'celebrations', catalan: 'Anem a celebrar el teu aniversari.', english: 'Let us celebrate your birthday.', targetWords: ['celebrar'] },
+  { id: 'u20-7', categoryId: 'celebrations', catalan: 'Celebrarem el teu aniversari.', english: 'Let us celebrate your birthday.', targetWords: ['celebrar'] },
   { id: 'u20-8', categoryId: 'celebrations', catalan: 'Espero que gaudiu de la festa.', english: 'I hope you enjoy the party.', targetWords: ['gaudir'] },
   { id: 'u20-9', categoryId: 'celebrations', catalan: 'Els focs artificials comencen a mitjanit.', english: 'The fireworks start at midnight.', targetWords: ['focs artificials'] },
   { id: 'u20-10', categoryId: 'celebrations', catalan: 'Els castellers van aixecar un castell de nou pisos.', english: 'The castellers raised a nine-storey human tower.', targetWords: ['castell'] },
@@ -539,11 +539,11 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u20-12', categoryId: 'celebrations', catalan: 'Per molts anys, iaia!', english: 'Happy birthday, Grandma!', targetWords: ['per molts anys'] },
   { id: 'u20-13', categoryId: 'celebrations', catalan: 'Bon Nadal i bones festes!', english: 'Merry Christmas and happy holidays!', targetWords: ['bon nadal'] },
   { id: 'u20-14', categoryId: 'celebrations', catalan: 'Bon any nou a tothom!', english: 'Happy New Year everyone!', targetWords: ['bon any nou'] },
-  { id: 'u20-15', categoryId: 'celebrations', catalan: 'Per Pasqua mengem la mona.', english: 'At Easter we eat the mona cake.', targetWords: ['pasqua'] },
+  { id: 'u20-15', categoryId: 'celebrations', catalan: 'Per Pasqua ens mengem la mona.', english: 'At Easter we eat the mona cake.', targetWords: ['pasqua'] },
   { id: 'u20-16', categoryId: 'celebrations', catalan: 'Per Sant Jordi es regalen llibres i roses.', english: 'On Saint George’s Day people give books and roses.', targetWords: ['sant jordi'] },
   { id: 'u20-17', categoryId: 'celebrations', catalan: 'La llegenda parla d’un drac i un cavaller.', english: 'The legend speaks of a dragon and a knight.', targetWords: ['llegenda', 'drac', 'cavaller'] },
   { id: 'u20-18', categoryId: 'celebrations', catalan: 'Ahir ens ho vam passar molt bé.', english: 'We had a great time yesterday.', targetWords: ["passar-s'ho bé"] },
-  { id: 'u20-19', categoryId: 'celebrations', catalan: 'Anem a brindar pels nuvis!', english: 'Let us toast the newlyweds!', targetWords: ['brindar'] },
+  { id: 'u20-19', categoryId: 'celebrations', catalan: 'Brindem pels nuvis!', english: 'Let us toast the newlyweds!', targetWords: ['brindar'] },
   { id: 'u20-20', categoryId: 'celebrations', catalan: 'Salut! Per molts anys!', english: 'Cheers! Many happy returns!', targetWords: ['salut'] },
 
   // ------------------------------------------------- Remaining course phrases

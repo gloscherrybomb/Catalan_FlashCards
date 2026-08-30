@@ -1,3 +1,4 @@
+import { A2_UNITS } from './vocabularyA2';
 // Vocabulary organized by the 20 units from "Colloquial Catalan" course
 // Each unit builds progressively on previous knowledge
 
@@ -52,7 +53,7 @@ const UNIT_1: UnitVocabulary = {
     { front: 'good afternoon', back: 'bona tarda', category: 'Greetings', notes: 'From about 2pm until the evening' },
     { front: 'good evening', back: 'bon vespre', category: 'Greetings', notes: 'The gap between tarda and nit; widely used again in Catalonia' },
     { front: 'good night', back: 'bona nit', category: 'Greetings', notes: 'From about 9pm, and on parting for the night' },
-    { front: 'goodbye', back: 'adéu', category: 'Greetings' },
+    { front: 'goodbye', back: 'adeu', category: 'Greetings' },
     { front: 'see you later', back: 'fins després', category: 'Greetings' },
     { front: 'see you tomorrow', back: 'fins demà', category: 'Greetings' },
     { front: 'welcome (to a man)', back: 'benvingut', category: 'Greetings', gender: 'masculine' },
@@ -536,7 +537,7 @@ const UNIT_15: UnitVocabulary = {
     { front: 'to think', back: 'pensar', category: 'Verbs' },
     { front: 'to believe', back: 'creure', category: 'Verbs' },
     { front: 'I think that...', back: 'Penso que...', category: 'Phrases' },
-    { front: 'in my opinion', back: 'al meu parer', category: 'Phrases' },
+    { front: 'in my opinion', back: 'a parer meu', category: 'Phrases' },
     { front: 'I agree', back: "estic d'acord", category: 'Phrases' },
     { front: 'I disagree', back: "no estic d'acord", category: 'Phrases' },
     { front: 'perhaps', back: 'potser', category: 'Adverbs' },
@@ -585,7 +586,7 @@ const UNIT_16: UnitVocabulary = {
     { front: 'I arrived', back: 'vaig arribar', category: 'Verbs' },
     { front: 'I left', back: 'vaig marxar', category: 'Verbs' },
     { front: 'in those days', back: 'en aquells dies', category: 'Time' },
-    { front: 'once upon a time', back: 'hi havia una vegada', category: 'Phrases' },
+    { front: 'once upon a time', back: 'una vegada hi havia', category: 'Phrases' },
     { front: 'suddenly', back: 'de sobte', category: 'Adverbs' },
     { front: 'finally', back: 'finalment', category: 'Adverbs' },
   ],
@@ -729,6 +730,8 @@ export const COURSE_UNITS: UnitVocabulary[] = [
   UNIT_6, UNIT_7, UNIT_8, UNIT_9, UNIT_10,
   UNIT_11, UNIT_12, UNIT_13, UNIT_14, UNIT_15,
   UNIT_16, UNIT_17, UNIT_18, UNIT_19, UNIT_20,
+  // Units 21+ carry the course past A1; see vocabularyA2.ts.
+  ...A2_UNITS,
 ];
 
 // Get total vocabulary count

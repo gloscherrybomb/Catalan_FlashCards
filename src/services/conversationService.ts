@@ -784,7 +784,7 @@ const SCENARIO_RESPONSES: Record<string, ScenarioResponses> = {
       { keywords: ['targeta', 'card'], response: 'Sí, acceptem targeta. Aquí té el datàfon.', translation: 'Yes, we accept card. Here\'s the card reader.' },
       // Thanks/Farewell
       { keywords: ['gràcies', 'gracies', 'thanks'], response: 'De res! Ha estat un plaer. Tornin aviat!', translation: 'You\'re welcome! It was a pleasure. Come back soon!' },
-      { keywords: ['adéu', 'adeu', 'goodbye'], response: 'Adéu! Que vagi bé!', translation: 'Goodbye! Take care!' },
+      { keywords: ['adeu', 'adeu', 'goodbye'], response: 'Adeu! Que vagi bé!', translation: 'Goodbye! Take care!' },
     ],
     fallbackResponses: [
       { response: 'Molt bé. I per menjar, què voleu? Avui tenim peix fresc i paella.', translation: 'Very good. And to eat, what would you like? Today we have fresh fish and paella.' },
@@ -813,7 +813,7 @@ const SCENARIO_RESPONSES: Record<string, ScenarioResponses> = {
       { keywords: ['fresc', 'fresh'], response: 'Tot és del dia! Arriba cada matí de l\'hort.', translation: 'Everything is fresh today! It arrives every morning from the garden.' },
       // Thanks/Farewell
       { keywords: ['gràcies', 'gracies', 'thanks'], response: 'De res! Que vagi bé! Fins demà!', translation: 'You\'re welcome! Take care! See you tomorrow!' },
-      { keywords: ['adéu', 'adeu', 'goodbye'], response: 'Adéu! Torni quan vulgui!', translation: 'Goodbye! Come back anytime!' },
+      { keywords: ['adeu', 'adeu', 'goodbye'], response: 'Adeu! Torni quan vulgui!', translation: 'Goodbye! Come back anytime!' },
     ],
     fallbackResponses: [
       { response: 'Què més li poso? Tinc fruita i verdura molt fresca avui.', translation: 'What else can I get you? I have very fresh fruit and vegetables today.' },

@@ -37,7 +37,7 @@ describe('Typing Validator', () => {
 
     describe('Tier 3: Accent tolerance', () => {
       it('should be acceptable but not correct when missing accent', () => {
-        const result = validateTyping('adeu', 'Adéu');
+        const result = validateTyping('cafe', 'cafè');
 
         expect(result.isCorrect).toBe(false);
         expect(result.isAcceptable).toBe(true);
@@ -165,7 +165,7 @@ describe('Typing Validator', () => {
     });
 
     it('should remove diacritics', () => {
-      expect(normalizeForComparison('Adéu')).toBe('adeu');
+      expect(normalizeForComparison('Adeu')).toBe('adeu');
       expect(normalizeForComparison('Cafè')).toBe('cafe');
     });
 
@@ -383,7 +383,7 @@ describe('Typing Validator', () => {
     });
 
     it('should return accent matchType for accent difference', () => {
-      const result = validateTyping('adeu', 'Adéu');
+      const result = validateTyping('cafe', 'cafè');
       expect(result.matchType).toBe('accent');
       expect(result.feedbackMessage).toContain('accent');
     });

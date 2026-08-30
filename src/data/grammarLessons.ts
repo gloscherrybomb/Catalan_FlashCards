@@ -1,3 +1,5 @@
+import { B1_GRAMMAR_LESSONS } from './grammarLessonsB1';
+
 export interface ConjugationTable {
   verb: string;
   verbEnglish: string;
@@ -50,7 +52,7 @@ export interface GrammarLesson {
   relatedCategories: string[];
 }
 
-export const GRAMMAR_LESSONS: GrammarLesson[] = [
+const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
   // BEGINNER LESSONS
   {
     id: 'definite-articles',
@@ -489,7 +491,7 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           examples: [
             { catalan: "l'home → els homes", english: 'the man → the men', highlight: 'homes' },
             { catalan: 'el peu → els peus', english: 'the foot → the feet', highlight: 'peus' },
-            { catalan: 'el ou → els ous', english: 'the egg → the eggs', highlight: 'ous' },
+            { catalan: "l'ou → els ous", english: 'the egg → the eggs', highlight: 'ous' },
           ],
           tips: [
             'Most irregulars are common words you\'ll learn through practice',
@@ -745,7 +747,7 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           explanation: 'Pronouns are usually dropped unless emphasizing or clarifying:',
           examples: [
             { catalan: 'Parlo català', english: 'I speak Catalan (pronoun dropped)', highlight: 'Parlo' },
-            { catalan: 'JO parlo català, no ell', english: 'I speak Catalan, not him (emphasis)', highlight: 'JO' },
+            { catalan: 'Jo parlo català, no ell', english: 'I speak Catalan, not him (emphasis)', highlight: 'JO' },
           ],
           tips: [
             'Drop pronouns when the verb makes the subject clear',
@@ -788,7 +790,7 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           title: 'Basic SVO Order',
           explanation: 'Simple sentences follow Subject + Verb + Object order, just like English.',
           examples: [
-            { catalan: 'El noi menja una poma', english: 'The boy eats an apple', highlight: 'menja' },
+            { catalan: 'El noi es menja una poma', english: 'The boy eats an apple', highlight: 'menja' },
             { catalan: 'La Maria llegeix un llibre', english: 'Maria reads a book', highlight: 'llegeix' },
             { catalan: 'Nosaltres parlem català', english: 'We speak Catalan', highlight: 'parlem' },
           ],
@@ -1813,7 +1815,7 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           examples: [
             { catalan: 'Voldria un cafè', english: 'I would like a coffee', highlight: 'Voldria' },
             { catalan: 'Si pogués, vindria', english: 'If I could, I would come', highlight: 'vindria' },
-            { catalan: 'Hauries de estudiar', english: 'You should study', highlight: 'Hauries' },
+            { catalan: "Hauries d'estudiar", english: 'You should study', highlight: 'Hauries' },
           ],
           tips: [
             'Polite requests: Podria... (Could I...)',
@@ -1973,7 +1975,7 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           title: 'Related Verbs',
           explanation: 'Several other verbs follow the same pattern as agradar.',
           examples: [
-            { catalan: "M'encanta el xocolata", english: 'I love chocolate', highlight: 'encanta' },
+            { catalan: "M'encanta la xocolata", english: 'I love chocolate', highlight: 'encanta' },
             { catalan: "M'interessa la història", english: "I'm interested in history", highlight: 'interessa' },
             { catalan: 'Em fa falta temps', english: 'I need time', highlight: 'fa falta' },
             { catalan: 'Em sembla bé', english: 'It seems good to me', highlight: 'sembla' },
@@ -2295,7 +2297,7 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           examples: [
             { catalan: 'Vull que vinguis', english: 'I want you to come (desire)', highlight: 'vinguis' },
             { catalan: 'Dubto que sàpiga', english: 'I doubt that he/she knows (doubt)', highlight: 'sàpiga' },
-            { catalan: 'És important que estudïis', english: 'It\'s important that you study (necessity)', highlight: 'estudïis' },
+            { catalan: 'És important que estudiïs', english: 'It\'s important that you study (necessity)', highlight: 'estudïis' },
           ],
           tips: [
             'After DESIRE verbs: voler, desitjar, preferir',
@@ -2342,3 +2344,12 @@ export function getLessonsByDifficulty(difficulty: 'beginner' | 'intermediate' |
 export function getGrammarCategories(): string[] {
   return [...new Set(GRAMMAR_LESSONS.map(l => l.category))];
 }
+
+/**
+ * The course grammar: the original 27 lessons plus the A2/B1 set that fills the
+ * gap between the present subjunctive and actually being able to speak.
+ */
+export const GRAMMAR_LESSONS: GrammarLesson[] = [
+  ...CORE_GRAMMAR_LESSONS,
+  ...B1_GRAMMAR_LESSONS,
+];

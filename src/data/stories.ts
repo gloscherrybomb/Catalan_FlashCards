@@ -212,7 +212,7 @@ export const STORIES: Story[] = [
     xpReward: 50,
     paragraphs: [
       {
-        catalan: 'La família García viu a Girona. Són cinc persones.',
+        catalan: 'La família Garcia viu a Girona. Són cinc persones.',
         english: 'The García family lives in Girona. They are five people.',
       },
       {
@@ -386,7 +386,7 @@ export const STORIES: Story[] = [
     xpReward: 60,
     paragraphs: [
       {
-        catalan: 'El 23 d\'abril és la Diada de Sant Jordi. És el dia més romàntic de Catalunya!',
+        catalan: 'El 23 d\'abril és la diada de Sant Jordi. És el dia més romàntic de Catalunya!',
         english: 'April 23rd is Sant Jordi Day. It is the most romantic day in Catalonia!',
       },
       {
@@ -426,11 +426,11 @@ export const STORIES: Story[] = [
     questions: [
       {
         id: 'q1',
-        question: 'Quan és la Diada de Sant Jordi?',
+        question: 'Quan és la diada de Sant Jordi?',
         questionEnglish: 'When is Sant Jordi Day?',
         options: ['El 23 de març', 'El 23 d\'abril', 'El 23 de maig', 'El 23 de juny'],
         correctIndex: 1,
-        explanation: '"El 23 d\'abril és la Diada de Sant Jordi" - April 23rd is Sant Jordi Day.',
+        explanation: '"El 23 d\'abril és la diada de Sant Jordi" - April 23rd is Sant Jordi Day.',
       },
       {
         id: 'q2',
@@ -484,7 +484,7 @@ export const STORIES: Story[] = [
         english: 'The interview lasted an hour. They asked me about my experience and my professional goals.',
       },
       {
-        catalan: 'Crec que va anar bé. L\'entrevistadora semblava interessada en el meu portfoli.',
+        catalan: 'Crec que va anar bé. L\'entrevistadora semblava interessada en el meu dossier.',
         english: 'I think it went well. The interviewer seemed interested in my portfolio.',
       },
       {

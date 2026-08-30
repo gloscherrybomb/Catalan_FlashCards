@@ -1,5 +1,6 @@
 import type { ExampleSentence } from '../types/flashcard';
 import { UNIT_SENTENCES } from './unitSentences';
+import { A2_SENTENCES } from './sentencesA2';
 
 export interface SentenceCategory {
   id: string;
@@ -162,6 +163,42 @@ export const SENTENCE_CATEGORIES: SentenceCategory[] = [
     description: 'Expressing conditional situations',
     difficulty: 'advanced',
   },
+  // Categories for the A2 units, which the original eighteen did not cover.
+  {
+    id: 'work',
+    name: 'Work & Jobs',
+    nameCatalan: 'La feina',
+    description: 'Your job, your workplace and the working day',
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'health',
+    name: 'Body & Health',
+    nameCatalan: 'El cos i la salut',
+    description: 'Parts of the body, feeling unwell and the doctor',
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'home',
+    name: 'At Home',
+    nameCatalan: 'A casa',
+    description: 'Rooms, furniture and looking after a house',
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'education',
+    name: 'Studying',
+    nameCatalan: 'Els estudis',
+    description: 'School, university and learning a language',
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'leisure',
+    name: 'Free Time & Sport',
+    nameCatalan: 'El temps lliure i l’esport',
+    description: 'Hobbies, sport and making plans',
+    difficulty: 'intermediate',
+  },
 ];
 
 // Example sentences organized by category
@@ -233,7 +270,7 @@ const CORE_SENTENCES: SentenceData[] = [
   {
     id: 'greet-8',
     categoryId: 'greetings',
-    catalan: 'Adéu, fins demà!',
+    catalan: 'Adeu, fins demà!',
     english: 'Goodbye, see you tomorrow!',
     vocabularyIndices: [0, 1, 2],
     hasAudio: true,
@@ -679,7 +716,11 @@ const CORE_SENTENCES: SentenceData[] = [
  * Kept in a separate module because the unit set is large and grows with the
  * course; this file stays about the categories and the lookup helpers.
  */
-export const EXAMPLE_SENTENCES: SentenceData[] = [...CORE_SENTENCES, ...UNIT_SENTENCES];
+export const EXAMPLE_SENTENCES: SentenceData[] = [
+  ...CORE_SENTENCES,
+  ...UNIT_SENTENCES,
+  ...A2_SENTENCES,
+];
 
 // Helper functions
 export function getSentencesByCategory(categoryId: string): SentenceData[] {

@@ -12,7 +12,7 @@ describe('CSV Parser', () => {
     it('should parse valid CSV with Front and Back columns', () => {
       const csv = `Front,Back
 Hello,Hola
-Goodbye,Adéu`;
+Goodbye,Adeu`;
 
       const cards = parseCSV(csv);
 
@@ -20,7 +20,7 @@ Goodbye,Adéu`;
       expect(cards[0].front).toBe('Hello');
       expect(cards[0].back).toBe('Hola');
       expect(cards[1].front).toBe('Goodbye');
-      expect(cards[1].back).toBe('Adéu');
+      expect(cards[1].back).toBe('Adeu');
     });
 
     it('should parse CSV with optional Notes and Category columns', () => {
@@ -81,7 +81,7 @@ Hello,Greeting`;
       const csv = `Front,Back
 Hello,Hola
 
-Goodbye,Adéu`;
+Goodbye,Adeu`;
 
       const cards = parseCSV(csv);
 
@@ -120,7 +120,7 @@ Water,Aigua (F)`;
     it('should generate unique IDs for each card', () => {
       const csv = `Front,Back
 Hello,Hola
-Goodbye,Adéu`;
+Goodbye,Adeu`;
 
       const cards = parseCSV(csv);
 

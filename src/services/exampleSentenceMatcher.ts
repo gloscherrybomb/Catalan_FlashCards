@@ -1,6 +1,6 @@
 import type { Flashcard } from '../types/flashcard';
 import { EXAMPLE_SENTENCES, type SentenceData } from '../data/exampleSentences';
-import { extractAllForms, tokenise, CATALAN_WORD_CHARS } from '../utils/textUtils';
+import { extractAllForms, tokenise, CATALAN_WORD_CHARS, normalizeTypography } from '../utils/textUtils';
 
 // Re-exported so callers that only need tokenisation don't reach past this
 // module; the implementation lives in textUtils, which imports nothing and so
@@ -31,7 +31,7 @@ export { tokenise };
 
 /** Normalise for comparison: lowercase, and trim stray edge punctuation. */
 function normalise(text: string): string {
-  return text
+  return normalizeTypography(text)
     .toLowerCase()
     .replace(new RegExp(`^[^${CATALAN_WORD_CHARS}]+|[^${CATALAN_WORD_CHARS}]+$`, 'g'), '')
     .trim();

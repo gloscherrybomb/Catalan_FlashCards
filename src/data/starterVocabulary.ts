@@ -34,7 +34,7 @@ export const STARTER_VOCABULARY: StarterCard[] = [
   { front: 'good morning', back: 'bon dia', category: 'Greetings', notes: 'Used until noon' },
   { front: 'good afternoon', back: 'bona tarda', category: 'Greetings', notes: 'Used after noon' },
   { front: 'good evening / good night', back: 'bona nit', category: 'Greetings', notes: 'Used in evening' },
-  { front: 'goodbye', back: 'adéu', category: 'Greetings', notes: 'Formal goodbye' },
+  { front: 'goodbye', back: 'adeu', category: 'Greetings', notes: 'Formal goodbye' },
   { front: 'see you later', back: 'fins després', category: 'Greetings' },
   { front: 'see you tomorrow', back: 'fins demà', category: 'Greetings' },
   { front: 'thank you', back: 'gràcies', category: 'Greetings', notes: 'Also: merci (informal)' },

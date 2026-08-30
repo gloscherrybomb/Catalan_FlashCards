@@ -894,7 +894,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     level: 'A1',
     type: 'vocabulary',
     question: 'How do you say "hello" in Catalan?',
-    options: ['Adéu', 'Hola', 'Gràcies', 'Sisplau'],
+    options: ['Adeu', 'Hola', 'Gràcies', 'Sisplau'],
     correctAnswer: 'Hola',
   },
   {
