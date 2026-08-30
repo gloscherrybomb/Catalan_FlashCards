@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { MobileNav } from './MobileNav';
 import { AchievementToastContainer } from '../gamification/AchievementToast';
+import { LevelUpWatcher } from '../gamification/LevelUpWatcher';
 
 // Floating decorative blobs component
 function FloatingShapes() {
@@ -62,6 +63,10 @@ export function Layout() {
 
       {/* Toast notifications */}
       <AchievementToastContainer />
+
+      {/* Level-up celebration. Mounted here rather than on a page because XP is
+          awarded from study, games, grammar and conversation alike. */}
+      <LevelUpWatcher />
     </div>
   );
 }

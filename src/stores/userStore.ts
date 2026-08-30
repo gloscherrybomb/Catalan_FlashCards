@@ -42,6 +42,15 @@ interface PersistedUserState {
 
 interface UserState {
   user: User | null;
+  /**
+   * Set when a gain of XP crosses a level boundary, cleared once the
+   * celebration has been shown.
+   *
+   * addXP computed the new level and wrote it, but never compared it to the old
+   * one - so levelling up, the payoff of the whole XP system, happened in total
+   * silence while a full celebration component sat unused.
+   */
+  pendingLevelUp: { from: number; to: number } | null;
   profile: UserProfile | null;
   progress: UserProgress;
   achievements: UnlockedAchievement[];
@@ -59,6 +68,7 @@ interface UserState {
   recordStudySession: (cardsReviewed: number, correctAnswers: number, timeSpentMs: number) => Promise<void>;
   addAchievements: (newAchievements: UnlockedAchievement[]) => void;
   updateCardsLearned: (count: number) => Promise<void>;
+  clearLevelUp: () => void;
   recordSpeakingAttempt: (wasExcellent: boolean) => Promise<void>;
 }
 
@@ -110,6 +120,7 @@ export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
       user: null,
+      pendingLevelUp: null,
       profile: null,
       progress: DEFAULT_PROGRESS,
       achievements: [],
@@ -375,7 +386,17 @@ export const useUserStore = create<UserState>()(
           dailyActivity: updatedDailyActivity,
         };
 
-        set({ progress: newProgress });
+        const previousLevel = progress.level ?? 1;
+        set({
+          progress: newProgress,
+          // Only raise it on an actual crossing, and never overwrite a
+          // celebration that has not been shown yet - two quick answers can
+          // both land inside one session.
+          pendingLevelUp:
+            newLevel > previousLevel
+              ? (get().pendingLevelUp ?? { from: previousLevel, to: newLevel })
+              : get().pendingLevelUp,
+        });
 
         if (user && !isDemoMode) {
           await updateUserProgress(user.uid, { xp: newXP, level: newLevel, dailyActivity: updatedDailyActivity });
@@ -526,6 +547,8 @@ export const useUserStore = create<UserState>()(
           await updateUserProgress(user.uid, newProgress);
         }
       },
+
+      clearLevelUp: () => set({ pendingLevelUp: null }),
 
       updateCardsLearned: async (count: number) => {
         const { user, progress } = get();
