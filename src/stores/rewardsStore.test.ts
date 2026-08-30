@@ -10,10 +10,10 @@ vi.mock('./userStore', () => ({
 }));
 
 import { useRewardsStore } from './rewardsStore';
-import { getRewardById } from '../types/rewards';
+import { getRewardById, ALL_REWARDS } from '../types/rewards';
 
 const AVATAR_CAT = 'avatar_cat';        // 100 XP
-const AVATAR_CROWN = 'avatar_crown';    // 1000 XP
+const AVATAR_CROWN = 'avatar_crown';    // 4000 XP, level 9
 
 describe('rewardsStore', () => {
   beforeEach(() => {
@@ -82,7 +82,7 @@ describe('rewardsStore', () => {
     });
 
     it('charges the listed price', async () => {
-      mockProgress = { xp: 2000, level: 20 };
+      mockProgress = { xp: 50_000, level: 20 };
       await useRewardsStore.getState().purchase(AVATAR_CROWN);
       expect(useRewardsStore.getState().totalXPSpent).toBe(
         getRewardById(AVATAR_CROWN)!.xpCost
@@ -168,5 +168,65 @@ describe('rewardsStore', () => {
       expect(state.equippedTheme).toBe('theme_default');
       expect(state.equippedCardBack).toBe('cardback_default');
     });
+  });
+});
+
+describe('reward economy balance', () => {
+  beforeEach(() => {
+    mockProgress = { xp: 0, level: 1 };
+    useRewardsStore.getState().reset();
+  });
+
+  /**
+   * A beginner could previously buy almost the whole catalogue. Between card
+   * XP, achievements, daily and weekly challenges and the practice caps, an
+   * engaged learner earns well over ten thousand XP in their first week, and
+   * the entire shop cost 17,350.
+   */
+  it('prices the catalogue beyond a beginner’s reach', () => {
+    const total = ALL_REWARDS.reduce((sum, r) => sum + r.xpCost, 0);
+    expect(total).toBeGreaterThan(50_000);
+  });
+
+  it('gates prestige rewards behind a level, not just XP', () => {
+    const prestige = ALL_REWARDS.filter(
+      r =>
+        ['rare', 'epic', 'legendary'].includes(r.rarity) &&
+        // Consumables are deliberately ungated: a streak freeze is no use to a
+        // learner if it only unlocks at level 12.
+        !['power_up', 'streak_freeze'].includes(r.type)
+    );
+    // Every one of them must require progression, so hoarding XP alone is not
+    // enough to own the best items on day one.
+    expect(prestige.every(r => (r.unlockLevel ?? 0) > 1)).toBe(true);
+  });
+
+  it('leaves the free starter items free and ungated', () => {
+    for (const id of ['avatar_default', 'theme_default', 'cardback_default']) {
+      const reward = ALL_REWARDS.find(r => r.id === id)!;
+      expect(reward.xpCost).toBe(0);
+      expect(reward.unlockLevel).toBeUndefined();
+    }
+  });
+
+  it('refuses a purchase above the learner’s level even with the XP', () => {
+    // Rich but low-level: XP alone must not buy a legendary item.
+    mockProgress = { xp: 999_999, level: 2 };
+    const legendary = ALL_REWARDS.find(r => r.rarity === 'legendary')!;
+
+    return expect(useRewardsStore.getState().purchase(legendary.id)).resolves.toEqual({
+      ok: false,
+      reason: 'level-locked',
+    });
+  });
+
+  it('keeps consumable power-ups ungated and affordable', () => {
+    // A streak freeze is no use if it only unlocks at level 12.
+    const consumables = ALL_REWARDS.filter(r =>
+      ['power_up', 'streak_freeze'].includes(r.type)
+    );
+    expect(consumables.length).toBeGreaterThan(0);
+    expect(consumables.every(r => r.unlockLevel === undefined)).toBe(true);
+    expect(consumables.every(r => r.xpCost <= 1000)).toBe(true);
   });
 });
