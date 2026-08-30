@@ -101,6 +101,12 @@ export default defineConfig({
           ],
           'vendor-charts': ['recharts'],
           'vendor-motion': ['framer-motion'],
+          // clsx is used by every UI primitive AND by recharts. Left to
+          // Rollup it was placed inside vendor-charts, which made the entry
+          // chunk import from there - so 400KB of charting was modulepreloaded
+          // on every page load to supply a class-name helper used by Button.
+          // Naming it here keeps it in a chunk of its own.
+          'vendor-clsx': ['clsx'],
         },
       },
     },
