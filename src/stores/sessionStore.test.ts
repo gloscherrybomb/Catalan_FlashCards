@@ -246,6 +246,25 @@ describe('sessionStore', () => {
     });
   });
 
+  describe('state shape', () => {
+    /**
+     * Guards against reintroducing currentCard/progress/isComplete as getters
+     * on the state object. Zustand's set() uses Object.assign, which invokes a
+     * getter and copies its *value*, so any such getter is frozen after the
+     * first set() and silently reports stale data forever.
+     */
+    it('exposes no getters that set() would freeze', () => {
+      startWith([studyCard('a'), studyCard('b')]);
+      const state = useSessionStore.getState() as Record<string, unknown>;
+
+      const getters = Object.keys(state).filter(
+        key => Object.getOwnPropertyDescriptor(state, key)?.get !== undefined
+      );
+
+      expect(getters).toEqual([]);
+    });
+  });
+
   describe('hasRecoverableSession', () => {
     it('is false before any card is answered', () => {
       startWith([studyCard('a'), studyCard('b')]);

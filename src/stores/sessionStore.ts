@@ -58,10 +58,17 @@ interface SessionState {
    */
   masteredAtStart: number;
 
-  // Computed
-  currentCard: StudyCard | null;
-  progress: number;
-  isComplete: boolean;
+  // NOTE: currentCard / progress / isComplete used to live here as getters on
+  // the initial state object. They never worked. Zustand's set() does
+  // `Object.assign({}, state, partial)`, and Object.assign *invokes* a getter
+  // and copies the resulting value as a plain property - so after the very
+  // first set() they were frozen at whatever they evaluated to then, and would
+  // have silently reported a stale card forever.
+  //
+  // Nothing consumed them (StudyPage derives all three from cards/currentIndex
+  // itself), so this was dead code that looked usable. Derive from `cards` and
+  // `currentIndex` in the component, or add a real selector - do not
+  // reintroduce getters on the state object.
 
   // Actions
   startSession: (mode: StudyMode, cardLimit?: number, includeDictation?: boolean, categoryFilter?: string[], unitNumber?: number) => void;
@@ -132,22 +139,6 @@ export const useSessionStore = create<SessionState>()(
   cardFormats: {},
   isEnding: false,
   masteredAtStart: 0,
-
-  get currentCard() {
-    const { cards, currentIndex } = get();
-    return cards[currentIndex] || null;
-  },
-
-  get progress() {
-    const { cards, currentIndex } = get();
-    if (cards.length === 0) return 0;
-    return Math.round((currentIndex / cards.length) * 100);
-  },
-
-  get isComplete() {
-    const { cards, currentIndex } = get();
-    return currentIndex >= cards.length;
-  },
 
   startSession: (mode: StudyMode, cardLimit = 20, includeDictation = true, categoryFilter?: string[], unitNumber?: number) => {
     const cardStore = useCardStore.getState();
