@@ -30,7 +30,7 @@ export const EXTENDED_STORIES: Story[] = [
       { catalan: 'Comprem fruita i verdura. Avui vull pomes i tomàquets.', english: 'We buy fruit and vegetables. Today I want apples and tomatoes.' },
       { catalan: 'La pagesa és molt simpàtica. Sempre ens diu bon dia.', english: 'The farmer is very friendly. She always says good morning to us.' },
       { catalan: 'Quant costa un quilo de pomes? Dos euros, sisplau.', english: 'How much is a kilo of apples? Two euros, please.' },
-      { catalan: 'Després prenem un cafè amb llet. M’agrada molt el dissabte!', english: 'Afterwards we have a white coffee. I really like Saturdays!' },
+      { catalan: 'Després prenem un cafè amb llet. M’agraden molt els dissabtes!', english: 'Afterwards we have a white coffee. I really like Saturdays!' },
     ],
     vocabulary: [
       { word: 'mercat', translation: 'market', partOfSpeech: 'noun' },
@@ -297,7 +297,7 @@ export const EXTENDED_STORIES: Story[] = [
     paragraphs: [
       { catalan: 'El mes passat vam anar a passar un cap de setmana als Pirineus.', english: 'Last month we went to spend a weekend in the Pyrenees.' },
       { catalan: 'Vam llogar una casa rural en un poble molt petit.', english: 'We rented a country house in a very small village.' },
-      { catalan: 'El dissabte vam fer una excursió de cinc hores.', english: 'On Saturday we went on a five-hour walk.' },
+      { catalan: 'Dissabte vam fer una excursió de cinc hores.', english: 'On Saturday we went on a five-hour walk.' },
       { catalan: 'Feia fred al matí, però a la tarda va sortir el sol.', english: 'It was cold in the morning, but in the afternoon the sun came out.' },
       { catalan: 'Vam veure cavalls i, de lluny, un parell de senglars.', english: 'We saw horses and, from a distance, a couple of wild boar.' },
       { catalan: 'Diumenge vam tornar cansats però molt contents.', english: 'On Sunday we came back tired but very happy.' },
@@ -403,7 +403,7 @@ export const EXTENDED_STORIES: Story[] = [
       { catalan: 'Dijous en vam visitar un que, tot i ser petit, tenia molta llum.', english: 'On Thursday we visited one which, despite being small, had a lot of light.' },
       { catalan: 'La propietària ens va dir que hi havia sis famílies interessades.', english: 'The owner told us there were six interested families.' },
       { catalan: 'Si haguéssim tingut la documentació preparada, potser ens l’haurien donat.', english: 'If we had had the paperwork ready, perhaps they would have given it to us.' },
-      { catalan: 'Ara ja ho tenim tot a punt, de manera que la propera vegada anirem més de pressa.', english: 'Now we have everything ready, so next time we will be quicker.' },
+      { catalan: 'Ara ja ho tenim tot a punt, de manera que la pròxima vegada anirem més de pressa.', english: 'Now we have everything ready, so next time we will be quicker.' },
     ],
     vocabulary: [
       { word: 'convèncer', translation: 'to convince', partOfSpeech: 'verb' },
@@ -467,7 +467,7 @@ export const EXTENDED_STORIES: Story[] = [
     xpReward: 90,
     paragraphs: [
       { catalan: 'La llibreria del carrer Nou va obrir el 1954 i encara és oberta.', english: 'The bookshop on Carrer Nou opened in 1954 and is still open.' },
-      { catalan: 'El seu propietari actual és el nét del fundador.', english: 'Its current owner is the founder’s grandson.' },
+      { catalan: 'El seu propietari actual és el net del fundador.', english: 'Its current owner is the founder’s grandson.' },
       { catalan: 'Fa deu anys, quan van obrir una gran superfície als afores, tothom deia que tancaria.', english: 'Ten years ago, when a big store opened on the outskirts, everybody said it would close.' },
       { catalan: 'En comptes de competir pel preu, va decidir organitzar clubs de lectura i presentacions.', english: 'Instead of competing on price, he decided to organise reading groups and book launches.' },
       { catalan: 'Ara els dijous al vespre la botiga s’omple de gent que hi va tant a xerrar com a comprar.', english: 'Now on Thursday evenings the shop fills with people who go as much to chat as to buy.' },
@@ -484,7 +484,7 @@ export const EXTENDED_STORIES: Story[] = [
       { word: 'xerrar', translation: 'to chat', partOfSpeech: 'verb' },
     ],
     questions: [
-      { id: 'q1', question: 'Qui és el propietari actual?', questionEnglish: 'Who is the current owner?', options: ['El fundador', 'El fill del fundador', 'El nét del fundador', 'Un desconegut'], correctIndex: 2, explanation: '"és el nét del fundador".' },
+      { id: 'q1', question: 'Qui és el propietari actual?', questionEnglish: 'Who is the current owner?', options: ['El fundador', 'El fill del fundador', 'El net del fundador', 'Un desconegut'], correctIndex: 2, explanation: '"és el net del fundador".' },
       { id: 'q2', question: 'Què va decidir fer en comptes de competir pel preu?', questionEnglish: 'What did he decide to do instead of competing on price?', options: ['Vendre per internet', 'Organitzar clubs de lectura', 'Baixar els preus', 'Obrir més hores'], correctIndex: 1, explanation: '"va decidir organitzar clubs de lectura i presentacions".' },
       { id: 'q3', question: 'Quin dia s’omple la botiga?', questionEnglish: 'Which day does the shop fill up?', options: ['Els dilluns', 'Els dimecres', 'Els dijous', 'Els dissabtes'], correctIndex: 2, explanation: '"els dijous al vespre".' },
     ],
@@ -573,7 +573,7 @@ export const EXTENDED_STORIES: Story[] = [
       { catalan: 'El que la retenia no era la feina d’aquí, sinó tota la resta.', english: 'What was holding her back was not the job here, but everything else.' },
       { catalan: 'Els dijous al mercat, el riu al matí, la mare a vint minuts en cotxe.', english: 'Thursdays at the market, the river in the morning, her mother twenty minutes away by car.' },
       { catalan: 'Si hagués tingut trenta anys, potser hi hauria anat sense pensar-s’ho tant.', english: 'If she had been thirty, perhaps she would have gone without thinking about it so much.' },
-      { catalan: 'Va trucar el divendres i va dir que no. I, curiosament, es va sentir alleujada.', english: 'She phoned on Friday and said no. And, oddly, she felt relieved.' },
+      { catalan: 'Va trucar divendres i va dir que no. I, curiosament, es va sentir alleujada.', english: 'She phoned on Friday and said no. And, oddly, she felt relieved.' },
     ],
     vocabulary: [
       { word: 'oferir', translation: 'to offer', partOfSpeech: 'verb' },

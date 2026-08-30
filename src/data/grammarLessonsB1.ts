@@ -338,7 +338,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
         id: 'imp-1',
         type: 'multiple-choice',
         question: 'How do you tell a friend "Come here"?',
-        options: ['Vine aquí', 'Véns aquí', 'Vens aquí', 'Venir aquí'],
+        options: ['Vine aquí', 'Vens aquí', 'Vindràs aquí', 'Venir aquí'],
         correctAnswer: 'Vine aquí',
         explanation: 'VENIR has the irregular imperative VINE for TU.',
       },

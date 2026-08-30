@@ -707,7 +707,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u35-35', categoryId: 'numbers', catalan: 'Trigarem dues hores com a mínim.', english: 'It will take us at least two hours.', targetWords: ['com a mínim'] },
   { id: 'u35-36', categoryId: 'numbers', catalan: 'Hi caben deu persones com a màxim.', english: 'Ten people fit at most.', targetWords: ['com a màxim'] },
   { id: 'u35-37', categoryId: 'numbers', catalan: 'Són aproximadament tres quilòmetres.', english: 'It is approximately three kilometres.', targetWords: ['aproximadament'] },
-  { id: 'u35-38', categoryId: 'numbers', catalan: 'Ja hem acabat gairebé tot.', english: 'We have almost finished everything.', targetWords: ['gairebé'] },
+  { id: 'u35-38', categoryId: 'numbers', catalan: 'Ja ho hem acabat gairebé tot.', english: 'We have almost finished everything.', targetWords: ['gairebé'] },
   { id: 'u35-39', categoryId: 'numbers', catalan: 'No queda gairebé cap entrada.', english: 'There are hardly any tickets left.', targetWords: ['gairebé cap'] },
   { id: 'u35-40', categoryId: 'numbers', catalan: 'Cal mesurar la paret abans de comprar.', english: 'You have to measure the wall before buying.', targetWords: ['mesurar'] },
   { id: 'u35-41', categoryId: 'numbers', catalan: 'Pesa la farina, sisplau.', english: 'Weigh the flour, please.', targetWords: ['pesar'] },
