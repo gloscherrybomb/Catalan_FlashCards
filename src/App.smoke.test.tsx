@@ -54,6 +54,7 @@ vi.mock('./services/firebase', () => ({
 }));
 
 import App from './App';
+import { markOnboardingComplete } from './services/onboarding';
 
 /** Routes declared in App.tsx, plus a deliberately unknown one. */
 const ROUTES = [
@@ -87,6 +88,11 @@ describe('App smoke tests', () => {
   let errorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    // These tests are about the routes, so opt out of the first-run flow
+    // explicitly. Without this they only avoid it by accident, because demo
+    // mode happens to seed starter cards before the first render.
+    markOnboardingComplete();
+
     // A React render error is reported through console.error rather than
     // thrown, so failing on it is the only way these tests can see it.
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

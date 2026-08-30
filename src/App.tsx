@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { logger } from './services/logger';
@@ -8,6 +8,7 @@ import { useUserStore } from './stores/userStore';
 import { useCardStore } from './stores/cardStore';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { shouldShowOnboarding } from './services/onboarding';
 
 // HomePage is the landing route, so it stays in the entry chunk — lazy-loading
 // it would only add a network round-trip before the first paint.
@@ -29,6 +30,7 @@ const StoriesPage = lazy(() => import('./pages/StoriesPage').then(m => ({ defaul
 const ConversationPage = lazy(() => import('./pages/ConversationPage').then(m => ({ default: m.ConversationPage })));
 const GamesPage = lazy(() => import('./pages/GamesPage').then(m => ({ default: m.GamesPage })));
 const PracticeDrillsPage = lazy(() => import('./pages/PracticeDrillsPage').then(m => ({ default: m.PracticeDrillsPage })));
+const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow').then(m => ({ default: m.OnboardingFlow })));
 const MorePage = lazy(() => import('./pages/MorePage').then(m => ({ default: m.MorePage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
@@ -39,6 +41,12 @@ function AppContent() {
   const initializeUser = useUserStore((state) => state.initialize);
   const loadCards = useCardStore((state) => state.loadCards);
   const isLoading = useUserStore((state) => state.isLoading);
+  const cardCount = useCardStore((state) => state.flashcards.length);
+  const totalCardsReviewed = useUserStore((state) => state.progress.totalCardsReviewed);
+
+  // Re-evaluated after loading, because the decision depends on whether this
+  // learner already has cards or review history.
+  const [onboardingDone, setOnboardingDone] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -110,6 +118,17 @@ function AppContent() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // A first-time learner previously landed on a home page with no cards and a
+  // hero pointing at a 20-unit course they had no vocabulary for, while the
+  // placement test sat unreferenced inside the Learning Path.
+  if (!onboardingDone && shouldShowOnboarding({ cardCount, totalCardsReviewed })) {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <OnboardingFlow onFinish={() => setOnboardingDone(true)} />
+      </Suspense>
     );
   }
 
