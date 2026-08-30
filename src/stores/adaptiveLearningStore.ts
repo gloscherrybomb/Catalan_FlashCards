@@ -402,13 +402,21 @@ function calculateTrends(
     }
   }
 
-  // Calculate consistency score
+  // Calculate consistency score.
+  //
+  // With no recent sessions this divided zero by zero, so avgAccuracy and
+  // variance were both NaN and the score propagated NaN into the analytics that
+  // display it - which renders as "NaN", not as a missing value.
   const recentAccuracies = recentSessions.map(s => s.accuracy);
-  const avgAccuracy = recentAccuracies.reduce((a, b) => a + b, 0) / recentAccuracies.length;
-  const variance =
-    recentAccuracies.reduce((sum, a) => sum + Math.pow(a - avgAccuracy, 2), 0) /
-    recentAccuracies.length;
-  const consistencyScore = Math.max(0, 100 - Math.sqrt(variance));
+  const consistencyScore = (() => {
+    if (recentAccuracies.length === 0) return 100; // Nothing to be inconsistent about yet.
+    const avgAccuracy =
+      recentAccuracies.reduce((a, b) => a + b, 0) / recentAccuracies.length;
+    const variance =
+      recentAccuracies.reduce((sum, a) => sum + Math.pow(a - avgAccuracy, 2), 0) /
+      recentAccuracies.length;
+    return Math.max(0, 100 - Math.sqrt(variance));
+  })();
 
   return {
     ...currentTrends,

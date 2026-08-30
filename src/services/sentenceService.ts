@@ -95,8 +95,13 @@ export function validateSentenceOrder(
     }
   }
 
-  const accuracy = Math.round((correctCount / correctWords.length) * 100);
-  const isCorrect = accuracy === 100;
+  // An empty target sentence divided zero by zero and produced NaN, which then
+  // rendered as "NaN%" in the exercise rather than failing visibly.
+  const accuracy =
+    correctWords.length > 0
+      ? Math.round((correctCount / correctWords.length) * 100)
+      : 0;
+  const isCorrect = correctWords.length > 0 && accuracy === 100;
 
   return {
     isCorrect,
