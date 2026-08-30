@@ -65,6 +65,9 @@ interface CurriculumState {
   resetProgress: () => void;
 }
 
+/** CEFR levels in ascending order, used to compare a unit's level to the learner's. */
+const LEVEL_ORDER: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
+
 const calculateLevel = (breakdown: PlacementResult['breakdown']): CEFRLevel => {
   // If they got most B2 correct, they're B2
   if (breakdown.B2.correct >= 3) return 'B2';
@@ -288,9 +291,32 @@ export const useCurriculumStore = create<CurriculumState>()(
         // No prerequisites = unlocked
         if (unit.prerequisites.length === 0) return true;
 
-        // Check all prerequisites are completed
-        const { isUnitCompleted } = get();
-        return unit.prerequisites.every(prereqId => isUnitCompleted(prereqId));
+        const { isUnitCompleted, currentLevel } = get();
+
+        // A prerequisite from a level BELOW the learner's level is treated as
+        // satisfied, so placement actually moves where you start.
+        //
+        // The curriculum is a strict linear chain (unit-8 A1 -> unit-9 A2 -> ...)
+        // and this used to ask only whether prerequisites were *completed*. A
+        // learner placed at A2 with nothing completed therefore had every unit
+        // locked except unit-1, and getNextLesson() fell through every level and
+        // returned null - so the placement test could only ever change a label.
+        //
+        // Waiving by level rather than marking the skipped lessons complete is
+        // deliberate: placing out is not the same as having done the work, and
+        // faking completion would inflate progress and XP. It also leaves the
+        // earlier levels open for optional review, while progression *within*
+        // the placed level still has to be earned.
+        const placedLevelIndex = LEVEL_ORDER.indexOf(currentLevel);
+
+        return unit.prerequisites.every(prereqId => {
+          if (isUnitCompleted(prereqId)) return true;
+
+          const prereq = getUnitById(prereqId);
+          if (!prereq) return true; // Unknown prerequisite must not lock the tree.
+
+          return LEVEL_ORDER.indexOf(prereq.level) < placedLevelIndex;
+        });
       },
 
       getUnitProgress: (unitId: string) => {
@@ -327,12 +353,13 @@ export const useCurriculumStore = create<CurriculumState>()(
       getNextLesson: () => {
         const { lessonProgress, currentLevel, isUnitUnlocked } = get();
 
-        // First, try to find next lesson in current level
-        const levels: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
-        const startIndex = levels.indexOf(currentLevel);
+        // Start at the learner's own level and work upward - a learner placed
+        // at A2 should not be offered A1 lessons as "next", though the fix in
+        // isUnitUnlocked leaves them reachable for optional review.
+        const startIndex = LEVEL_ORDER.indexOf(currentLevel);
 
-        for (let i = startIndex; i < levels.length; i++) {
-          const levelUnits = CURRICULUM_UNITS.filter(u => u.level === levels[i]);
+        for (let i = startIndex; i < LEVEL_ORDER.length; i++) {
+          const levelUnits = CURRICULUM_UNITS.filter(u => u.level === LEVEL_ORDER[i]);
 
           for (const unit of levelUnits) {
             if (!isUnitUnlocked(unit.id)) continue;
