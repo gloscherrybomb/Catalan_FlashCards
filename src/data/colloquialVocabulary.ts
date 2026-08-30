@@ -1,4 +1,5 @@
 import { A2_UNITS } from './vocabularyA2';
+import { B1_UNITS } from './vocabularyB1';
 // Vocabulary organized by the 20 units from "Colloquial Catalan" course
 // Each unit builds progressively on previous knowledge
 
@@ -730,8 +731,9 @@ export const COURSE_UNITS: UnitVocabulary[] = [
   UNIT_6, UNIT_7, UNIT_8, UNIT_9, UNIT_10,
   UNIT_11, UNIT_12, UNIT_13, UNIT_14, UNIT_15,
   UNIT_16, UNIT_17, UNIT_18, UNIT_19, UNIT_20,
-  // Units 21+ carry the course past A1; see vocabularyA2.ts.
+  // Units 21+ carry the course past A1; see vocabularyA2.ts and vocabularyB1.ts.
   ...A2_UNITS,
+  ...B1_UNITS,
 ];
 
 // Get total vocabulary count

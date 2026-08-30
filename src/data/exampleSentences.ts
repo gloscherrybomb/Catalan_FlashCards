@@ -1,6 +1,7 @@
 import type { ExampleSentence } from '../types/flashcard';
 import { UNIT_SENTENCES } from './unitSentences';
 import { A2_SENTENCES } from './sentencesA2';
+import { B1_SENTENCES } from './sentencesB1';
 
 export interface SentenceCategory {
   id: string;
@@ -720,6 +721,7 @@ export const EXAMPLE_SENTENCES: SentenceData[] = [
   ...CORE_SENTENCES,
   ...UNIT_SENTENCES,
   ...A2_SENTENCES,
+  ...B1_SENTENCES,
 ];
 
 // Helper functions
