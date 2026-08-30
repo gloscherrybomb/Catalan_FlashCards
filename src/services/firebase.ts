@@ -23,7 +23,6 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { logger } from './logger';
-import { getStorage } from 'firebase/storage';
 import type { Flashcard, CardProgress } from '../types/flashcard';
 import type { PlacementResult } from '../types/curriculum';
 import type { DailyChallenge } from '../types/challenges';
@@ -89,7 +88,6 @@ if (!isDemoMode && recaptchaSiteKey && typeof window !== 'undefined') {
 }
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
 export const functions = getFunctions(app, 'europe-west2');
 
 const googleProvider = new GoogleAuthProvider();
