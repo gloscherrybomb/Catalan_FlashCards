@@ -39,7 +39,7 @@ describe('learning path', () => {
   it('never drops back to an easier level', () => {
     const regressions = CURRICULUM_UNITS.filter(
       (unit, i) => i > 0 && RANK[unit.level] < RANK[CURRICULUM_UNITS[i - 1].level]
-    ).map((unit, i) => `${unit.id} (${unit.level}) follows a harder unit`);
+    ).map(unit => `${unit.id} (${unit.level}) follows a harder unit`);
 
     expect(regressions).toEqual([]);
   });
