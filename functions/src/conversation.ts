@@ -22,8 +22,66 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
 
+// ---------------------------------------------------------------------------
+// Tuning
+// ---------------------------------------------------------------------------
+// The three knobs that decide what this feature costs. Collected here so they
+// can be changed without touching the request body.
+
+/**
+ * Which model answers, and how it must be configured.
+ *
+ * These are not interchangeable strings: the reasoning controls differ by model
+ * generation, and sending the wrong shape is a 400, not a silent downgrade.
+ *   - Opus 5 / Sonnet 5 take adaptive thinking and `output_config.effort`.
+ *   - Haiku 4.5 predates both: `effort` is rejected outright, and thinking
+ *     needs an explicit `budget_tokens` rather than `adaptive`.
+ * So the profile carries the request shape alongside the id.
+ */
+type TutorProfile = {
+  model: string;
+  /** Omitted for models that reject output_config.effort. */
+  effort?: "low" | "medium" | "high";
+  /** Adaptive on current models; a token budget on older ones; off for neither. */
+  thinking?:
+    | { type: "adaptive" }
+    | { type: "enabled"; budget_tokens: number };
+};
+
+const TUTOR_PROFILES = {
+  /**
+   * Default. The hard judgement here - "is the learner's Catalan actually
+   * wrong, or merely regional or colloquial?" - is carried mostly by the
+   * correction rules in the system prompt rather than by raw model strength,
+   * and an A1-B2 role-play is not a demanding generation task. Roughly a fifth
+   * of Opus per turn. No thinking: the turns are short and chat is
+   * latency-sensitive.
+   */
+  haiku: { model: "claude-haiku-4-5" },
+
+  /** Middle ground if corrections start looking shallow. */
+  sonnet: {
+    model: "claude-sonnet-5",
+    effort: "low",
+    thinking: { type: "adaptive" },
+  },
+
+  /** Most careful, ~5x the cost of haiku per turn. */
+  opus: {
+    model: "claude-opus-5",
+    effort: "medium",
+    thinking: { type: "adaptive" },
+  },
+} as const satisfies Record<string, TutorProfile>;
+
+/** Switch this one word to change model, effort and thinking together. */
+const TUTOR: TutorProfile = TUTOR_PROFILES.haiku;
+
 /** Kept small deliberately: this is a personal-scale app paying real per-token costs. */
 const DAILY_MESSAGE_LIMIT = 60;
+
+/** Turns of history sent per request - enough for context, not the whole session. */
+const HISTORY_TURNS = 12;
 
 const LEVELS = ["A1", "A2", "B1", "B2"] as const;
 type Level = (typeof LEVELS)[number];
@@ -182,21 +240,20 @@ export const chatWithTutor = functions
 
     // Only the recent turns: the scenario resets often and the whole point is
     // short practice exchanges, so sending everything wastes tokens.
-    const history = (data.history ?? []).slice(-12).map((m) => ({
+    const history = (data.history ?? []).slice(-HISTORY_TURNS).map((m) => ({
       role: m.role,
       content: String(m.content ?? "").slice(0, 1000),
     }));
 
     try {
       const response = await client.messages.parse({
-        model: "claude-opus-5",
+        model: TUTOR.model,
         max_tokens: 4096,
-        // Judging whether a learner's Catalan is actually wrong - rather than
-        // merely unusual - benefits from reasoning; medium keeps chat latency
-        // tolerable.
-        thinking: { type: "adaptive" },
+        // Spread rather than set: Haiku 4.5 rejects `effort` outright, so the
+        // key must be absent, not undefined-valued.
+        ...(TUTOR.thinking ? { thinking: TUTOR.thinking } : {}),
         output_config: {
-          effort: "medium",
+          ...(TUTOR.effort ? { effort: TUTOR.effort } : {}),
           format: zodOutputFormat(TutorReplySchema),
         },
         system: [

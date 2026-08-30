@@ -44,8 +44,29 @@ the first.
 
 ## Model
 
-`claude-opus-5` with adaptive thinking at `medium` effort. Deciding whether a
-learner's Catalan is genuinely wrong — rather than merely unusual, regional, or
-colloquial — is a judgement call that benefits from reasoning; `medium` keeps
-the reply latency tolerable for a chat interface. Lower it to `low` in
-`conversation.ts` if replies feel slow, or raise it if corrections look shallow.
+Configured by a single profile in `conversation.ts`:
+
+```ts
+const TUTOR: TutorProfile = TUTOR_PROFILES.haiku;   // haiku | sonnet | opus
+```
+
+| Profile | Model | Reasoning | Approx. per turn |
+|---|---|---|---|
+| `haiku` (default) | `claude-haiku-4-5` | none | ~0.4p |
+| `sonnet` | `claude-sonnet-5` | adaptive, low effort | ~0.8p |
+| `opus` | `claude-opus-5` | adaptive, medium effort | ~2p |
+
+Costs are rough — thinking tokens bill as output and vary — but the ratios hold.
+
+Haiku is the default because the hard judgement in this task ("is the learner's
+Catalan actually wrong, or merely regional or colloquial?") is carried mostly by
+the correction rules in the system prompt rather than by raw model strength.
+Move up a profile if corrections start looking shallow or the role-play drifts
+out of character.
+
+**The profile carries the request shape, not just the model id, and that
+matters.** The reasoning controls differ by model generation and sending the
+wrong shape is a 400, not a silent downgrade: Opus 5 and Sonnet 5 take adaptive
+thinking and `output_config.effort`, while Haiku 4.5 predates both — it rejects
+`effort` outright and needs an explicit `budget_tokens` for thinking. Change
+models by switching profile, not by editing the model string on its own.
