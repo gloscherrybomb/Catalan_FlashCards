@@ -382,8 +382,20 @@ export function StudyPage() {
     if (quality >= 3) hapticCorrect();
     else hapticIncorrect();
 
-    await submitAnswer(quality, userAnswer);
-    nextCard();
+    // Defence in depth. Remote writes are now best-effort (see remoteSync), so
+    // submitAnswer should not reject - but if anything in the answer pipeline
+    // ever throws again, advancing must still happen. The alternative is what
+    // was reported: a rejected promise skipping nextCard and the session
+    // stopping dead on one card with no way forward.
+    try {
+      await submitAnswer(quality, userAnswer);
+    } catch (error) {
+      logger.error('Failed to record answer; advancing anyway', 'StudyPage', {
+        error: String(error),
+      });
+    } finally {
+      nextCard();
+    }
   };
 
   const handleFinish = () => {

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { getPersistStorage } from '../utils/persistStorage';
 import { getGrammarProgress, updateGrammarProgress, isDemoMode } from '../services/firebase';
 import { logger } from '../services/logger';
+import { syncQuietly } from '../services/remoteSync';
 
 export interface LessonProgress {
   lessonId: string;
@@ -83,9 +84,9 @@ async function syncToFirebase(userId: string | null, lessonProgress: Map<string,
   if (!userId || isDemoMode) return;
 
   try {
-    await updateGrammarProgress(userId, {
+    await syncQuietly('updateGrammarProgress', () => updateGrammarProgress(userId, {
       lessonProgress: serializeLessonProgress(lessonProgress),
-    });
+    }));
   } catch (error) {
     logger.error('Failed to sync grammar progress to Firebase', 'GrammarStore', { error: String(error) });
   }

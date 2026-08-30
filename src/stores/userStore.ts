@@ -24,6 +24,7 @@ import { useStoryStore } from './storyStore';
 import { getPersistStorage } from '../utils/persistStorage';
 import { notificationService } from '../services/notificationService';
 import { todayKey } from '../utils/dateKeys';
+import { syncQuietly } from '../services/remoteSync';
 
 // Module-scoped variable for auth unsubscribe (replaces window.__authUnsubscribe)
 // Exported for potential cleanup usage by the app
@@ -421,7 +422,7 @@ export const useUserStore = create<UserState>()(
         });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, { xp: newXP, level: newLevel, dailyActivity: updatedDailyActivity });
+          await syncQuietly('updateUserProgress', () => updateUserProgress(user.uid, { xp: newXP, level: newLevel, dailyActivity: updatedDailyActivity }));
         }
       },
 
@@ -484,7 +485,7 @@ export const useUserStore = create<UserState>()(
         });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, newProgress);
+          await syncQuietly('updateUserProgress', () => updateUserProgress(user.uid, newProgress));
         }
       },
 
@@ -501,7 +502,7 @@ export const useUserStore = create<UserState>()(
         set({ progress: { ...progress, ...newProgress } });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, newProgress);
+          await syncQuietly('updateUserProgress', () => updateUserProgress(user.uid, newProgress));
         }
 
         return true;
@@ -523,7 +524,7 @@ export const useUserStore = create<UserState>()(
         // reverted the next time the learner signed in on any device.
         if (user && !isDemoMode) {
           try {
-            await updateUserSettings(user.uid, newProfile.settings);
+            await syncQuietly('updateUserSettings', () => updateUserSettings(user.uid, newProfile.settings));
           } catch (error) {
             logger.error('Failed to persist settings', 'UserStore', { error: String(error) });
           }
@@ -555,7 +556,7 @@ export const useUserStore = create<UserState>()(
         set({ progress: { ...progress, ...newProgress } });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, newProgress);
+          await syncQuietly('updateUserProgress', () => updateUserProgress(user.uid, newProgress));
         }
       },
 
@@ -581,7 +582,7 @@ export const useUserStore = create<UserState>()(
         set({ progress: { ...progress, ...newProgress } });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, newProgress);
+          await syncQuietly('updateUserProgress', () => updateUserProgress(user.uid, newProgress));
         }
       },
 
@@ -597,7 +598,7 @@ export const useUserStore = create<UserState>()(
         set({ progress: { ...progress, ...newProgress } });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, newProgress);
+          await syncQuietly('updateUserProgress', () => updateUserProgress(user.uid, newProgress));
         }
       },
 
@@ -611,7 +612,7 @@ export const useUserStore = create<UserState>()(
         set({ progress: { ...progress, ...newProgress } });
 
         if (user && !isDemoMode) {
-          await updateUserProgress(user.uid, newProgress);
+          await syncQuietly('updateUserProgress', () => updateUserProgress(user.uid, newProgress));
         }
       },
     }),

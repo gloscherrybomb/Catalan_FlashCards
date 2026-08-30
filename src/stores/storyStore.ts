@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { getPersistStorage } from '../utils/persistStorage';
 import { getStoryProgress, updateStoryProgress, isDemoMode } from '../services/firebase';
 import { logger } from '../services/logger';
+import { syncQuietly } from '../services/remoteSync';
 
 export interface StoryProgress {
   storyId: string;
@@ -65,7 +66,7 @@ async function syncToFirebase(userId: string | null, storyProgress: Record<strin
   if (!userId || isDemoMode) return;
 
   try {
-    await updateStoryProgress(userId, { storyProgress });
+    await syncQuietly('updateStoryProgress', () => updateStoryProgress(userId, { storyProgress }));
   } catch (error) {
     logger.error('Failed to sync story progress to Firebase', 'StoryStore', { error: String(error) });
   }

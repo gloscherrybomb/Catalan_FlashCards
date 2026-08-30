@@ -16,6 +16,7 @@ import {
 import { logger } from '../services/logger';
 import { useCardStore } from './cardStore';
 import { getPersistStorage } from '../utils/persistStorage';
+import { syncQuietly } from '../services/remoteSync';
 
 export interface LessonProgress {
   lessonId: string;
@@ -135,7 +136,7 @@ async function syncToFirebase(userId: string | null, state: Partial<{
   if (!userId || isDemoMode) return;
 
   try {
-    await updateCurriculumProgress(userId, state);
+    await syncQuietly('updateCurriculumProgress', () => updateCurriculumProgress(userId, state));
   } catch (error) {
     logger.error('Failed to sync curriculum progress to Firebase', 'CurriculumStore', { error: String(error) });
   }

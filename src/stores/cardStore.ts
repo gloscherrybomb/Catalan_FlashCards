@@ -34,6 +34,7 @@ import {
 import { useUserStore } from './userStore';
 import { generateWeaknessDeck } from '../services/mistakeAnalysisService';
 import { countMasteredCards } from '../utils/mastery';
+import { syncQuietly } from '../services/remoteSync';
 
 interface CardState {
   flashcards: Flashcard[];
@@ -160,7 +161,7 @@ export const useCardStore = create<CardState>()(
           const userStore = useUserStore.getState();
           const userId = userStore.user?.uid;
           if (userId && !isDemoMode) {
-            await saveFlashcards(userId, uniqueNewCards);
+            await syncQuietly('saveFlashcards', () => saveFlashcards(userId, uniqueNewCards));
           }
 
           return uniqueNewCards.length;
@@ -197,7 +198,7 @@ export const useCardStore = create<CardState>()(
           const userStore = useUserStore.getState();
           const userId = userStore.user?.uid;
           if (userId && !isDemoMode) {
-            await saveFlashcards(userId, uniqueNewCards);
+            await syncQuietly('saveFlashcards', () => saveFlashcards(userId, uniqueNewCards));
           }
 
           return uniqueNewCards.length;
@@ -237,7 +238,7 @@ export const useCardStore = create<CardState>()(
           const userStore = useUserStore.getState();
           const userId = userStore.user?.uid;
           if (userId && !isDemoMode) {
-            await saveFlashcards(userId, uniqueNewCards);
+            await syncQuietly('saveFlashcards', () => saveFlashcards(userId, uniqueNewCards));
           }
 
           return uniqueNewCards.length;
@@ -273,7 +274,7 @@ export const useCardStore = create<CardState>()(
         const userStore = useUserStore.getState();
         const userId = userStore.user?.uid;
         if (userId && !isDemoMode) {
-          await deleteFlashcard(userId, cardId);
+          await syncQuietly('deleteFlashcard', () => deleteFlashcard(userId, cardId));
         }
       },
 
@@ -397,7 +398,7 @@ export const useCardStore = create<CardState>()(
         // Save to Firebase
         const userId = userStore.user?.uid;
         if (userId && !isDemoMode) {
-          await updateCardProgress(userId, newProgress);
+          await syncQuietly('updateCardProgress', () => updateCardProgress(userId, newProgress));
         }
       },
 
@@ -519,7 +520,7 @@ export const useCardStore = create<CardState>()(
         const userId = useUserStore.getState().user?.uid;
         if (card && userId && !isDemoMode) {
           try {
-            await saveFlashcards(userId, [card]);
+            await syncQuietly('saveFlashcards', () => saveFlashcards(userId, [card]));
           } catch (error) {
             logger.error('Failed to sync mnemonic', 'CardStore', { error: String(error) });
           }
@@ -569,7 +570,7 @@ export const useCardStore = create<CardState>()(
         const userId = userStore.user?.uid;
         if (userId && !isDemoMode) {
           for (const id of duplicateIds) {
-            await deleteFlashcard(userId, id);
+            await syncQuietly('deleteFlashcard', () => deleteFlashcard(userId, id));
           }
         }
 
