@@ -1,6 +1,6 @@
 // Conversation service for Catalan conversation practice.
 //
-// Two tiers: a Claude-backed tutor via Cloud Functions when available, and an
+// Two tiers: a Gemini-backed tutor via Cloud Functions when available, and an
 // offline keyword-matching fallback for demo mode and network failures.
 import { chatWithTutorFunction, isDemoMode } from './firebase';
 import { logger } from './logger';
@@ -647,7 +647,7 @@ export function processUserMessage(
 // =============================================================================
 
 /**
- * Ask the Claude-backed tutor for a reply.
+ * Ask the Gemini-backed tutor for a reply.
  *
  * Everything above this point is a keyword lookup table: it cannot respond to
  * what the learner actually wrote, repeats itself quickly, and its "grammar

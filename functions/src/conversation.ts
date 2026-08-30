@@ -1,81 +1,43 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { defineSecret } from "firebase-functions/params";
-import Anthropic from "@anthropic-ai/sdk";
-// zod/v4: the SDK's zodOutputFormat helper is built against the Zod 4 API,
-// which ships inside zod 3.25+ under this subpath.
-import { z } from "zod/v4";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import {GoogleGenAI} from "@google/genai";
 
 /**
- * Claude-backed Catalan conversation practice.
+ * Gemini-backed Catalan conversation practice.
  *
  * The client previously had a lookup table of canned replies keyed by scenario,
  * which is fine as a fallback but cannot respond to what the learner actually
- * wrote, and never corrects them. This proxies Claude so the tutor can react to
+ * wrote, and never corrects them. This proxies Gemini so the tutor can react to
  * real input and explain the mistakes.
  *
- * It runs server-side because the API key must never reach the browser. The
- * client calls it through Firebase callable auth, so only signed-in users
- * reach it.
+ * Runs on Vertex AI with Application Default Credentials: the function already
+ * executes as a service account, so there is no API key to store, rotate or
+ * leak, and it bills to the same project as everything else.
  */
 
-const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
-
-// ---------------------------------------------------------------------------
-// Tuning
-// ---------------------------------------------------------------------------
-// The three knobs that decide what this feature costs. Collected here so they
-// can be changed without touching the request body.
+/** Vertex location. "global" gives the widest model availability. */
+const LOCATION = "global";
 
 /**
- * Which model answers, and how it must be configured.
+ * Which model answers.
  *
- * These are not interchangeable strings: the reasoning controls differ by model
- * generation, and sending the wrong shape is a 400, not a silent downgrade.
- *   - Opus 5 / Sonnet 5 take adaptive thinking and `output_config.effort`.
- *   - Haiku 4.5 predates both: `effort` is rejected outright, and thinking
- *     needs an explicit `budget_tokens` rather than `adaptive`.
- * So the profile carries the request shape alongside the id.
+ * Verified callable on this project before being written here rather than
+ * taken from memory: gemini-2.5-flash, -flash-lite and -pro all respond, while
+ * gemini-2.0-flash and gemini-3-flash do not exist for it.
+ *
+ * Flash is the default. The hard judgement in this task - "is the learner's
+ * Catalan actually wrong, or merely regional or colloquial?" - is carried
+ * mostly by the correction rules in the system prompt, and an A1-B2 role-play
+ * is not a demanding generation task. Pinned rather than gemini-flash-latest,
+ * so behaviour does not shift underneath the app.
  */
-type TutorProfile = {
-  model: string;
-  /** Omitted for models that reject output_config.effort. */
-  effort?: "low" | "medium" | "high";
-  /** Adaptive on current models; a token budget on older ones; off for neither. */
-  thinking?:
-    | { type: "adaptive" }
-    | { type: "enabled"; budget_tokens: number };
-};
+const MODELS = {
+  lite: "gemini-2.5-flash-lite",
+  flash: "gemini-2.5-flash",
+  pro: "gemini-2.5-pro",
+} as const;
 
-const TUTOR_PROFILES = {
-  /**
-   * Default. The hard judgement here - "is the learner's Catalan actually
-   * wrong, or merely regional or colloquial?" - is carried mostly by the
-   * correction rules in the system prompt rather than by raw model strength,
-   * and an A1-B2 role-play is not a demanding generation task. Roughly a fifth
-   * of Opus per turn. No thinking: the turns are short and chat is
-   * latency-sensitive.
-   */
-  haiku: { model: "claude-haiku-4-5" },
-
-  /** Middle ground if corrections start looking shallow. */
-  sonnet: {
-    model: "claude-sonnet-5",
-    effort: "low",
-    thinking: { type: "adaptive" },
-  },
-
-  /** Most careful, ~5x the cost of haiku per turn. */
-  opus: {
-    model: "claude-opus-5",
-    effort: "medium",
-    thinking: { type: "adaptive" },
-  },
-} as const satisfies Record<string, TutorProfile>;
-
-/** Switch this one word to change model, effort and thinking together. */
-const TUTOR: TutorProfile = TUTOR_PROFILES.haiku;
+const TUTOR_MODEL: string = MODELS.flash;
 
 /** Kept small deliberately: this is a personal-scale app paying real per-token costs. */
 const DAILY_MESSAGE_LIMIT = 60;
@@ -95,36 +57,67 @@ interface ChatRequest {
   userMessage: string;
 }
 
+interface TutorReply {
+  reply: string;
+  translation: string;
+  corrections: Array<{
+    original: string;
+    corrected: string;
+    explanation: string;
+    type: "grammar" | "spelling" | "word-choice" | "accent";
+  }>;
+  newVocabulary: Array<{ catalan: string; english: string }>;
+}
+
 /**
- * The shape we need back. Declared as a schema rather than parsed out of prose
+ * The shape we need back, declared as a schema rather than parsed out of prose
  * so the client can render corrections and vocabulary as structured UI.
  */
-const TutorReplySchema = z.object({
-  reply: z
-    .string()
-    .describe("Your reply in Catalan, staying in character for the scenario."),
-  translation: z
-    .string()
-    .describe("A natural English translation of your Catalan reply."),
-  corrections: z
-    .array(
-      z.object({
-        original: z.string().describe("The learner's original wording."),
-        corrected: z.string().describe("The corrected Catalan."),
-        explanation: z
-          .string()
-          .describe("A short, kind explanation in English of why."),
-        type: z.enum(["grammar", "spelling", "word-choice", "accent"]),
-      })
-    )
-    .describe(
-      "Mistakes worth correcting. Empty when the learner's Catalan was fine - " +
-        "do not invent corrections."
-    ),
-  newVocabulary: z
-    .array(z.object({ catalan: z.string(), english: z.string() }))
-    .describe("At most three useful words from your reply the learner may not know."),
-});
+const RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    reply: {
+      type: "STRING",
+      description: "Your reply in Catalan, staying in character for the scenario.",
+    },
+    translation: {
+      type: "STRING",
+      description: "A natural English translation of your Catalan reply.",
+    },
+    corrections: {
+      type: "ARRAY",
+      description:
+        "Mistakes worth correcting. Empty when the learner's Catalan was fine - " +
+        "do not invent corrections.",
+      items: {
+        type: "OBJECT",
+        properties: {
+          original: {type: "STRING"},
+          corrected: {type: "STRING"},
+          explanation: {type: "STRING"},
+          type: {
+            type: "STRING",
+            enum: ["grammar", "spelling", "word-choice", "accent"],
+          },
+        },
+        required: ["original", "corrected", "explanation", "type"],
+      },
+    },
+    newVocabulary: {
+      type: "ARRAY",
+      description: "At most three useful words from your reply the learner may not know.",
+      items: {
+        type: "OBJECT",
+        properties: {
+          catalan: {type: "STRING"},
+          english: {type: "STRING"},
+        },
+        required: ["catalan", "english"],
+      },
+    },
+  },
+  required: ["reply", "translation", "corrections", "newVocabulary"],
+};
 
 function systemPromptFor(level: Level, scenarioTitle: string): string {
   return [
@@ -137,7 +130,7 @@ function systemPromptFor(level: Level, scenarioTitle: string): string {
     "",
     "Language rules:",
     "- Reply in standard Central (Barcelona) Catalan, using IEC orthography.",
-    `- Match the learner's level: at A1/A2 use short sentences, present tense,`,
+    "- Match the learner's level: at A1/A2 use short sentences, present tense,",
     "  and high-frequency vocabulary. At B1/B2 you may use past and future",
     "  tenses, subordinate clauses and idiom.",
     "- Keep replies to one to three sentences. This is practice for them, not",
@@ -161,6 +154,9 @@ function systemPromptFor(level: Level, scenarioTitle: string): string {
  * Without this a single loop in a client - or one enthusiastic evening - runs
  * up a real bill on a personal project. Uses a transaction so concurrent calls
  * cannot both read the same count and each decide there is room.
+ *
+ * Written through the Admin SDK, which bypasses security rules; the rules deny
+ * client writes to this path precisely so a learner cannot reset their own cap.
  */
 async function consumeDailyQuota(userId: string): Promise<number> {
   const today = new Date();
@@ -170,9 +166,7 @@ async function consumeDailyQuota(userId: string): Promise<number> {
     String(today.getDate()).padStart(2, "0"),
   ].join("-");
 
-  const ref = admin
-    .firestore()
-    .doc(`users/${userId}/usage/conversation-${dayKey}`);
+  const ref = admin.firestore().doc(`users/${userId}/usage/conversation-${dayKey}`);
 
   return admin.firestore().runTransaction(async (tx) => {
     const snap = await tx.get(ref);
@@ -190,12 +184,12 @@ async function consumeDailyQuota(userId: string): Promise<number> {
       ref,
       {
         count: used + 1,
-        // Lets a TTL policy clean these up without a scheduled function.
+        // A TTL policy on this field clears old counters automatically.
         expiresAt: admin.firestore.Timestamp.fromMillis(
           Date.now() + 7 * 24 * 60 * 60 * 1000
         ),
       },
-      { merge: true }
+      {merge: true}
     );
 
     return used + 1;
@@ -205,8 +199,6 @@ async function consumeDailyQuota(userId: string): Promise<number> {
 export const chatWithTutor = functions
   .region("europe-west2")
   .runWith({
-    secrets: [anthropicApiKey],
-    // Adaptive thinking makes turns slower than a plain completion.
     timeoutSeconds: 120,
     memory: "512MB",
   })
@@ -218,10 +210,10 @@ export const chatWithTutor = functions
       );
     }
 
-    // App Check is not configurable for callable functions through the
-    // services API - the function verifies the attestation itself. Warned
-    // rather than rejected for now, matching the console's monitoring-only
-    // setting; tighten to a throw once real traffic is consistently attested.
+    // App Check is not configurable for callable functions through the services
+    // API - the function verifies the attestation itself. Warned rather than
+    // rejected for now, matching the console's monitoring-only setting; tighten
+    // to a throw once real traffic is consistently attested.
     if (!context.app) {
       functions.logger.warn("Request without a valid App Check token", {
         uid: context.auth.uid,
@@ -230,91 +222,98 @@ export const chatWithTutor = functions
 
     const userMessage = (data?.userMessage ?? "").trim();
     if (!userMessage) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Message cannot be empty."
-      );
+      throw new functions.https.HttpsError("invalid-argument", "Message cannot be empty.");
     }
     if (userMessage.length > 1000) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Message is too long."
-      );
+      throw new functions.https.HttpsError("invalid-argument", "Message is too long.");
     }
 
     const level: Level = LEVELS.includes(data?.level) ? data.level : "A1";
 
     await consumeDailyQuota(context.auth.uid);
 
-    const client = new Anthropic({ apiKey: anthropicApiKey.value() });
+    // Application Default Credentials: the function's own service account.
+    const ai = new GoogleGenAI({
+      vertexai: true,
+      project: process.env.GCLOUD_PROJECT,
+      location: LOCATION,
+    });
 
     // Only the recent turns: the scenario resets often and the whole point is
     // short practice exchanges, so sending everything wastes tokens.
     const history = (data.history ?? []).slice(-HISTORY_TURNS).map((m) => ({
-      role: m.role,
-      content: String(m.content ?? "").slice(0, 1000),
+      // Gemini names the assistant role "model".
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{text: String(m.content ?? "").slice(0, 1000)}],
     }));
 
     try {
-      const response = await client.messages.parse({
-        model: TUTOR.model,
-        max_tokens: 4096,
-        // Spread rather than set: Haiku 4.5 rejects `effort` outright, so the
-        // key must be absent, not undefined-valued.
-        ...(TUTOR.thinking ? { thinking: TUTOR.thinking } : {}),
-        output_config: {
-          ...(TUTOR.effort ? { effort: TUTOR.effort } : {}),
-          format: zodOutputFormat(TutorReplySchema),
+      const response = await ai.models.generateContent({
+        model: TUTOR_MODEL,
+        contents: [...history, {role: "user", parts: [{text: userMessage}]}],
+        config: {
+          systemInstruction: systemPromptFor(
+            level,
+            data.scenarioTitle ?? "a friendly chat"
+          ),
+          responseMimeType: "application/json",
+          responseSchema: RESPONSE_SCHEMA,
+          maxOutputTokens: 2048,
+          temperature: 0.7,
         },
-        system: [
-          {
-            type: "text",
-            text: systemPromptFor(level, data.scenarioTitle ?? "a friendly chat"),
-            // The system prompt is identical for every turn of a scenario, so
-            // caching it makes each follow-up materially cheaper.
-            cache_control: { type: "ephemeral" },
-          },
-        ],
-        messages: [
-          ...history,
-          { role: "user" as const, content: userMessage },
-        ],
       });
 
-      if (response.stop_reason === "refusal") {
+      const text = response.text;
+      if (!text) {
         throw new functions.https.HttpsError(
-          "invalid-argument",
-          "I can't help with that one - try a different message."
+          "internal",
+          "The tutor gave an empty reply. Please try again."
         );
       }
 
-      const parsed = response.parsed_output;
-      if (!parsed) {
+      let parsed: TutorReply;
+      try {
+        parsed = JSON.parse(text) as TutorReply;
+      } catch {
+        functions.logger.error("Tutor reply was not valid JSON", {
+          sample: text.slice(0, 200),
+        });
         throw new functions.https.HttpsError(
           "internal",
           "The tutor's reply could not be read. Please try again."
         );
       }
 
-      return parsed;
+      // The schema guarantees the shape, but the client renders these directly,
+      // so guard rather than trust.
+      return {
+        reply: String(parsed.reply ?? ""),
+        translation: String(parsed.translation ?? ""),
+        corrections: Array.isArray(parsed.corrections) ? parsed.corrections : [],
+        newVocabulary: Array.isArray(parsed.newVocabulary) ? parsed.newVocabulary : [],
+      };
     } catch (error) {
       if (error instanceof functions.https.HttpsError) throw error;
 
-      if (error instanceof Anthropic.RateLimitError) {
+      const message = String(error);
+      if (/RESOURCE_EXHAUSTED|429/.test(message)) {
         throw new functions.https.HttpsError(
           "resource-exhausted",
           "The tutor is busy right now. Try again in a moment."
         );
       }
-      if (error instanceof Anthropic.AuthenticationError) {
-        functions.logger.error("Anthropic auth failed - check ANTHROPIC_API_KEY");
+      if (/PERMISSION_DENIED|403/.test(message)) {
+        functions.logger.error(
+          "Vertex AI permission denied - check the service account role",
+          {error: message}
+        );
         throw new functions.https.HttpsError(
           "failed-precondition",
           "Conversation practice is not configured."
         );
       }
 
-      functions.logger.error("Tutor request failed", { error: String(error) });
+      functions.logger.error("Tutor request failed", {error: message});
       throw new functions.https.HttpsError(
         "internal",
         "Could not reach the tutor. Please try again."
