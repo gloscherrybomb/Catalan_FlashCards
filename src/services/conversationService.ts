@@ -142,7 +142,7 @@ export const SCENARIOS: ConversationScenario[] = [
     starterPrompt: 'Hola! Em dic Maria. D\'on ets?',
     starterPromptEnglish: 'Hello! My name is Maria. Where are you from?',
     suggestedResponses: [
-      'Hola Maria! Sóc de...',
+      'Hola Maria! Soc de...',
       'Encant de conèixer-te!',
       'Què fas a Barcelona?',
     ],
@@ -272,7 +272,7 @@ export const SCENARIOS: ConversationScenario[] = [
     starterPromptEnglish: "Hi! I'm Marta. And you, what's your name?",
     suggestedResponses: [
       'Em dic Tom. Encantat!',
-      'Sóc anglès, de Londres.',
+      'Soc anglès, de Londres.',
       'Estic aprenent català.',
     ],
     keyVocabulary: [
@@ -312,7 +312,7 @@ export const SCENARIOS: ConversationScenario[] = [
     icon: '📱',
     level: 'A1',
     category: 'social',
-    starterPrompt: 'Em dónes el teu telèfon? Així quedem un altre dia.',
+    starterPrompt: 'Em dones el teu telèfon? Així quedem un altre dia.',
     starterPromptEnglish: 'Will you give me your phone number? Then we can meet another day.',
     suggestedResponses: [
       'És clar! És el sis-cents...',

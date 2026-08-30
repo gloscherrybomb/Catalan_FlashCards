@@ -1,6 +1,6 @@
 import type { TypingResult, Correction, MatchType } from '../types/flashcard';
 import { TYPING_CONFIG } from '../config/constants';
-import { stripBracketedContent, extractAllForms } from '../utils/textUtils';
+import { stripBracketedContent, extractAllForms, normalizeTypography } from '../utils/textUtils';
 import {
   CATALAN_PHRASE_EQUIVALENCES,
   CATALAN_SYNONYMS,
@@ -40,7 +40,7 @@ export function normalizeForComparison(text: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
     .replace(/·/g, '') // Remove middle dot
-    .replace(/[.,!?;:'"¿¡…]+/g, '') // Remove punctuation (including ellipsis)
+    .replace(/[.,!?;:'"\u2018\u2019\u201C\u201D¿¡…]+/g, '') // Remove punctuation (including ellipsis)
     .replace(/\.{2,}/g, '') // Remove multiple dots (ellipsis as ...)
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim(); // Trim again after punctuation removal
@@ -55,7 +55,7 @@ export function normalizeLooseComparison(text: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
     .replace(/·/g, '') // Remove middle dot
-    .replace(/[.,!?;:'"¿¡…]+/g, '') // Remove punctuation (including ellipsis)
+    .replace(/[.,!?;:'"\u2018\u2019\u201C\u201D¿¡…]+/g, '') // Remove punctuation (including ellipsis)
     .replace(/\.{2,}/g, '') // Remove multiple dots (ellipsis as ...)
     .replace(/[-\s]+/g, ''); // Remove all spaces and hyphens
 }
@@ -186,8 +186,10 @@ function createResult(
 }
 
 export function validateTyping(userAnswer: string, correctAnswer: string): TypingResult {
-  const trimmedUser = userAnswer.trim();
-  const trimmedCorrect = correctAnswer.trim();
+  // Fold smart quotes before any tier runs, so a phone keyboard's apostrophe
+  // still reaches the exact-match tier and scores full marks.
+  const trimmedUser = normalizeTypography(userAnswer).trim();
+  const trimmedCorrect = normalizeTypography(correctAnswer).trim();
 
   // Get all valid forms (handles "vell / vella" -> ["vell", "vella"])
   const validForms = extractAllForms(trimmedCorrect);

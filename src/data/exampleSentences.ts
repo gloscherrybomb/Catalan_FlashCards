@@ -215,7 +215,7 @@ const CORE_SENTENCES: SentenceData[] = [
   {
     id: 'greet-6',
     categoryId: 'greetings',
-    catalan: 'Sóc de Barcelona.',
+    catalan: 'Soc de Barcelona.',
     english: 'I am from Barcelona.',
     vocabularyIndices: [0, 1],
     hasAudio: true,

@@ -47,7 +47,7 @@ describe('exampleSentenceMatcher', () => {
     it('does not match a word inside a longer word', () => {
       expect(containsWord('Treballo en una oficina', 'all')).toBe(false);
       expect(containsWord('Aquest estiu viatjarem a Menorca', 'vi')).toBe(false);
-      expect(containsWord('Sóc de Barcelona', 'on')).toBe(false);
+      expect(containsWord('Soc de Barcelona', 'on')).toBe(false);
       expect(containsWord('Demà aniré a la platja', 'plat')).toBe(false);
       expect(containsWord('Faig esport tres vegades', 'port')).toBe(false);
     });
@@ -64,7 +64,7 @@ describe('exampleSentenceMatcher', () => {
 
     it('is case-insensitive', () => {
       expect(containsWord('Bon dia', 'BON')).toBe(true);
-      expect(containsWord('Sóc de Barcelona', 'barcelona')).toBe(true);
+      expect(containsWord('Soc de Barcelona', 'barcelona')).toBe(true);
     });
 
     /**

@@ -1,4 +1,23 @@
 /**
+ * Fold typographic punctuation onto its ASCII equivalent.
+ *
+ * iOS and macOS turn a typed apostrophe into a right single quotation mark by
+ * default. Catalan is full of elisions - l'aigua, m'agrada, d'anada, s'ho - so
+ * on a phone a learner writing the answer perfectly would produce U+2019 where
+ * the card holds U+0027, miss the exact match, fall through to the typo tier
+ * and be told "Acceptable, but there was a small typo" for a correct answer,
+ * scoring 3 instead of 5. The character is a keyboard setting, never a
+ * spelling mistake, so it is folded before anything is compared.
+ */
+export function normalizeTypography(text: string): string {
+  return text
+    .replace(/[\u2018\u2019\u201B\u02BC\u02B9\u2032\u00B4`]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u2033]/g, '"')
+    .replace(/[\u2010-\u2015]/g, '-')
+    .replace(/\u2026/g, '...');
+}
+
+/**
  * Strips common punctuation from text for answer comparison.
  * Removes periods, commas, ellipsis, question marks, exclamation points,
  * quotes, colons, semicolons, and Spanish/Catalan inverted punctuation.
@@ -10,7 +29,7 @@
  */
 export function stripPunctuation(text: string): string {
   return text
-    .replace(/[.,!?;:'"¿¡…]+/g, '') // Remove common punctuation
+    .replace(/[.,!?;:'"\u2018\u2019\u201C\u201D¿¡…]+/g, '') // Remove common punctuation
     .replace(/\.{2,}/g, '') // Remove multiple dots (ellipsis as ...)
     .trim();
 }

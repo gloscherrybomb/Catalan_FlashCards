@@ -910,8 +910,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     level: 'A1',
     type: 'grammar',
     question: 'Complete: "Jo ___ català" (I am Catalan)',
-    options: ['és', 'som', 'sóc', 'ets'],
-    correctAnswer: 'sóc',
+    options: ['és', 'som', 'soc', 'ets'],
+    correctAnswer: 'soc',
   },
   {
     id: 'p4',
@@ -960,7 +960,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     level: 'B1',
     type: 'grammar',
     question: 'Complete: "Ahir ___ anar al cinema" (Yesterday I went to the cinema)',
-    options: ['he', 'vaig', 'vull', 'sóc'],
+    options: ['he', 'vaig', 'vull', 'soc'],
     correctAnswer: 'vaig',
   },
   {

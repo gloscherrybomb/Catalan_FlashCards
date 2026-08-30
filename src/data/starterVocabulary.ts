@@ -128,13 +128,13 @@ export const STARTER_VOCABULARY: StarterCard[] = [
   { front: 'the bill', back: 'el compte', category: 'Food & Drink', gender: 'masculine' },
 
   // Common Verbs (15 words)
-  { front: 'to be (permanent)', back: 'ser', category: 'Verbs', notes: 'Jo sóc, tu ets, ell és' },
+  { front: 'to be (permanent)', back: 'ser', category: 'Verbs', notes: 'Jo soc, tu ets, ell és' },
   { front: 'to be (temporary)', back: 'estar', category: 'Verbs', notes: 'Jo estic, tu estàs, ell està' },
   { front: 'to have', back: 'tenir', category: 'Verbs', notes: 'Jo tinc, tu tens, ell té' },
   { front: 'to want', back: 'voler', category: 'Verbs', notes: 'Jo vull, tu vols, ell vol' },
   { front: 'to be able to / can', back: 'poder', category: 'Verbs', notes: 'Jo puc, tu pots, ell pot' },
   { front: 'to go', back: 'anar', category: 'Verbs', notes: 'Jo vaig, tu vas, ell va' },
-  { front: 'to come', back: 'venir', category: 'Verbs', notes: 'Jo vinc, tu véns, ell ve' },
+  { front: 'to come', back: 'venir', category: 'Verbs', notes: 'Jo vinc, tu vens, ell ve' },
   { front: 'to do / to make', back: 'fer', category: 'Verbs', notes: 'Jo faig, tu fas, ell fa' },
   { front: 'to say / to tell', back: 'dir', category: 'Verbs', notes: 'Jo dic, tu dius, ell diu' },
   { front: 'to eat', back: 'menjar', category: 'Verbs', notes: 'Regular -ar verb' },
