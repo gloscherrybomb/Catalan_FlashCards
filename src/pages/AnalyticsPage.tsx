@@ -6,6 +6,8 @@ import { useCardStore } from '../stores/cardStore';
 import { useUserStore } from '../stores/userStore';
 import { Card } from '../components/ui/Card';
 import { MistakePatterns } from '../components/analytics/MistakePatterns';
+import { ReviewForecast } from '../components/analytics/ReviewForecast';
+import { RetentionBands } from '../components/analytics/RetentionBands';
 
 export function AnalyticsPage() {
   const flashcards = useCardStore((state) => state.flashcards);
@@ -153,7 +155,18 @@ export function AnalyticsPage() {
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        {/* Forecast leads, because it is the only panel here that is about what
+            happens next rather than what already happened. */}
+        <div className="mb-6">
+          <ReviewForecast
+            cardProgress={cardProgress}
+            totalCardDirections={flashcards.length * 2}
+          />
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          <RetentionBands cardProgress={cardProgress} />
+
           {/* Mastery Distribution */}
           <Card>
             <h2 className="text-xl font-bold text-miro-blue dark:text-ink-light mb-4">
@@ -201,6 +214,9 @@ export function AnalyticsPage() {
             </div>
           </Card>
 
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Time to Mastery */}
           <Card>
             <h2 className="text-xl font-bold text-miro-blue dark:text-ink-light mb-4 flex items-center gap-2">
