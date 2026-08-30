@@ -218,6 +218,16 @@ export const chatWithTutor = functions
       );
     }
 
+    // App Check is not configurable for callable functions through the
+    // services API - the function verifies the attestation itself. Warned
+    // rather than rejected for now, matching the console's monitoring-only
+    // setting; tighten to a throw once real traffic is consistently attested.
+    if (!context.app) {
+      functions.logger.warn("Request without a valid App Check token", {
+        uid: context.auth.uid,
+      });
+    }
+
     const userMessage = (data?.userMessage ?? "").trim();
     if (!userMessage) {
       throw new functions.https.HttpsError(

@@ -21,6 +21,8 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
+import { logger } from './logger';
 import { getStorage } from 'firebase/storage';
 import type { Flashcard, CardProgress } from '../types/flashcard';
 import type { PlacementResult } from '../types/curriculum';
@@ -46,6 +48,45 @@ export const isDemoMode = !import.meta.env.VITE_FIREBASE_API_KEY;
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+/**
+ * App Check.
+ *
+ * The Firebase web config is public by design - it ships in the bundle - so
+ * anyone who views source can talk to this project's Firestore and Functions
+ * directly, with any Google account. App Check attests that a request came from
+ * the real app before the backend will serve it.
+ *
+ * Initialised immediately after initializeApp and before any other service, so
+ * every subsequent call carries a token.
+ *
+ * Enforcement is currently OFF in the Firebase console (monitoring only). That
+ * is deliberate: turning it on before enough real traffic carries valid tokens
+ * would lock the live app out of its own backend. Watch the App Check metrics,
+ * and once verified requests dominate, switch Firestore and Storage to
+ * Enforced. See FIREBASE_SETUP.md.
+ */
+const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+if (!isDemoMode && recaptchaSiteKey && typeof window !== 'undefined') {
+  // A debug token lets local development and CI obtain App Check tokens
+  // without a real reCAPTCHA assessment.
+  if (import.meta.env.DEV) {
+    (window as unknown as Record<string, unknown>).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  }
+
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (error) {
+    // App Check is a hardening layer, not a dependency. If it cannot start -
+    // blocked script, misconfigured key - the app must still work, exactly as
+    // it does when Firestore itself is blocked.
+    logger.warn('App Check failed to initialise', 'Firebase', { error: String(error) });
+  }
+}
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
