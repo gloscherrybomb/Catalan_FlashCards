@@ -1,16 +1,22 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+// v1 subpath: from firebase-functions v6 the bare import resolves to the v2
+// API, whose callable handlers take a single request object rather than
+// (data, context). These functions use the v1 shape.
+import * as functions from "firebase-functions/v1";
+// firebase-admin v12+ is modular: the namespaced admin.storage() form was
+// removed in v14.
+import {initializeApp} from "firebase-admin/app";
+import {getStorage} from "firebase-admin/storage";
 import textToSpeech from "@google-cloud/text-to-speech";
 import * as crypto from "crypto";
 
 // Initialize Firebase Admin
-admin.initializeApp();
+initializeApp();
 
 // Initialize Text-to-Speech client
 const ttsClient = new textToSpeech.TextToSpeechClient();
 
 // Get storage bucket
-const bucket = admin.storage().bucket();
+const bucket = getStorage().bucket();
 
 // Voice configuration for different languages
 const VOICE_CONFIG: Record<string, {

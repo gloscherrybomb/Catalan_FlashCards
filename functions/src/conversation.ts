@@ -1,5 +1,10 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+// v1 subpath: from firebase-functions v6 the bare import resolves to the v2
+// API, whose callable handlers take a single request object rather than
+// (data, context). These functions use the v1 shape.
+import * as functions from "firebase-functions/v1";
+// firebase-admin v12+ is modular: the namespaced admin.firestore() form was
+// removed in v14.
+import {getFirestore, Timestamp} from "firebase-admin/firestore";
 import {GoogleGenAI} from "@google/genai";
 
 /**
@@ -166,9 +171,10 @@ async function consumeDailyQuota(userId: string): Promise<number> {
     String(today.getDate()).padStart(2, "0"),
   ].join("-");
 
-  const ref = admin.firestore().doc(`users/${userId}/usage/conversation-${dayKey}`);
+  const db = getFirestore();
+  const ref = db.doc(`users/${userId}/usage/conversation-${dayKey}`);
 
-  return admin.firestore().runTransaction(async (tx) => {
+  return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     const used = (snap.exists ? snap.data()?.count : 0) ?? 0;
 
@@ -185,7 +191,7 @@ async function consumeDailyQuota(userId: string): Promise<number> {
       {
         count: used + 1,
         // A TTL policy on this field clears old counters automatically.
-        expiresAt: admin.firestore.Timestamp.fromMillis(
+        expiresAt: Timestamp.fromMillis(
           Date.now() + 7 * 24 * 60 * 60 * 1000
         ),
       },
