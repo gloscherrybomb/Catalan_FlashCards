@@ -192,7 +192,7 @@ const UNIT_39: UnitVocabulary = {
     { front: 'identity', back: 'identitat', category: 'Culture', gender: 'feminine' },
     { front: 'flag', back: 'bandera', category: 'Culture', gender: 'feminine' },
     { front: 'anthem', back: 'himne', category: 'Culture', gender: 'masculine' },
-    { front: 'national day', back: 'Diada Nacional', category: 'Culture', gender: 'feminine' },
+    { front: 'national day', back: 'Diada nacional', category: 'Culture', gender: 'feminine' },
     { front: 'human tower team', back: 'colla castellera', category: 'Culture', gender: 'feminine' },
     { front: 'giant (festival figure)', back: 'gegant', category: 'Culture', gender: 'masculine' },
     { front: 'fire run', back: 'correfoc', category: 'Culture', gender: 'masculine' },

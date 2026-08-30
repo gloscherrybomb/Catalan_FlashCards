@@ -154,7 +154,7 @@ const AUTHORED: AuthoredSentence[] = [
   { id: 'u39-13', categoryId: 'celebrations', catalan: 'La llengua forma part de la identitat.', english: 'Language is part of identity.', targetWords: ['identitat'] },
   { id: 'u39-14', categoryId: 'celebrations', catalan: 'La bandera catalana es diu senyera.', english: 'The Catalan flag is called the senyera.', targetWords: ['bandera'] },
   { id: 'u39-15', categoryId: 'celebrations', catalan: 'Tothom canta l’himne a la Diada.', english: 'Everybody sings the anthem on the National Day.', targetWords: ['himne'] },
-  { id: 'u39-16', categoryId: 'celebrations', catalan: 'L’onze de setembre és la Diada Nacional.', english: 'The eleventh of September is the national day.', targetWords: ['diada nacional'] },
+  { id: 'u39-16', categoryId: 'celebrations', catalan: 'L’onze de setembre és la Diada nacional.', english: 'The eleventh of September is the national day.', targetWords: ['diada nacional'] },
   { id: 'u39-17', categoryId: 'celebrations', catalan: 'La colla castellera assaja cada dijous.', english: 'The human tower team practises every Thursday.', targetWords: ['colla castellera'] },
   { id: 'u39-18', categoryId: 'celebrations', catalan: 'Els gegants surten per la festa major.', english: 'The giants come out for the local festival.', targetWords: ['gegant', 'festa major'] },
   { id: 'u39-19', categoryId: 'celebrations', catalan: 'El correfoc és impressionant.', english: 'The fire run is impressive.', targetWords: ['correfoc'] },
