@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "catalanflashcards"
+  },
   "targets": {},
   "etags": {}
 }
