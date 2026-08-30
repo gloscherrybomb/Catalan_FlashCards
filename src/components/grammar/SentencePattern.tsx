@@ -106,6 +106,7 @@ export function SentencePattern({ pattern, compact = false }: SentencePatternPro
             <button
               onClick={handlePlayAudio}
               disabled={isPlaying}
+              aria-label="Listen to this sentence pattern"
               className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
                 isPlaying
                   ? 'bg-miro-green text-white'

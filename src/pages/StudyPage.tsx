@@ -979,6 +979,7 @@ export function StudyPage() {
             resetSession();
             setShowModeSelect(true);
           }}
+          aria-label="Back to study modes"
           className="p-2 hover:bg-gray-100 dark:bg-gray-800 rounded-lg"
         >
           <ArrowLeft size={24} className="text-gray-600 dark:text-ink-light/70" />

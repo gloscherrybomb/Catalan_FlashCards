@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
-import type { ReactNode } from 'react';
+import type { ReactNode, KeyboardEvent } from 'react';
 
 interface CardProps {
   children: ReactNode;
@@ -9,6 +9,13 @@ interface CardProps {
   hover?: boolean;
   className?: string;
   onClick?: () => void;
+  /**
+   * Accessible name for a clickable card.
+   *
+   * Only needed when the card's own content does not describe the action - a
+   * card whose heading reads "Flip Cards" already names itself.
+   */
+  ariaLabel?: string;
 }
 
 export function Card({
@@ -18,8 +25,33 @@ export function Card({
   hover = false,
   className,
   onClick,
+  ariaLabel,
 }: CardProps) {
   const baseStyles = 'rounded-2xl overflow-hidden relative';
+
+  /**
+   * A card with an onClick is a control, so it has to behave like one.
+   *
+   * This rendered a bare div with a click handler: no role, not focusable, and
+   * unreachable by keyboard. Thirteen places use a clickable Card, including
+   * the study-mode picker - so a keyboard or screen-reader user could not start
+   * a study session at all.
+   */
+  const interactiveProps = onClick
+    ? {
+        role: 'button',
+        tabIndex: 0,
+        'aria-label': ariaLabel,
+        onClick,
+        onKeyDown: (event: KeyboardEvent) => {
+          // Enter and Space are what a real button responds to.
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onClick();
+          }
+        },
+      }
+    : {};
 
   const variants = {
     default: 'bg-white dark:bg-gray-800 shadow-card dark:shadow-gray-900/30',
@@ -57,9 +89,10 @@ export function Card({
           paddings[padding],
           hoverStyles,
           variant === 'playful' && 'hover:shadow-[9px_9px_0px_0px_rgba(29,53,87,0.9)]',
-          className
+          className,
+          onClick && 'focus:outline-none focus-visible:ring-3 focus-visible:ring-miro-yellow focus-visible:ring-offset-2'
         )}
-        onClick={onClick}
+        {...interactiveProps}
       >
         {children}
       </motion.div>
@@ -72,9 +105,10 @@ export function Card({
         baseStyles,
         variants[variant],
         paddings[padding],
-        className
+        className,
+        onClick && 'cursor-pointer focus:outline-none focus-visible:ring-3 focus-visible:ring-miro-yellow focus-visible:ring-offset-2'
       )}
-      onClick={onClick}
+      {...interactiveProps}
     >
       {children}
     </div>

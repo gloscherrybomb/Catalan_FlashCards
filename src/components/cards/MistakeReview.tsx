@@ -88,10 +88,24 @@ export function MistakeReview({ mistakes, onComplete, onPracticeAgain }: Mistake
           {/* Cards list */}
           <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
             {mistakes.map((mistake) => (
+              /* A selectable row is a checkbox, not decoration: without a role
+                 and a key handler it cannot be reached or toggled from the
+                 keyboard, and a screen reader cannot tell whether it is
+                 selected. */
               <div
                 key={`${mistake.flashcard.id}-${mistake.direction}`}
                 onClick={() => togglePractice(mistake.flashcard.id)}
-                className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                role="checkbox"
+                aria-checked={selectedForPractice.has(mistake.flashcard.id)}
+                aria-label={`Practise ${mistake.flashcard.front} again`}
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    togglePractice(mistake.flashcard.id);
+                  }
+                }}
+                className={`p-3 rounded-lg border-2 cursor-pointer transition-all focus:outline-none focus-visible:ring-3 focus-visible:ring-miro-yellow ${
                   selectedForPractice.has(mistake.flashcard.id)
                     ? 'border-primary bg-primary/5 dark:bg-primary/10'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
@@ -236,6 +250,7 @@ export function MistakeReview({ mistakes, onComplete, onPracticeAgain }: Mistake
                 </p>
                 <button
                   onClick={() => handleSpeak(answerText, answerLang)}
+                  aria-label={`Listen to ${answerText}`}
                   className="p-1.5 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-full transition-colors"
                 >
                   <Volume2 className={`w-4 h-4 text-green-600 dark:text-green-400 ${isPlaying ? 'animate-pulse' : ''}`} />

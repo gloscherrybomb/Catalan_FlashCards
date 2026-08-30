@@ -134,6 +134,7 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
+            aria-label="Back to scenarios"
             className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -274,6 +275,7 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
           <button
             onClick={handleSend}
             disabled={!input.trim()}
+            aria-label="Send message"
             className={`p-3 rounded-xl transition-all ${
               input.trim()
                 ? 'bg-miro-blue hover:bg-miro-blue/90 text-white'

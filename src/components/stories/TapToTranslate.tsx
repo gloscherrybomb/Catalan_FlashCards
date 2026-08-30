@@ -172,6 +172,7 @@ export function TapToTranslate({
                 </span>
                 <button
                   onClick={handlePlayAudio}
+                  aria-label="Listen to this word"
                   className="p-1 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-full"
                 >
                   <Volume2 className={`w-4 h-4 ${isPlaying ? 'text-miro-red animate-pulse' : 'text-gray-500 dark:text-ink-light/60'}`} />

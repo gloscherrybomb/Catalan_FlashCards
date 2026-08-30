@@ -101,3 +101,109 @@ describe('dark mode coverage', () => {
   });
 });
 
+
+/**
+ * Guards against controls that only work with a mouse.
+ *
+ * The shared Card rendered a bare div with an onClick: no role, not focusable,
+ * no key handler. Thirteen places use a clickable Card, including the
+ * study-mode picker, so a keyboard or screen-reader user could not start a
+ * study session at all.
+ */
+/**
+ * Extract the opening tag of every `<name ...>` in a JSX source.
+ *
+ * A regex cannot do this. `[^>]*` stops at the first '>', and an arrow function
+ * in an attribute (`onClick={() => ...}`) supplies one long before the tag ends,
+ * so a regex silently skips exactly the elements that have handlers - the ones
+ * these guards exist to check. Attribute values are only ever quoted strings or
+ * braced expressions, so tracking brace depth and quotes finds the true end.
+ */
+function openingTags(source: string, name: string) {
+  const tags: Array<{ index: number; attrs: string; end: number }> = [];
+  const opener = new RegExp(`<${name}\\b`, 'g');
+
+  for (const match of source.matchAll(opener)) {
+    let i = match.index! + name.length + 1;
+    let depth = 0;
+    let quote = '';
+
+    for (; i < source.length; i++) {
+      const char = source[i];
+      if (quote) {
+        if (char === quote && source[i - 1] !== '\\') quote = '';
+        continue;
+      }
+      if (char === '"' || char === "'" || char === '`') quote = char;
+      else if (char === '{') depth++;
+      else if (char === '}') depth--;
+      else if (char === '>' && depth === 0) break;
+    }
+
+    tags.push({ index: match.index!, attrs: source.slice(match.index!, i), end: i + 1 });
+  }
+
+  return tags;
+}
+
+/** 1-indexed line number of an offset, for a clickable offender path. */
+function lineAt(source: string, index: number) {
+  return source.slice(0, index).split('\n').length;
+}
+
+describe('keyboard accessibility', () => {
+  it('gives every clickable element a role and a key handler', () => {
+    const offenders: string[] = [];
+
+    for (const file of sourceFiles('src')) {
+      if (!file.endsWith('.tsx')) continue;
+      const source = readFileSync(file, 'utf8');
+
+      for (const tag of openingTags(source, 'div')) {
+        if (!/onClick=/.test(tag.attrs)) continue;
+
+        // A backdrop that only swallows a click is not an interactive control.
+        const isStopPropagationOnly = /onClick=\{\(e\w*\) => e\w*\.stopPropagation\(\)\}/.test(
+          tag.attrs
+        );
+        if (isStopPropagationOnly) continue;
+
+        if (!/role=/.test(tag.attrs) || !/onKeyDown=|onKeyUp=|onKeyPress=/.test(tag.attrs)) {
+          offenders.push(`${file.replace(/^src\//, '')}:${lineAt(source, tag.index)}`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('gives every icon-only button an accessible name', () => {
+    const offenders: string[] = [];
+
+    for (const file of sourceFiles('src')) {
+      if (!file.endsWith('.tsx')) continue;
+      const source = readFileSync(file, 'utf8');
+
+      for (const tag of openingTags(source, 'button')) {
+        if (/aria-label|title=|aria-labelledby/.test(tag.attrs)) continue;
+        if (tag.attrs.trimEnd().endsWith('/')) continue; // self-closing, no body
+
+        const close = source.indexOf('</button>', tag.end);
+        if (close === -1) continue;
+
+        const body = source.slice(tag.end, close);
+        // Strip nested tags but keep `{expr}` - an expression such as
+        // {option.label} renders visible text and does name the button.
+        const visibleText = body.replace(/<[^>]+>/g, ' ').trim();
+        const hasIcon = /<[A-Z]\w+|<svg/.test(body);
+
+        // An icon with no text beside it announces only as "button".
+        if (hasIcon && !visibleText) {
+          offenders.push(`${file.replace(/^src\//, '')}:${lineAt(source, tag.index)}`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+});

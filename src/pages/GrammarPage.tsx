@@ -103,6 +103,7 @@ function HighlightedExample({ example }: { example: GrammarExample }) {
       <button
         onClick={handlePlayAudio}
         disabled={isPlaying}
+        aria-label={`Listen to "${example.catalan}"`}
         className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
           isPlaying
             ? 'bg-miro-green text-white'
@@ -183,6 +184,7 @@ function LessonDetail({ lesson, curriculumLessonId }: { lesson: GrammarLesson; c
           <div className="flex items-center gap-3 mb-6">
             <button
               onClick={() => setShowExercises(false)}
+              aria-label="Back to the lesson"
               className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-800 rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-miro-blue dark:text-ink-light" />
@@ -218,6 +220,7 @@ function LessonDetail({ lesson, curriculumLessonId }: { lesson: GrammarLesson; c
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => navigate('/grammar')}
+            aria-label="Back to grammar lessons"
             className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-800 rounded-xl transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-miro-blue dark:text-ink-light" />

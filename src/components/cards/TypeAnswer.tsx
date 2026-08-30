@@ -180,6 +180,8 @@ export function TypeAnswer({ studyCard, onAnswer }: TypeAnswerProps) {
           <button
             type="button"
             onClick={() => setShowKeyboard(!showKeyboard)}
+            aria-label={showKeyboard ? 'Hide the accented character keys' : 'Show the accented character keys'}
+            aria-expanded={showKeyboard}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
           >
             <Keyboard size={20} />

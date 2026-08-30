@@ -208,6 +208,7 @@ function VocabQuizCard({
                 <button
                   onClick={handlePlayAudio}
                   disabled={isPlayingAudio}
+                  aria-label="Listen to this word"
                   className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-500 hover:bg-emerald-200"
                 >
                   <Volume2 className={`w-5 h-5 ${isPlayingAudio ? 'animate-pulse' : ''}`} />

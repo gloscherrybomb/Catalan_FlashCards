@@ -259,6 +259,7 @@ export function SentenceMode({
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={onExit}
+          aria-label="Exit sentence practice"
           className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
           <ArrowLeft size={24} className="text-miro-blue dark:text-ink-light" />

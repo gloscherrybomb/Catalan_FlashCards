@@ -109,6 +109,7 @@ export function MnemonicEditor({
             </div>
             <button
               onClick={handlePlayAudio}
+              aria-label="Listen to the pronunciation"
               className={`p-3 rounded-full transition-colors ${
                 isPlayingAudio
                   ? 'bg-miro-red/20 text-miro-red'
