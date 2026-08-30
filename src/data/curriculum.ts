@@ -1023,15 +1023,38 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   },
 ];
 
+/** CEFR order, so the path can be sorted by how hard a unit is. */
+const LEVEL_ORDER: Record<CEFRLevel, number> = { A1: 0, A2: 1, B1: 2, B2: 3 };
+
 /**
  * The full learning path: the original twenty units plus the A2 and B1 units
- * built from the extended vocabulary. Without the second half, units 21 to 50
- * are flashcards with no route into them.
+ * built from the extended vocabulary.
+ *
+ * Two things have to happen here rather than in either half.
+ *
+ * Order. Concatenating the two lists ran A1 1-8, A2 9-14, B1 15-20, and then
+ * back down to A2 for 21-35 - a learner reached B1 material at unit 15 and was
+ * dropped back to A2 six units later. Sorting by level and then by unit number
+ * gives one rising path: A1 1-8, A2 9-14 and 21-35, B1 15-20 and 36-50.
+ *
+ * Prerequisites. Each unit unlocks the next, so the chain has to follow the
+ * order above and cannot be written by either half in isolation. It was:
+ * unit 21 pointed at `unit-20-festival`, which is the id of the *vocabulary*
+ * unit - the curriculum one is `unit-20-culture` - so the prerequisite could
+ * never be satisfied and every unit from 21 on was locked for good.
  */
 export const CURRICULUM_UNITS: CurriculumUnit[] = [
   ...CORE_CURRICULUM_UNITS,
   ...EXTENDED_CURRICULUM_UNITS,
-];
+]
+  .sort((a, b) => {
+    const byLevel = LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level];
+    return byLevel !== 0 ? byLevel : (a.courseUnit ?? 0) - (b.courseUnit ?? 0);
+  })
+  .map((unit, index, ordered) => ({
+    ...unit,
+    prerequisites: index === 0 ? [] : [ordered[index - 1].id],
+  }));
 
 // Helper functions
 export function getUnitById(unitId: string): CurriculumUnit | undefined {

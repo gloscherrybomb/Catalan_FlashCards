@@ -43,9 +43,10 @@ function levelFor(unitNumber: number): CEFRLevel {
  *
  * Each gets a vocabulary lesson wired to the unit number - which is what
  * addUnitVocabulary and getStudyDeck key off - and a practice lesson, matching
- * the shape of the original twenty.
+ * the shape of the original twenty. Prerequisites are left empty and filled in
+ * by curriculum.ts, which orders the whole path and chains it in one place.
  */
-function toCurriculumUnit(unit: UnitVocabulary, index: number, previousId: string | null): CurriculumUnit {
+function toCurriculumUnit(unit: UnitVocabulary, index: number): CurriculumUnit {
   const level = levelFor(unit.unitNumber);
   const xp = level === 'B1' ? 40 : 35;
 
@@ -57,7 +58,8 @@ function toCurriculumUnit(unit: UnitVocabulary, index: number, previousId: strin
     level,
     icon: ICONS[unit.unitNumber] ?? '📘',
     color: GRADIENTS[index % GRADIENTS.length],
-    prerequisites: previousId ? [previousId] : [],
+    // Filled in by curriculum.ts, which chains the whole path in level order.
+    prerequisites: [],
     courseUnit: unit.unitNumber,
     milestoneTitle: unit.unitNumber === 35 ? 'A2 Complete' : unit.unitNumber === 50 ? 'B1 Complete' : undefined,
     lessons: [
@@ -92,6 +94,4 @@ function toCurriculumUnit(unit: UnitVocabulary, index: number, previousId: strin
 
 const ALL = [...A2_UNITS, ...B1_UNITS];
 
-export const EXTENDED_CURRICULUM_UNITS: CurriculumUnit[] = ALL.map((unit, i) =>
-  toCurriculumUnit(unit, i, i === 0 ? 'unit-20-festival' : ALL[i - 1].unitId)
-);
+export const EXTENDED_CURRICULUM_UNITS: CurriculumUnit[] = ALL.map(toCurriculumUnit);
