@@ -2,12 +2,20 @@ import { motion } from 'framer-motion';
 import { Check, X, AlertCircle, Volume2, RefreshCw, Lightbulb } from 'lucide-react';
 import { Button } from './Button';
 
+interface WordScore {
+  expected: string;
+  heard: string | null;
+  correct: boolean;
+}
+
 interface PronunciationFeedbackProps {
   score: number;
   feedback: string;
   isAcceptable: boolean;
   spokenText: string;
   expectedText: string;
+  /** Per-word outcome, so the learner can see which word to work on. */
+  words?: WordScore[];
   tips?: string[];
   onTryAgain: () => void;
   onListenAgain: () => void;
@@ -21,6 +29,7 @@ export function PronunciationFeedback({
   isAcceptable,
   spokenText,
   expectedText,
+  words = [],
   tips = [],
   onTryAgain,
   onListenAgain,
@@ -150,6 +159,42 @@ export function PronunciationFeedback({
       </div>
 
       {/* Tips */}
+      {/* Word-by-word result. A single blended percentage tells a learner they
+          did badly but not where; this points at the word to work on. */}
+      {words.length > 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="mb-6"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide text-miro-blue/50 dark:text-ink-light/50 mb-2">
+            Word by word
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {words.map((word, index) => (
+              <span
+                key={`${word.expected}-${index}`}
+                title={
+                  word.correct
+                    ? `"${word.expected}" — heard clearly`
+                    : word.heard
+                      ? `"${word.expected}" — heard as "${word.heard}"`
+                      : `"${word.expected}" — not heard`
+                }
+                className={`px-2 py-1 rounded-lg text-sm font-medium ${
+                  word.correct
+                    ? 'bg-miro-green/15 text-miro-green'
+                    : 'bg-miro-red/15 text-miro-red line-through decoration-miro-red/40'
+                }`}
+              >
+                {word.expected}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {tips.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -160,7 +205,7 @@ export function PronunciationFeedback({
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="w-4 h-4 text-amber-600" />
             <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
-              Pronunciation Tips
+              What to adjust
             </span>
           </div>
           <ul className="space-y-1">

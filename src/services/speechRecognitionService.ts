@@ -7,6 +7,13 @@ import type {
   SpeechRecognitionErrorEvent,
 } from '../types/webSpeech';
 import { logger } from './logger';
+import { PRONUNCIATION_THRESHOLDS } from '../config/constants';
+import {
+  splitWords,
+  transcribeWord,
+  phonemeDistance,
+  diagnoseWord,
+} from './catalanPhonetics';
 
 export interface SpeechResult {
   transcript: string;
@@ -212,98 +219,136 @@ class SpeechRecognitionService {
   }
 }
 
-// Calculate pronunciation similarity score
+/** Per-word outcome, so feedback can point at the word that went wrong. */
+export interface WordScore {
+  expected: string;
+  heard: string | null;
+  correct: boolean;
+  /** One targeted tip, when we can name what differed. */
+  tip?: { sound: string; tip: string };
+}
+
+export interface PronunciationScore {
+  score: number;
+  feedback: string;
+  isAcceptable: boolean;
+  /** Word-by-word breakdown driving the detailed feedback. */
+  words: WordScore[];
+  /** The most useful tips across the phrase, most specific first. */
+  tips: string[];
+}
+
+/**
+ * Score a spoken attempt against the expected Catalan.
+ *
+ * Compares phoneme sequences rather than raw characters (see catalanPhonetics).
+ * Two consequences worth knowing:
+ *
+ *   - Spellings that sound the same in Central Catalan score as correct. "vi"
+ *     heard as "bi" is a b/v merger, not a mistake, and the previous
+ *     character-level scorer marked it 50% wrong on a two-letter word.
+ *   - Accents are no longer discarded. The previous version stripped diacritics
+ *     before comparing, so `cafè` and `cafe` were identical - throwing away the
+ *     open/closed vowel contrast that most needs practice.
+ *
+ * The score reflects whether the recogniser heard the right words, which is not
+ * the same as how native the delivery sounded. The wording says so rather than
+ * claiming "perfect pronunciation" for what is really a transcript match.
+ */
 export function calculatePronunciationScore(
   spoken: string,
   expected: string
-): { score: number; feedback: string; isAcceptable: boolean } {
-  const normalizedSpoken = normalizeText(spoken);
-  const normalizedExpected = normalizeText(expected);
+): PronunciationScore {
+  const expectedWords = splitWords(expected);
+  const spokenWords = splitWords(spoken);
 
-  // Exact match
-  if (normalizedSpoken === normalizedExpected) {
-    return {
-      score: 100,
-      feedback: 'Perfect pronunciation!',
-      isAcceptable: true,
-    };
+  if (expectedWords.length === 0) {
+    return { score: 0, feedback: 'Nothing to compare.', isAcceptable: false, words: [], tips: [] };
   }
 
-  // Calculate similarity using Levenshtein distance
-  const distance = levenshteinDistance(normalizedSpoken, normalizedExpected);
-  const maxLength = Math.max(normalizedSpoken.length, normalizedExpected.length);
-  const similarity = maxLength > 0 ? ((maxLength - distance) / maxLength) * 100 : 0;
+  // Align at the word level so a dropped or inserted word shifts the rest
+  // rather than corrupting every subsequent comparison.
+  const words: WordScore[] = [];
+  let totalPhonemes = 0;
+  let totalErrors = 0;
+  let matched = 0;
+
+  const used = new Set<number>();
+  for (const expectedWord of expectedWords) {
+    // Nearest unused spoken word, preferring order.
+    let bestIndex = -1;
+    let bestDistance = Infinity;
+    for (let j = 0; j < spokenWords.length; j++) {
+      if (used.has(j)) continue;
+      const d = phonemeDistance(expectedWord, spokenWords[j]);
+      if (d < bestDistance) {
+        bestDistance = d;
+        bestIndex = j;
+      }
+    }
+
+    const heard = bestIndex >= 0 ? spokenWords[bestIndex] : null;
+    const expectedLength = Math.max(1, transcribeWord(expectedWord).length);
+    totalPhonemes += expectedLength;
+
+    if (heard === null) {
+      totalErrors += expectedLength;
+      words.push({ expected: expectedWord, heard: null, correct: false });
+      continue;
+    }
+
+    used.add(bestIndex);
+    // Errors in one word cannot exceed that word's length, so a wildly wrong
+    // guess costs the word and no more.
+    const errors = Math.min(bestDistance, expectedLength);
+    totalErrors += errors;
+
+    const correct = errors === 0;
+    if (correct) matched++;
+
+    words.push({
+      expected: expectedWord,
+      heard,
+      correct,
+      tip: correct ? undefined : diagnoseWord(expectedWord, heard) ?? undefined,
+    });
+  }
+
+  const similarity = Math.max(0, ((totalPhonemes - totalErrors) / totalPhonemes) * 100);
+  const score = Math.round(similarity);
+
+  const tips = words
+    .map(w => w.tip)
+    .filter((t): t is { sound: string; tip: string } => Boolean(t))
+    .map(t => t.tip);
+
+  const allWordsMatched = matched === expectedWords.length && spokenWords.length === expectedWords.length;
 
   let feedback: string;
   let isAcceptable: boolean;
 
-  if (similarity >= 90) {
-    feedback = 'Excellent! Very close to native pronunciation.';
+  if (allWordsMatched) {
+    feedback = 'Recognised exactly - every word came through clearly.';
     isAcceptable = true;
-  } else if (similarity >= 75) {
-    feedback = 'Good pronunciation! Keep practicing for perfection.';
+  } else if (score >= PRONUNCIATION_THRESHOLDS.EXCELLENT) {
+    feedback = 'Very close. Almost every sound landed.';
     isAcceptable = true;
-  } else if (similarity >= 60) {
-    feedback = 'Getting there! Focus on the sounds you\'re missing.';
+  } else if (score >= PRONUNCIATION_THRESHOLDS.GOOD) {
+    feedback = 'Understandable, with a few sounds to tighten up.';
+    isAcceptable = true;
+  } else if (score >= PRONUNCIATION_THRESHOLDS.ACCEPTABLE) {
+    feedback = 'Recognisable, but several sounds drifted.';
     isAcceptable = false;
-  } else if (similarity >= 40) {
-    feedback = 'Needs work. Listen to the native audio and try again.';
+  } else if (score >= PRONUNCIATION_THRESHOLDS.NEEDS_WORK) {
+    feedback = 'Hard to make out. Listen again and copy the rhythm.';
     isAcceptable = false;
   } else {
-    feedback = 'Let\'s try again. Listen carefully to each sound.';
+    feedback = "That didn't come through. Play the audio and try once more.";
     isAcceptable = false;
   }
 
-  return {
-    score: Math.round(similarity),
-    feedback,
-    isAcceptable,
-  };
-}
-
-// Normalize text for comparison
-function normalizeText(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    // Remove punctuation
-    .replace(/[.,!?;:'"¿¡]/g, '')
-    // Normalize whitespace
-    .replace(/\s+/g, ' ')
-    // Normalize common Catalan characters for comparison
-    // Keep accents but normalize variations
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics for fuzzy matching
-    .normalize('NFC');
-}
-
-// Levenshtein distance for similarity calculation
-function levenshteinDistance(a: string, b: string): number {
-  const matrix: number[][] = [];
-
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
-        );
-      }
-    }
-  }
-
-  return matrix[b.length][a.length];
+  // Deduplicate: the same tip repeated across words reads as nagging.
+  return { score, feedback, isAcceptable, words, tips: [...new Set(tips)].slice(0, 3) };
 }
 
 // Get specific feedback for Catalan sounds

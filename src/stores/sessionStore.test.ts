@@ -255,7 +255,7 @@ describe('sessionStore', () => {
      */
     it('exposes no getters that set() would freeze', () => {
       startWith([studyCard('a'), studyCard('b')]);
-      const state = useSessionStore.getState() as Record<string, unknown>;
+      const state = useSessionStore.getState() as unknown as Record<string, unknown>;
 
       const getters = Object.keys(state).filter(
         key => Object.getOwnPropertyDescriptor(state, key)?.get !== undefined

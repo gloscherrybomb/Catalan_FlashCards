@@ -11,6 +11,7 @@ import {
   calculatePronunciationScore,
   getCatalanPronunciationTips,
   type SpeechResult,
+  type PronunciationScore,
 } from '../../services/speechRecognitionService';
 import { audioService } from '../../services/audioService';
 import type { StudyCard } from '../../types/flashcard';
@@ -31,11 +32,9 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
   const [spokenText, setSpokenText] = useState('');
   const [interimText, setInterimText] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{
-    score: number;
-    feedback: string;
-    isAcceptable: boolean;
-  } | null>(null);
+  // Use the service's own result type rather than a narrower local copy, which
+  // silently dropped the per-word breakdown and diagnostic tips.
+  const [result, setResult] = useState<PronunciationScore | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
@@ -221,7 +220,15 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
     );
   }
 
-  const tips = getCatalanPronunciationTips(textToSpeak);
+  // Prefer tips diagnosed from what actually went wrong. The static,
+  // letter-based tips fire on any word merely containing "ll" or "ny", so on
+  // their own they lecture a learner who pronounced the word perfectly; they
+  // are only a fallback for a poor attempt we could not pin to a sound.
+  const tips = result?.tips.length
+    ? result.tips
+    : result && !result.isAcceptable
+      ? getCatalanPronunciationTips(textToSpeak)
+      : [];
 
   return (
     <div className="max-w-lg mx-auto">
@@ -432,6 +439,7 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
                 isAcceptable={result.isAcceptable}
                 spokenText={spokenText}
                 expectedText={textToSpeak}
+                words={result.words}
                 tips={tips}
                 onTryAgain={handleTryAgain}
                 onListenAgain={playNativeAudio}
