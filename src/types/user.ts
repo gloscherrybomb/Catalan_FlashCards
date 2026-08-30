@@ -28,6 +28,15 @@ export interface UserProgress {
   streakFreezeAvailable: boolean;
   lastStreakFreezeUsed?: Date;
   dailyActivity: Record<string, { cards: number; xp: number }>; // keyed by YYYY-MM-DD
+  /**
+   * Lifetime speak-mode attempts, and those scoring at the "excellent"
+   * threshold. Five achievements require these; without the counters their
+   * requirement types fell through checkRequirement's default and returned
+   * false, so they could never unlock however much the learner practised.
+   * Optional because profiles saved before this existed will not have them.
+   */
+  speakingExercises?: number;
+  perfectPronunciations?: number;
 }
 
 export interface DailyStats {

@@ -59,6 +59,7 @@ interface UserState {
   recordStudySession: (cardsReviewed: number, correctAnswers: number, timeSpentMs: number) => Promise<void>;
   addAchievements: (newAchievements: UnlockedAchievement[]) => void;
   updateCardsLearned: (count: number) => Promise<void>;
+  recordSpeakingAttempt: (wasExcellent: boolean) => Promise<void>;
 }
 
 const DEFAULT_PROGRESS: UserProgress = {
@@ -73,6 +74,8 @@ const DEFAULT_PROGRESS: UserProgress = {
   cardsLearned: 0,
   streakFreezeAvailable: true,
   dailyActivity: {},
+  speakingExercises: 0,
+  perfectPronunciations: 0,
 };
 
 // Day keys are local-time (see utils/dateKeys) so that "today" means the same
@@ -505,6 +508,22 @@ export const useUserStore = create<UserState>()(
 
         if (uniqueNew.length > 0) {
           set({ achievements: [...achievements, ...uniqueNew] });
+        }
+      },
+
+      recordSpeakingAttempt: async (wasExcellent: boolean) => {
+        const { user, progress } = get();
+
+        const newProgress: Partial<UserProgress> = {
+          speakingExercises: (progress.speakingExercises ?? 0) + 1,
+          perfectPronunciations:
+            (progress.perfectPronunciations ?? 0) + (wasExcellent ? 1 : 0),
+        };
+
+        set({ progress: { ...progress, ...newProgress } });
+
+        if (user && !isDemoMode) {
+          await updateUserProgress(user.uid, newProgress);
         }
       },
 

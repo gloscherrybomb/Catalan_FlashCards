@@ -19,7 +19,8 @@ import { stripBracketedContent } from '../../utils/textUtils';
 
 interface SpeakModeProps {
   studyCard: StudyCard;
-  onComplete: (score: number, correct: boolean) => void;
+  /** quality is the 0-5 SM-2 rating; pronunciationScore is the raw 0-100 score. */
+  onComplete: (quality: number, correct: boolean, pronunciationScore: number) => void;
   onSkip?: () => void;
 }
 
@@ -173,9 +174,9 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
     if (result) {
       // Convert score to 0-5 scale
       const quality = Math.round((result.score / 100) * 5);
-      onComplete(quality, result.isAcceptable);
+      onComplete(quality, result.isAcceptable, result.score);
     } else {
-      onComplete(0, false);
+      onComplete(0, false, 0);
     }
   };
 

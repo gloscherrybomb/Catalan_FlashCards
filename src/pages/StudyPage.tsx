@@ -39,7 +39,7 @@ import { hasCategoryIntroBeenShown } from '../services/categoryIntroStorage';
 import { Confetti } from '../components/ui/Confetti';
 import { DifficultyIndicator, SessionCompositionPreview } from '../components/adaptive';
 import type { StudyMode } from '../types/flashcard';
-import { SESSION_CONFIG, STUDY_PAGE_CONFIG } from '../config/constants';
+import { SESSION_CONFIG, STUDY_PAGE_CONFIG, PRONUNCIATION_THRESHOLDS } from '../config/constants';
 import { useUserStore } from '../stores/userStore';
 import { hapticCorrect, hapticIncorrect } from '../utils/haptics';
 
@@ -148,6 +148,7 @@ export function StudyPage() {
   // The Settings toggle for this wrote the value and nothing read it, so hints
   // always showed regardless of the switch.
   const showHints = useUserStore((state) => state.profile?.settings.showHints ?? true);
+  const recordSpeakingAttempt = useUserStore((state) => state.recordSpeakingAttempt);
   // The preferred mode was likewise stored and never consulted when starting.
   const preferredMode = useUserStore((state) => state.profile?.settings.preferredMode ?? 'mixed');
 
@@ -1003,7 +1004,14 @@ export function StudyPage() {
                   return (
                     <SpeakMode
                       studyCard={currentCard}
-                      onComplete={(quality) => handleAnswer(quality)}
+                      onComplete={(quality, _correct, pronunciationScore) => {
+                        // Feeds the speaking achievements, which previously had
+                        // no counter behind them and could never unlock.
+                        void recordSpeakingAttempt(
+                          pronunciationScore >= PRONUNCIATION_THRESHOLDS.EXCELLENT
+                        );
+                        handleAnswer(quality);
+                      }}
                       onSkip={() => handleAnswer(0)}
                     />
                   );

@@ -70,6 +70,12 @@ function isAchievementMet(req: AchievementRequirement, ctx: AchievementContext):
     case 'xp':
       return progress.xp >= req.amount;
 
+    case 'speaking_exercises':
+      return (progress.speakingExercises ?? 0) >= req.count;
+
+    case 'perfect_pronunciations':
+      return (progress.perfectPronunciations ?? 0) >= req.count;
+
     case 'first_action':
       if (req.action === 'review') {
         return progress.totalCardsReviewed >= 1;
@@ -144,6 +150,12 @@ export function getAchievementProgress(
 
     case 'xp':
       return Math.min(100, Math.round((progress.xp / req.amount) * 100));
+
+    case 'speaking_exercises':
+      return Math.min(100, Math.round(((progress.speakingExercises ?? 0) / req.count) * 100));
+
+    case 'perfect_pronunciations':
+      return Math.min(100, Math.round(((progress.perfectPronunciations ?? 0) / req.count) * 100));
 
     case 'first_action':
       if (req.action === 'review') {
