@@ -67,6 +67,15 @@ class LRUCache<K, V> {
 }
 
 class AudioService {
+  /**
+   * Mirrors the user's soundEnabled setting.
+   *
+   * That setting was stored in every profile and read by nothing, so turning
+   * sound off did nothing at all. Held here rather than read from the user
+   * store to avoid a service -> store -> service import cycle; App syncs it
+   * whenever the profile changes.
+   */
+  private enabled = true;
   private synthesis: SpeechSynthesis | null = null;
   private catalanVoice: SpeechSynthesisVoice | null = null;
   private englishVoice: SpeechSynthesisVoice | null = null;
@@ -123,7 +132,20 @@ class AudioService {
   /**
    * Main speak method - tries Cloud TTS first, falls back to Web Speech API
    */
+  setEnabled(value: boolean): void {
+    this.enabled = value;
+    if (!value) this.stop();
+  }
+
+  get isEnabled(): boolean {
+    return this.enabled;
+  }
+
   async speak(text: string, language: Language, options: AudioOptions = {}): Promise<void> {
+    // Silent when the learner has turned sound off. Checked here rather than at
+    // every call site so no future caller can bypass the setting.
+    if (!this.enabled) return;
+
     const cleanText = cleanTextForSpeech(text);
     const useCloud = !options.forceWebSpeech && !isDemoMode;
 

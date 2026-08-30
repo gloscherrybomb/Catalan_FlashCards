@@ -9,6 +9,8 @@ import { useCardStore } from './stores/cardStore';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { shouldShowOnboarding } from './services/onboarding';
+import { audioService } from './services/audioService';
+import { setHapticsEnabled } from './utils/haptics';
 
 // HomePage is the landing route, so it stays in the entry chunk — lazy-loading
 // it would only add a network round-trip before the first paint.
@@ -42,6 +44,8 @@ function AppContent() {
   const loadCards = useCardStore((state) => state.loadCards);
   const isLoading = useUserStore((state) => state.isLoading);
   const cardCount = useCardStore((state) => state.flashcards.length);
+  const soundEnabled = useUserStore((state) => state.profile?.settings.soundEnabled ?? true);
+  const vibrationEnabled = useUserStore((state) => state.profile?.settings.vibrationEnabled ?? true);
   const totalCardsReviewed = useUserStore((state) => state.progress.totalCardsReviewed);
 
   // Re-evaluated after loading, because the decision depends on whether this
@@ -86,6 +90,17 @@ function AppContent() {
       clearTimeout(timeout);
     };
   }, [initializeUser, loadCards]);
+
+  // Push the two output preferences into the services that act on them. Both
+  // settings were stored in every profile and read by nothing, so turning sound
+  // off did nothing and nothing ever vibrated.
+  useEffect(() => {
+    audioService.setEnabled(soundEnabled);
+  }, [soundEnabled]);
+
+  useEffect(() => {
+    setHapticsEnabled(vibrationEnabled);
+  }, [vibrationEnabled]);
 
   if (isLoading) {
     return (

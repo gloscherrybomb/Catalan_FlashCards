@@ -29,6 +29,7 @@ import { Card } from '../components/ui/Card';
 import { StreakWarning } from '../components/gamification/StudyReminder';
 import { isSameDay } from 'date-fns';
 import { logger } from '../services/logger';
+import { DailyGoalRing } from '../components/gamification/DailyGoalRing';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -115,6 +116,21 @@ export function HomePage() {
       </div>
 
       <div className="relative max-w-4xl mx-auto px-4 py-8">
+        {/* Progress against today's goal. The goal was configurable and asked
+            for during onboarding, but nothing had ever displayed progress
+            against it. */}
+        {hasCards && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4"
+          >
+            <Card>
+              <DailyGoalRing compact />
+            </Card>
+          </motion.div>
+        )}
+
         {/* Streak Warning */}
         {hasCards && (
           <motion.div

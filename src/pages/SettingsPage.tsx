@@ -136,21 +136,28 @@ export function SettingsPage() {
               </select>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-800">Show Hints</p>
-                <p className="text-sm text-gray-500">Display grammar hints on cards</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={profile?.settings.showHints ?? true}
-                  onChange={(e) => updateSettings({ showHints: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-              </label>
-            </div>
+            <ToggleRow
+              title="Show Hints"
+              description="Display grammar hints on cards"
+              checked={profile?.settings.showHints ?? true}
+              onChange={(checked) => updateSettings({ showHints: checked })}
+            />
+
+            {/* Sound and vibration were stored in every profile and read by
+                nothing, and had no controls here at all. */}
+            <ToggleRow
+              title="Sound"
+              description="Play pronunciation audio"
+              checked={profile?.settings.soundEnabled ?? true}
+              onChange={(checked) => updateSettings({ soundEnabled: checked })}
+            />
+
+            <ToggleRow
+              title="Vibration"
+              description="Short buzz when you answer (supported devices only)"
+              checked={profile?.settings.vibrationEnabled ?? true}
+              onChange={(checked) => updateSettings({ vibrationEnabled: checked })}
+            />
           </div>
         </Card>
       </motion.div>
@@ -308,6 +315,38 @@ export function SettingsPage() {
         <p>Catalan FlashCards v1.0.0</p>
         <p className="mt-1">Made with ❤️ for Catalan learners</p>
       </motion.div>
+    </div>
+  );
+}
+
+/** A labelled switch. The markup was duplicated per setting before. */
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onChange,
+}: {
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="font-medium text-gray-800 dark:text-ink-light">{title}</p>
+        <p className="text-sm text-gray-500 dark:text-ink-light/60">{description}</p>
+      </div>
+      <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="sr-only peer"
+          aria-label={title}
+        />
+        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus-visible:ring-2 peer-focus-visible:ring-miro-yellow rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary" />
+      </label>
     </div>
   );
 }

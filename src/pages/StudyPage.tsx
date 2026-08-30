@@ -40,6 +40,8 @@ import { Confetti } from '../components/ui/Confetti';
 import { DifficultyIndicator, SessionCompositionPreview } from '../components/adaptive';
 import type { StudyMode } from '../types/flashcard';
 import { SESSION_CONFIG, STUDY_PAGE_CONFIG } from '../config/constants';
+import { useUserStore } from '../stores/userStore';
+import { hapticCorrect, hapticIncorrect } from '../utils/haptics';
 
 /** Cards drawn for a standard session. */
 const SESSION_CARD_LIMIT = SESSION_CONFIG.DEFAULT_CARD_LIMIT;
@@ -47,6 +49,21 @@ const SESSION_CARD_LIMIT = SESSION_CONFIG.DEFAULT_CARD_LIMIT;
 const SPRINT_CARD_LIMIT = 15;
 /** How many brand new cards to introduce before testing begins. */
 const INTRO_CARD_LIMIT = 5;
+/**
+ * Marks the mode chosen in Settings.
+ *
+ * "Preferred mode" was stored in the profile and consulted by nothing, so the
+ * Settings dropdown had no observable effect anywhere in the app. Surfacing it
+ * here at least makes the stored choice visible and act as a recommendation.
+ */
+function PreferredBadge() {
+  return (
+    <span className="ml-2 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-miro-green/15 text-miro-green align-middle">
+      Your default
+    </span>
+  );
+}
+
 /** Accuracy at which a session is worth celebrating. */
 const CONFETTI_ACCURACY_THRESHOLD = 80;
 /** Seconds per card in a sprint, unless a speed drill specifies otherwise. */
@@ -127,6 +144,12 @@ export function StudyPage() {
 
   // Curriculum store for marking lessons complete
   const completeLesson = useCurriculumStore((state) => state.completeLesson);
+
+  // The Settings toggle for this wrote the value and nothing read it, so hints
+  // always showed regardless of the switch.
+  const showHints = useUserStore((state) => state.profile?.settings.showHints ?? true);
+  // The preferred mode was likewise stored and never consulted when starting.
+  const preferredMode = useUserStore((state) => state.profile?.settings.preferredMode ?? 'mixed');
 
   // Queue the vocabulary-introduction phase for any brand new cards in the
   // deck that was just drawn. Reads the store directly because zustand applies
@@ -352,6 +375,10 @@ export function StudyPage() {
   };
 
   const handleAnswer = async (quality: number, userAnswer?: string) => {
+    // Quality >= 3 is the correct/incorrect boundary used throughout SM-2.
+    if (quality >= 3) hapticCorrect();
+    else hapticIncorrect();
+
     await submitAnswer(quality, userAnswer);
     nextCard();
   };
@@ -551,7 +578,10 @@ export function StudyPage() {
                     <Shuffle size={28} className="text-miro-blue dark:text-ink-light" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-miro-blue dark:text-ink-light">Flip Cards</h3>
+                    <h3 className="font-bold text-miro-blue dark:text-ink-light">
+                      Flip Cards
+                      {preferredMode === 'flip' && <PreferredBadge />}
+                    </h3>
                     <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
                       Classic flashcard experience - flip to reveal
                     </p>
@@ -569,7 +599,10 @@ export function StudyPage() {
                     <HelpCircle size={28} className="text-miro-green" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-miro-blue dark:text-ink-light">Multiple Choice</h3>
+                    <h3 className="font-bold text-miro-blue dark:text-ink-light">
+                      Multiple Choice
+                      {preferredMode === 'multiple-choice' && <PreferredBadge />}
+                    </h3>
                     <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
                       Pick the correct answer from 4 options
                     </p>
@@ -587,7 +620,10 @@ export function StudyPage() {
                     <Keyboard size={28} className="text-miro-red" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-miro-blue dark:text-ink-light">Type Answer</h3>
+                    <h3 className="font-bold text-miro-blue dark:text-ink-light">
+                      Type Answer
+                      {preferredMode === 'type-answer' && <PreferredBadge />}
+                    </h3>
                     <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
                       Practice spelling by typing your answer
                     </p>
@@ -611,6 +647,7 @@ export function StudyPage() {
                       <span className="text-xs px-2 py-0.5 bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-300 rounded-full">
                         Varied!
                       </span>
+                      {preferredMode === 'mixed' && <PreferredBadge />}
                     </h3>
                     <p className="text-sm text-miro-blue/60 dark:text-ink-light/60">
                       Random format per card - keeps you on your toes!
@@ -948,7 +985,7 @@ export function StudyPage() {
 
               switch (cardFormat) {
                 case 'flip':
-                  return <FlashCard studyCard={currentCard} onRate={handleAnswer} />;
+                  return <FlashCard studyCard={currentCard} onRate={handleAnswer} showHints={showHints} />;
                 case 'multiple-choice':
                   return <MultipleChoice studyCard={currentCard} onAnswer={handleAnswer} />;
                 case 'type-answer':
@@ -971,7 +1008,7 @@ export function StudyPage() {
                     />
                   );
                 default:
-                  return <FlashCard studyCard={currentCard} onRate={handleAnswer} />;
+                  return <FlashCard studyCard={currentCard} onRate={handleAnswer} showHints={showHints} />;
               }
             })()}
           </motion.div>
