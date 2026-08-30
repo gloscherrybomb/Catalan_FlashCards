@@ -65,6 +65,16 @@ export default {
         ink: {
           DEFAULT: '#1D3557',
           light: '#A8DADC',
+          /**
+           * Dark-mode card surface.
+           *
+           * Ten components already used `dark:bg-ink-dark`, but the token was
+           * never defined - so Tailwind emitted no rule and those cards kept
+           * their light `bg-white`, rendering white in dark mode. Matched to
+           * gray-800, which the shared Card component uses, so a widget sits
+           * flush with the cards beside it on the same page.
+           */
+          dark: '#1F2937',
         },
         success: '#2A9D8F',
         warning: '#F77F00',
