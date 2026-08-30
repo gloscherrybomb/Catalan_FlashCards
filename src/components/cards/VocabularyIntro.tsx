@@ -3,7 +3,7 @@
  * Teaches new vocabulary before flashcard testing
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Volume2,
@@ -352,19 +352,42 @@ export function VocabularyIntro({
 }: VocabularyIntroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Guard against empty cards
-  if (!cards || cards.length === 0) {
-    onComplete();
-    return null;
-  }
+  /**
+   * Mirrors currentIndex so the handler never reads a stale copy.
+   *
+   * The card is rendered inside AnimatePresence mode="wait", which keeps the
+   * outgoing child mounted until its exit animation finishes. That child holds
+   * the onNext from the render it mounted in, so `currentIndex + 1` recomputed
+   * the same value on every press and the introduction stuck on one word
+   * forever - which is what "cannot get past the first card" looked like.
+   *
+   * A ref rather than a functional setState because advancing past the last
+   * card calls onComplete, and a state updater must stay pure.
+   */
+  const indexRef = useRef(0);
+
+  const isEmpty = !cards || cards.length === 0;
+
+  // Nothing to introduce. Reported from an effect rather than during render:
+  // calling onComplete in the render body is a side effect, and React may run
+  // a render twice.
+  useEffect(() => {
+    if (isEmpty) onComplete();
+  }, [isEmpty, onComplete]);
+
+  if (isEmpty) return null;
 
   const handleNext = () => {
-    if (currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    const current = indexRef.current;
+
+    if (current < cards.length - 1) {
+      indexRef.current = current + 1;
+      setCurrentIndex(current + 1);
     } else {
       onComplete();
     }
   };
+
 
   const progress = Math.round(((currentIndex + 1) / cards.length) * 100);
 
@@ -398,8 +421,11 @@ export function VocabularyIntro({
 
       {/* Current word card */}
       <AnimatePresence mode="wait">
+        {/* Keyed by card AND direction: the introduction can legitimately
+            include the same word twice, once per study direction, and a
+            repeated key stops AnimatePresence swapping the card at all. */}
         <VocabIntroCard
-          key={cards[currentIndex].flashcard.id}
+          key={`${cards[currentIndex].flashcard.id}_${cards[currentIndex].direction}`}
           studyCard={cards[currentIndex]}
           onNext={handleNext}
           isLast={currentIndex === cards.length - 1}
