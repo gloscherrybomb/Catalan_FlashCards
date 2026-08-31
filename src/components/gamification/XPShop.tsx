@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Glyph } from '../ui/Glyph';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag,
@@ -117,7 +118,7 @@ function RewardCard({
           className="w-16 h-16 mx-auto mb-3 rounded-xl bg-white dark:bg-ink-dark shadow-lg flex items-center justify-center text-4xl"
           whileHover={{ scale: 1.1, rotate: 5 }}
         >
-          {reward.icon}
+          <Glyph name={reward.icon} size="md" tone="auto" />
         </motion.div>
 
         {/* Info */}

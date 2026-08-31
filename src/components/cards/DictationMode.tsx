@@ -369,7 +369,7 @@ export function DictationMode({ studyCard, onComplete, onSkip }: DictationModePr
           >
             <div className="p-3 rounded-xl bg-miro-yellow/10 dark:bg-miro-yellow/20 border border-miro-yellow/30">
               <p className="text-sm text-miro-yellow font-medium">
-                💡 Hint: The word starts with "{correctAnswer.charAt(0).toUpperCase()}"
+                Hint: The word starts with "{correctAnswer.charAt(0).toUpperCase()}"
               </p>
             </div>
           </motion.div>

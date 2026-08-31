@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Glyph } from '../ui/Glyph';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConfettiPiece {
@@ -185,7 +186,7 @@ export function StarBurst({ isActive }: { isActive: boolean }) {
       transition={{ duration: 0.6 }}
       className="absolute inset-0 flex items-center justify-center pointer-events-none"
     >
-      <span className="text-6xl">⭐</span>
+      <Glyph name="star" size="xl" className="text-miro-yellow" />
     </motion.div>
   );
 }

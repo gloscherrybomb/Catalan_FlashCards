@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Glyph } from '../components/ui/Glyph';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle, Filter, Trophy } from 'lucide-react';
@@ -247,7 +248,7 @@ export function ConversationPage() {
         >
           <Card className="p-4 bg-gradient-to-r from-miro-blue/10 to-miro-green/10 dark:from-miro-blue/5 dark:to-miro-green/5 border-miro-blue/20">
             <div className="flex items-start gap-3">
-              <div className="text-2xl">💡</div>
+              <Glyph name="idea" size="sm" />
               <div>
                 <p className="font-medium text-gray-800 dark:text-white mb-1">
                   How it works

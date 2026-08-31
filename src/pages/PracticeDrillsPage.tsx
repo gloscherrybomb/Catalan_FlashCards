@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Glyph } from '../components/ui/Glyph';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -64,13 +65,13 @@ export function PracticeDrillsPage() {
           'from-miro-blue to-miro-green',
           'from-purple-400 to-pink-500',
         ];
-        const icons = ['🏃', '📚', '🎯', '💪', '⚡'];
+        const icons = ['adverb', 'vocabulary', 'target', 'strength', 'verb'];
 
         return {
           id: `category-${category.toLowerCase().replace(/\s+/g, '-')}`,
           name: `${category} Boot Camp`,
           description: `Master ${category.toLowerCase()} with intensive practice`,
-          icon: <span className="text-2xl">{icons[index % icons.length]}</span>,
+          icon: <Glyph name={icons[index % icons.length]} size="sm" />,
           color: colors[index % colors.length],
           type: 'category' as const,
           cardCount: Math.min(30, stats.total),

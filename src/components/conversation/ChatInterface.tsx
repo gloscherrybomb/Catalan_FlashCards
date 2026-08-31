@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Glyph } from '../ui/Glyph';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send,
@@ -141,7 +142,7 @@ export function ChatInterface({ scenario, onBack, onComplete }: ChatInterfacePro
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl">{scenario.icon}</span>
+              <Glyph name={scenario.icon} size="sm" />
               <h2 className="font-bold text-gray-800 dark:text-white">
                 {scenario.titleCatalan}
               </h2>

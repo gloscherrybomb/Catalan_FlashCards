@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Glyph } from '../ui/Glyph';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellOff, X, Clock } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -76,7 +77,7 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
       return {
         title: `Don't break your ${currentStreak}-day streak!`,
         subtitle: `You have ${dueCards} cards waiting for you today.`,
-        icon: '🔥',
+        icon: 'streak',
         urgency: currentStreak >= 7 ? 'high' : 'medium',
       };
     }
@@ -84,14 +85,14 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
       return {
         title: 'Time for a review session!',
         subtitle: `${dueCards} cards are ready - let's keep that momentum!`,
-        icon: '📚',
+        icon: 'vocabulary',
         urgency: 'medium',
       };
     }
     return {
       title: 'Ready to learn some Catalan?',
       subtitle: `${dueCards} cards are waiting for you.`,
-      icon: '👋',
+      icon: 'greeting',
       urgency: 'low',
     };
   };
@@ -122,7 +123,7 @@ export function StudyReminder({ lastStudyDate, currentStreak, dueCards }: StudyR
             </button>
 
             <div className="flex items-start gap-3 pr-6">
-              <span className="text-3xl">{message.icon}</span>
+              <Glyph name={message.icon} size="md" tone="auto" />
               <div className="flex-1">
                 <h4 className="font-semibold text-gray-800 dark:text-white mb-1">
                   {message.title}

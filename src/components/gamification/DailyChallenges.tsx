@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Glyph } from '../ui/Glyph';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Clock, Flame, Trophy } from 'lucide-react';
 import { Card, CardTitle } from '../ui/Card';
@@ -87,7 +88,7 @@ export function DailyChallenges({ challenges, onChallengeClick }: DailyChallenge
               <div className="flex items-start gap-3">
                 {/* Icon */}
                 <div className={`text-2xl flex-shrink-0 ${isComplete ? 'grayscale-0' : ''}`}>
-                  {challenge.icon}
+                  <Glyph name={challenge.icon} size="sm" />
                 </div>
 
                 {/* Content */}

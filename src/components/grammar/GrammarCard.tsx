@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Glyph } from '../ui/Glyph';
 import { motion } from 'framer-motion';
 import { Clock, Check, ChevronRight, Star, Lock } from 'lucide-react';
 import { Card } from '../ui/Card';
@@ -30,12 +31,12 @@ const difficultyColors = {
 };
 
 const categoryIcons: Record<string, string> = {
-  articles: '📰',
-  verbs: '⚡',
-  pronouns: '👥',
-  adjectives: '🎨',
-  prepositions: '🔗',
-  basics: '📚',
+  articles: 'article',
+  verbs: 'verb',
+  pronouns: 'pronoun',
+  adjectives: 'adjective',
+  prepositions: 'preposition',
+  basics: 'grammar',
 };
 
 export function GrammarCard({ lesson, index = 0, locked = false }: GrammarCardProps) {
@@ -97,7 +98,7 @@ export function GrammarCard({ lesson, index = 0, locked = false }: GrammarCardPr
                 : 'bg-miro-blue/10 dark:bg-miro-blue/20'
             }`}
           >
-            {lesson.icon || categoryIcons[lesson.category] || '📖'}
+            <Glyph name={lesson.icon || categoryIcons[lesson.category] || 'read'} size="sm" />
           </div>
 
           {/* Content */}

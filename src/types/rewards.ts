@@ -40,7 +40,7 @@ export const AVATARS: Reward[] = [
     type: 'avatar',
     rarity: 'common',
     xpCost: 0,
-    icon: '👤',
+    icon: 'person',
   },
   {
     id: 'avatar_cat',
@@ -49,7 +49,7 @@ export const AVATARS: Reward[] = [
     type: 'avatar',
     rarity: 'common',
     xpCost: 100,
-    icon: '🐱',
+    icon: 'cat',
   },
   {
     id: 'avatar_book',
@@ -58,7 +58,7 @@ export const AVATARS: Reward[] = [
     type: 'avatar',
     rarity: 'common',
     xpCost: 150,
-    icon: '📚',
+    icon: 'vocabulary',
   },
   {
     id: 'avatar_dragon',
@@ -68,7 +68,7 @@ export const AVATARS: Reward[] = [
     rarity: 'uncommon',
     xpCost: 600,
     unlockLevel: 3,
-    icon: '🐉',
+    icon: 'dragon',
   },
   {
     id: 'avatar_rose',
@@ -78,7 +78,7 @@ export const AVATARS: Reward[] = [
     rarity: 'uncommon',
     xpCost: 500,
     unlockLevel: 3,
-    icon: '🌹',
+    icon: 'flower',
   },
   {
     id: 'avatar_castle',
@@ -88,7 +88,7 @@ export const AVATARS: Reward[] = [
     rarity: 'rare',
     xpCost: 1500,
     unlockLevel: 6,
-    icon: '🏰',
+    icon: 'history',
   },
   {
     id: 'avatar_fire',
@@ -98,7 +98,7 @@ export const AVATARS: Reward[] = [
     rarity: 'rare',
     xpCost: 1800,
     unlockLevel: 6,
-    icon: '🔥',
+    icon: 'streak',
   },
   {
     id: 'avatar_crown',
@@ -108,7 +108,7 @@ export const AVATARS: Reward[] = [
     rarity: 'epic',
     xpCost: 4000,
     unlockLevel: 9,
-    icon: '👑',
+    icon: 'crown',
   },
   {
     id: 'avatar_star',
@@ -118,7 +118,7 @@ export const AVATARS: Reward[] = [
     rarity: 'legendary',
     xpCost: 12500,
     unlockLevel: 12,
-    icon: '⭐',
+    icon: 'star',
   },
 ];
 
@@ -131,7 +131,7 @@ export const THEMES: Reward[] = [
     type: 'theme',
     rarity: 'common',
     xpCost: 0,
-    icon: '🎨',
+    icon: 'arts',
     preview: 'theme-default',
   },
   {
@@ -142,7 +142,7 @@ export const THEMES: Reward[] = [
     rarity: 'uncommon',
     xpCost: 800,
     unlockLevel: 3,
-    icon: '🌊',
+    icon: 'sea',
     preview: 'theme-ocean',
   },
   {
@@ -153,7 +153,7 @@ export const THEMES: Reward[] = [
     rarity: 'uncommon',
     xpCost: 800,
     unlockLevel: 3,
-    icon: '🌅',
+    icon: 'sunrise',
     preview: 'theme-sunset',
   },
   {
@@ -164,7 +164,7 @@ export const THEMES: Reward[] = [
     rarity: 'rare',
     xpCost: 2250,
     unlockLevel: 6,
-    icon: '🌲',
+    icon: 'tree',
     preview: 'theme-forest',
   },
   {
@@ -175,7 +175,7 @@ export const THEMES: Reward[] = [
     rarity: 'epic',
     xpCost: 4800,
     unlockLevel: 9,
-    icon: '🏛️',
+    icon: 'society',
     preview: 'theme-gaudi',
   },
   {
@@ -186,7 +186,7 @@ export const THEMES: Reward[] = [
     rarity: 'epic',
     xpCost: 6000,
     unlockLevel: 9,
-    icon: '🌙',
+    icon: 'subjunctive',
     preview: 'theme-night',
   },
   {
@@ -197,7 +197,7 @@ export const THEMES: Reward[] = [
     rarity: 'legendary',
     xpCost: 15000,
     unlockLevel: 12,
-    icon: '✨',
+    icon: 'plans',
     preview: 'theme-gold',
   },
 ];
@@ -211,7 +211,7 @@ export const CARD_BACKS: Reward[] = [
     type: 'card_back',
     rarity: 'common',
     xpCost: 0,
-    icon: '🃏',
+    icon: 'gift',
     preview: 'cardback-default',
   },
   {
@@ -222,7 +222,7 @@ export const CARD_BACKS: Reward[] = [
     rarity: 'uncommon',
     xpCost: 400,
     unlockLevel: 3,
-    icon: '🚩',
+    icon: 'flag',
     preview: 'cardback-senyera',
   },
   {
@@ -233,7 +233,7 @@ export const CARD_BACKS: Reward[] = [
     rarity: 'uncommon',
     xpCost: 500,
     unlockLevel: 3,
-    icon: '🔷',
+    icon: 'shape',
     preview: 'cardback-mosaic',
   },
   {
@@ -244,7 +244,7 @@ export const CARD_BACKS: Reward[] = [
     rarity: 'rare',
     xpCost: 1350,
     unlockLevel: 6,
-    icon: '⛪',
+    icon: 'church',
     preview: 'cardback-sagrada',
   },
   {
@@ -255,7 +255,7 @@ export const CARD_BACKS: Reward[] = [
     rarity: 'rare',
     xpCost: 1500,
     unlockLevel: 6,
-    icon: '🎭',
+    icon: 'theatre',
     preview: 'cardback-miro',
   },
   {
@@ -266,7 +266,7 @@ export const CARD_BACKS: Reward[] = [
     rarity: 'epic',
     xpCost: 3200,
     unlockLevel: 9,
-    icon: '🌟',
+    icon: 'star',
     preview: 'cardback-stars',
   },
   {
@@ -277,7 +277,7 @@ export const CARD_BACKS: Reward[] = [
     rarity: 'legendary',
     xpCost: 7500,
     unlockLevel: 12,
-    icon: '🐲',
+    icon: 'dragon',
     preview: 'cardback-dragon',
   },
 ];
@@ -291,7 +291,7 @@ export const POWER_UPS: Reward[] = [
     type: 'streak_freeze',
     rarity: 'uncommon',
     xpCost: 600,
-    icon: '❄️',
+    icon: 'snow',
   },
   {
     id: 'powerup_xp_boost',
@@ -300,7 +300,7 @@ export const POWER_UPS: Reward[] = [
     type: 'power_up',
     rarity: 'rare',
     xpCost: 1000,
-    icon: '⚡',
+    icon: 'verb',
   },
   {
     id: 'powerup_hint_pack',
@@ -309,7 +309,7 @@ export const POWER_UPS: Reward[] = [
     type: 'power_up',
     rarity: 'uncommon',
     xpCost: 400,
-    icon: '💡',
+    icon: 'idea',
   },
 ];
 

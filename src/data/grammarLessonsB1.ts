@@ -29,7 +29,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els pronoms EN i HI',
     category: 'pronouns',
     difficulty: 'intermediate',
-    icon: '🔗',
+    icon: 'connectors',
     estimatedMinutes: 18,
     content: {
       introduction:
@@ -134,7 +134,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El pronom neutre HO',
     category: 'pronouns',
     difficulty: 'intermediate',
-    icon: '💭',
+    icon: 'attitudes',
     estimatedMinutes: 12,
     content: {
       introduction:
@@ -201,7 +201,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Combinacions de pronoms febles',
     category: 'pronouns',
     difficulty: 'advanced',
-    icon: '🧩',
+    icon: 'problems',
     estimatedMinutes: 20,
     content: {
       introduction:
@@ -286,7 +286,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: "L'imperatiu",
     category: 'verbs',
     difficulty: 'intermediate',
-    icon: '📣',
+    icon: 'imperative',
     estimatedMinutes: 15,
     content: {
       introduction:
@@ -367,7 +367,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Comparatius i superlatius',
     category: 'adjectives',
     difficulty: 'beginner',
-    icon: '⚖️',
+    icon: 'comparison',
     estimatedMinutes: 12,
     content: {
       introduction:
@@ -438,7 +438,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: "L'imperfet de subjuntiu",
     category: 'tenses',
     difficulty: 'advanced',
-    icon: '🌗',
+    icon: 'subjunctive',
     estimatedMinutes: 18,
     content: {
       introduction:
@@ -531,7 +531,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'PER i PER A',
     category: 'prepositions',
     difficulty: 'intermediate',
-    icon: '🎯',
+    icon: 'target',
     estimatedMinutes: 12,
     content: {
       introduction:
@@ -608,7 +608,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'La passiva i com evitar-la',
     category: 'structure',
     difficulty: 'advanced',
-    icon: '🔄',
+    icon: 'passive',
     estimatedMinutes: 15,
     content: {
       introduction:
@@ -678,7 +678,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'L’estil indirecte',
     category: 'structure',
     difficulty: 'advanced',
-    icon: '💬',
+    icon: 'idioms',
     estimatedMinutes: 15,
     content: {
       introduction:
@@ -753,7 +753,7 @@ export const B1_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els adverbis en -MENT',
     category: 'basics',
     difficulty: 'beginner',
-    icon: '🏃',
+    icon: 'adverb',
     estimatedMinutes: 10,
     content: {
       introduction:

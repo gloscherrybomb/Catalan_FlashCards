@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Glyph } from '../ui/Glyph';
 import { Clock, BookOpen, Star, Check, ChevronRight } from 'lucide-react';
 import type { Story } from '../../data/stories';
 import type { StoryProgress } from '../../stores/storyStore';
@@ -72,7 +73,7 @@ export function StoryCard({ story, progress, index, onClick }: StoryCardProps) {
           {isCompleted ? (
             <Check className="w-8 h-8 text-white" strokeWidth={3} />
           ) : (
-            <span className="text-3xl">{story.icon}</span>
+            <Glyph name={story.icon} size="md" tone="auto" />
           )}
 
           {/* Score badge for completed stories */}

@@ -106,6 +106,8 @@ export function StudyPage() {
   const getWeaknessDeck = useCardStore((state) => state.getWeaknessDeck);
   const flashcards = useCardStore((state) => state.flashcards);
   const cardProgress = useCardStore((state) => state.cardProgress);
+  const loadStarterVocabulary = useCardStore((state) => state.loadStarterVocabulary);
+  const [isLoadingStarter, setIsLoadingStarter] = useState(false);
   const dueCount = getDueCount();
 
   // Get category filter from URL
@@ -812,6 +814,40 @@ export function StudyPage() {
                 </div>
               </Card>
             </div>
+          ) : flashcards.length === 0 ? (
+            // An empty deck is not the same as a finished one. Saying "all
+            // caught up" to somebody with no cards is both wrong and a dead
+            // end: onboarding has already been marked complete, so it never
+            // offers the starter deck again and there is no other route to it.
+            <div className="text-center py-12">
+              <div className="w-20 h-20 mx-auto mb-4 bg-miro-yellow/15 rounded-full flex items-center justify-center">
+                <Sparkles size={40} className="text-miro-orange" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                You have no cards yet
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                Add the starter deck and you can begin straight away.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  isLoading={isLoadingStarter}
+                  onClick={async () => {
+                    setIsLoadingStarter(true);
+                    try {
+                      await loadStarterVocabulary();
+                    } finally {
+                      setIsLoadingStarter(false);
+                    }
+                  }}
+                >
+                  Add starter deck
+                </Button>
+                <Button variant="ghost" onClick={() => navigate('/learning-path')}>
+                  Go to the learning path
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="text-center py-12">
               <div className="w-20 h-20 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
@@ -834,11 +870,11 @@ export function StudyPage() {
   // Summary screen
   if (summary) {
     const getMessage = () => {
-      if (summary.accuracy >= 90) return { text: 'Outstanding!', emoji: '🏆' };
-      if (summary.accuracy >= 80) return { text: 'Excellent work!', emoji: '⭐' };
-      if (summary.accuracy >= 70) return { text: 'Great job!', emoji: '👏' };
-      if (summary.accuracy >= 60) return { text: 'Good effort!', emoji: '💪' };
-      return { text: 'Keep practicing!', emoji: '📚' };
+      if (summary.accuracy >= 90) return { text: 'Outstanding!', emoji: 'trophy' };
+      if (summary.accuracy >= 80) return { text: 'Excellent work!', emoji: 'star' };
+      if (summary.accuracy >= 70) return { text: 'Great job!', emoji: 'applause' };
+      if (summary.accuracy >= 60) return { text: 'Good effort!', emoji: 'strength' };
+      return { text: 'Keep practicing!', emoji: 'vocabulary' };
     };
 
     const message = getMessage();
@@ -938,7 +974,7 @@ export function StudyPage() {
                 className="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl text-center"
               >
                 <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                  🔥 {summary.perfectStreak} perfect answers in a row!
+                  {summary.perfectStreak} perfect answers in a row!
                 </p>
               </motion.div>
             )}

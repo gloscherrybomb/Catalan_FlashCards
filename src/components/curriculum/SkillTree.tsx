@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Glyph } from '../ui/Glyph';
 import { Check, Lock, ChevronRight, Trophy } from 'lucide-react';
 import type { CurriculumUnit, CEFRLevel } from '../../data/curriculum';
 import { useCurriculumStore } from '../../stores/curriculumStore';
@@ -102,7 +103,7 @@ export function SkillTree({ units, onSelectUnit, selectedUnitId }: SkillTreeProp
                   ) : isCompleted ? (
                     <Check className="w-8 h-8 text-white" strokeWidth={3} />
                   ) : (
-                    <span className="text-3xl">{unit.icon}</span>
+                    <Glyph name={unit.icon} size="lg" className="text-white" />
                   )}
 
                   {/* Milestone badge */}

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Glyph } from '../ui/Glyph';
 import { Card } from '../ui/Card';
 import { SCENARIOS, type ConversationScenario } from '../../services/conversationService';
 
@@ -48,7 +49,7 @@ export function ScenarioSelector({ onSelect, selectedLevel = 'all' }: ScenarioSe
               <div className="flex items-start gap-4">
                 {/* Icon */}
                 <div className="text-3xl flex-shrink-0">
-                  {scenario.icon}
+                  <Glyph name={scenario.icon} size="md" tone="auto" />
                 </div>
 
                 {/* Content */}

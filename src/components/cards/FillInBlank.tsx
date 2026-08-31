@@ -277,14 +277,14 @@ export function FillInBlank({
           >
             {isCorrect ? (
               <div className="p-4 rounded-xl bg-miro-green/10 dark:bg-miro-green/20 border border-miro-green/20">
-                <p className="font-bold text-miro-green mb-1">Perfect! 🎉</p>
+                <p className="font-bold text-miro-green mb-1">Perfect!</p>
                 <p className="text-sm text-miro-blue/70 dark:text-ink-light/70">
                   The word was: <span className="font-semibold">{blankData.blankWord}</span>
                 </p>
               </div>
             ) : isCloseMatch ? (
               <div className="p-4 rounded-xl bg-miro-orange/10 dark:bg-miro-orange/20 border border-miro-orange/20">
-                <p className="font-bold text-miro-orange mb-1">Almost! 👏</p>
+                <p className="font-bold text-miro-orange mb-1">Almost!</p>
                 <p className="text-sm text-miro-blue/70 dark:text-ink-light/70">
                   You wrote: <span className="font-semibold">{userAnswer}</span>
                 </p>

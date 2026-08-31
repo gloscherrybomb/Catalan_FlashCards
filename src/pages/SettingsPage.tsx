@@ -376,7 +376,7 @@ export function SettingsPage() {
         className="mt-8 text-center text-sm text-gray-400"
       >
         <p>Catalan FlashCards v1.0.0</p>
-        <p className="mt-1">Made with ❤️ for Catalan learners</p>
+        <p className="mt-1">Made for Catalan learners</p>
       </motion.div>
     </div>
   );

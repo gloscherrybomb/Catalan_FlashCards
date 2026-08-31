@@ -12,12 +12,12 @@ interface StreakMilestoneProps {
 }
 
 const MILESTONE_INFO: Record<number, { title: string; emoji: string; color: string }> = {
-  7: { title: 'Week Warrior', emoji: '🔥', color: 'from-orange-400 to-orange-600' },
-  14: { title: 'Fortnight Fighter', emoji: '💪', color: 'from-orange-500 to-red-500' },
-  30: { title: 'Monthly Master', emoji: '💎', color: 'from-red-400 to-pink-500' },
-  60: { title: 'Two Month Titan', emoji: '🏆', color: 'from-pink-500 to-purple-500' },
-  100: { title: 'Century Champion', emoji: '👑', color: 'from-yellow-400 to-orange-500' },
-  365: { title: 'Yearly Legend', emoji: '🌟', color: 'from-yellow-300 to-yellow-500' },
+  7: { title: 'Week Warrior', emoji: 'streak', color: 'from-orange-400 to-orange-600' },
+  14: { title: 'Fortnight Fighter', emoji: 'strength', color: 'from-orange-500 to-red-500' },
+  30: { title: 'Monthly Master', emoji: 'gem', color: 'from-red-400 to-pink-500' },
+  60: { title: 'Two Month Titan', emoji: 'trophy', color: 'from-pink-500 to-purple-500' },
+  100: { title: 'Century Champion', emoji: 'crown', color: 'from-yellow-400 to-orange-500' },
+  365: { title: 'Yearly Legend', emoji: 'star', color: 'from-yellow-300 to-yellow-500' },
 };
 
 export function StreakMilestone({
@@ -29,7 +29,7 @@ export function StreakMilestone({
 }: StreakMilestoneProps) {
   const info = MILESTONE_INFO[milestone] || {
     title: `${milestone} Day Streak`,
-    emoji: '🔥',
+    emoji: 'streak',
     color: 'from-orange-400 to-red-500',
   };
 
@@ -89,7 +89,7 @@ export function StreakMilestone({
                   repeat: Infinity,
                 }}
               >
-                🔥
+                
               </motion.div>
             ))}
 
@@ -218,7 +218,7 @@ export function SessionCompleteCelebration({
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 0.5, repeat: 2 }}
               >
-                {isPerfectSession ? '🌟' : isGreatSession ? '🎉' : '👍'}
+                
               </motion.div>
               <h2 className="text-2xl font-display font-bold text-miro-blue dark:text-ink-light">
                 {isPerfectSession

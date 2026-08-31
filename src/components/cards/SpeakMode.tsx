@@ -412,7 +412,7 @@ export function SpeakMode({ studyCard, onComplete, onSkip }: SpeakModeProps) {
                         className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3"
                       >
                         <p className="text-xs font-medium text-amber-800 dark:text-amber-200 mb-1">
-                          💡 Tips for this word:
+                          Tips for this word:
                         </p>
                         <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-0.5">
                           {tips.slice(0, 2).map((tip, i) => (

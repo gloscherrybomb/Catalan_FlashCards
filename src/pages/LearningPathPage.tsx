@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Glyph } from '../components/ui/Glyph';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -158,7 +159,7 @@ export function LearningPathPage() {
               w-20 h-20 rounded-2xl flex items-center justify-center
               bg-gradient-to-br ${selectedUnit.color}
             `}>
-              <span className="text-4xl">{selectedUnit.icon}</span>
+              <Glyph name={selectedUnit.icon} size="xl" tone="auto" />
             </div>
 
             <div className="flex-1">

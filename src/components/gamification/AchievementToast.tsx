@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { Glyph } from '../ui/Glyph';
 import { X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { Achievement } from '../../types/gamification';
@@ -31,7 +32,7 @@ export function AchievementToast({ achievement, onDismiss }: AchievementToastPro
     >
       <div className={`bg-gradient-to-r ${rarityColors[achievement.rarity]} rounded-2xl p-1 shadow-2xl`}>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-4">
-          <div className="text-4xl">{achievement.icon}</div>
+          <Glyph name={achievement.icon} size="lg" tone="yellow" />
           <div className="flex-1">
             <p className="text-xs font-medium text-primary uppercase tracking-wide">
               Achievement Unlocked!

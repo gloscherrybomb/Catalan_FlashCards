@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Glyph } from '../ui/Glyph';
 import { motion } from 'framer-motion';
 import { Volume2, ChevronDown, Lightbulb } from 'lucide-react';
 import { type SentencePattern as SentencePatternType, PATTERN_COLORS } from '../../data/sentencePatterns';
@@ -155,7 +156,7 @@ export function SentencePatternGrid({ patterns, title }: SentencePatternGridProp
     <div className="space-y-4">
       {title && (
         <h2 className="text-xl font-bold text-miro-blue dark:text-ink-light flex items-center gap-2">
-          <span className="text-2xl">🔤</span>
+          <Glyph name="language" size="sm" />
           {title}
         </h2>
       )}

@@ -126,10 +126,10 @@ export function SentenceMode({
     const accuracy = Math.round((correctCount / results.length) * 100);
 
     const getMessage = () => {
-      if (avgScore >= 90) return { text: 'Outstanding!', emoji: '🏆', color: 'text-miro-yellow' };
-      if (avgScore >= 70) return { text: 'Great work!', emoji: '⭐', color: 'text-miro-green' };
-      if (avgScore >= 50) return { text: 'Good effort!', emoji: '👏', color: 'text-miro-blue dark:text-ink-light' };
-      return { text: 'Keep practicing!', emoji: '💪', color: 'text-miro-orange' };
+      if (avgScore >= 90) return { text: 'Outstanding!', emoji: 'trophy', color: 'text-miro-yellow' };
+      if (avgScore >= 70) return { text: 'Great work!', emoji: 'star', color: 'text-miro-green' };
+      if (avgScore >= 50) return { text: 'Good effort!', emoji: 'applause', color: 'text-miro-blue dark:text-ink-light' };
+      return { text: 'Keep practicing!', emoji: 'strength', color: 'text-miro-orange' };
     };
     const message = getMessage();
 
@@ -283,7 +283,7 @@ export function SentenceMode({
               : 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
           }`}
         >
-          {exerciseType === 'builder' ? '🧩 Word Order' : '✏️ Fill in Blank'}
+          {exerciseType === 'builder' ? 'Word Order' : 'Fill in Blank'}
         </span>
       </div>
 

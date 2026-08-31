@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Glyph } from '../components/ui/Glyph';
 import { Lock, Check } from 'lucide-react';
 import { useUserStore } from '../stores/userStore';
 import { Card } from '../components/ui/Card';
@@ -7,40 +8,40 @@ import type { Achievement } from '../types/gamification';
 // Achievement definitions
 const ACHIEVEMENTS: Achievement[] = [
   // First actions
-  { id: 'first_card', name: 'First Steps', description: 'Review your first card', icon: '🐣', category: 'special', requirement: { type: 'first_action', action: 'review' }, xpReward: 10, rarity: 'common' },
-  { id: 'first_import', name: 'Collector', description: 'Import your first flashcard set', icon: '📚', category: 'special', requirement: { type: 'first_action', action: 'import' }, xpReward: 15, rarity: 'common' },
+  { id: 'first_card', name: 'First Steps', description: 'Review your first card', icon: 'egg', category: 'special', requirement: { type: 'first_action', action: 'review' }, xpReward: 10, rarity: 'common' },
+  { id: 'first_import', name: 'Collector', description: 'Import your first flashcard set', icon: 'vocabulary', category: 'special', requirement: { type: 'first_action', action: 'import' }, xpReward: 15, rarity: 'common' },
 
   // Streaks
-  { id: 'streak_3', name: 'Getting Started', description: '3-day study streak', icon: '✨', category: 'streak', requirement: { type: 'streak', days: 3 }, xpReward: 25, rarity: 'common' },
-  { id: 'streak_7', name: 'Week Warrior', description: '7-day study streak', icon: '🔥', category: 'streak', requirement: { type: 'streak', days: 7 }, xpReward: 50, rarity: 'uncommon' },
-  { id: 'streak_14', name: 'Fortnight Fighter', description: '14-day study streak', icon: '💪', category: 'streak', requirement: { type: 'streak', days: 14 }, xpReward: 100, rarity: 'rare' },
-  { id: 'streak_30', name: 'Monthly Master', description: '30-day study streak', icon: '💎', category: 'streak', requirement: { type: 'streak', days: 30 }, xpReward: 200, rarity: 'epic' },
-  { id: 'streak_100', name: 'Century Champion', description: '100-day study streak', icon: '👑', category: 'streak', requirement: { type: 'streak', days: 100 }, xpReward: 500, rarity: 'legendary' },
+  { id: 'streak_3', name: 'Getting Started', description: '3-day study streak', icon: 'plans', category: 'streak', requirement: { type: 'streak', days: 3 }, xpReward: 25, rarity: 'common' },
+  { id: 'streak_7', name: 'Week Warrior', description: '7-day study streak', icon: 'streak', category: 'streak', requirement: { type: 'streak', days: 7 }, xpReward: 50, rarity: 'uncommon' },
+  { id: 'streak_14', name: 'Fortnight Fighter', description: '14-day study streak', icon: 'strength', category: 'streak', requirement: { type: 'streak', days: 14 }, xpReward: 100, rarity: 'rare' },
+  { id: 'streak_30', name: 'Monthly Master', description: '30-day study streak', icon: 'gem', category: 'streak', requirement: { type: 'streak', days: 30 }, xpReward: 200, rarity: 'epic' },
+  { id: 'streak_100', name: 'Century Champion', description: '100-day study streak', icon: 'crown', category: 'streak', requirement: { type: 'streak', days: 100 }, xpReward: 500, rarity: 'legendary' },
 
   // Cards reviewed
-  { id: 'cards_10', name: 'Warm Up', description: 'Review 10 cards', icon: '📝', category: 'dedication', requirement: { type: 'cards_reviewed', count: 10 }, xpReward: 15, rarity: 'common' },
-  { id: 'cards_50', name: 'Getting Serious', description: 'Review 50 cards', icon: '📖', category: 'dedication', requirement: { type: 'cards_reviewed', count: 50 }, xpReward: 30, rarity: 'common' },
-  { id: 'cards_100', name: 'Century', description: 'Review 100 cards', icon: '💯', category: 'dedication', requirement: { type: 'cards_reviewed', count: 100 }, xpReward: 50, rarity: 'uncommon' },
-  { id: 'cards_500', name: 'Half Thousand', description: 'Review 500 cards', icon: '🎯', category: 'dedication', requirement: { type: 'cards_reviewed', count: 500 }, xpReward: 100, rarity: 'rare' },
-  { id: 'cards_1000', name: 'Millennium', description: 'Review 1000 cards', icon: '🏆', category: 'dedication', requirement: { type: 'cards_reviewed', count: 1000 }, xpReward: 250, rarity: 'epic' },
+  { id: 'cards_10', name: 'Warm Up', description: 'Review 10 cards', icon: 'exercise', category: 'dedication', requirement: { type: 'cards_reviewed', count: 10 }, xpReward: 15, rarity: 'common' },
+  { id: 'cards_50', name: 'Getting Serious', description: 'Review 50 cards', icon: 'read', category: 'dedication', requirement: { type: 'cards_reviewed', count: 50 }, xpReward: 30, rarity: 'common' },
+  { id: 'cards_100', name: 'Century', description: 'Review 100 cards', icon: 'perfect', category: 'dedication', requirement: { type: 'cards_reviewed', count: 100 }, xpReward: 50, rarity: 'uncommon' },
+  { id: 'cards_500', name: 'Half Thousand', description: 'Review 500 cards', icon: 'target', category: 'dedication', requirement: { type: 'cards_reviewed', count: 500 }, xpReward: 100, rarity: 'rare' },
+  { id: 'cards_1000', name: 'Millennium', description: 'Review 1000 cards', icon: 'trophy', category: 'dedication', requirement: { type: 'cards_reviewed', count: 1000 }, xpReward: 250, rarity: 'epic' },
 
   // Cards mastered
-  { id: 'master_10', name: 'Apprentice', description: 'Master 10 cards', icon: '🌱', category: 'mastery', requirement: { type: 'cards_mastered', count: 10 }, xpReward: 40, rarity: 'common' },
-  { id: 'master_25', name: 'Rising Star', description: 'Master 25 cards', icon: '⭐', category: 'mastery', requirement: { type: 'cards_mastered', count: 25 }, xpReward: 75, rarity: 'uncommon' },
-  { id: 'master_50', name: 'Knowledge Keeper', description: 'Master 50 cards', icon: '🧠', category: 'mastery', requirement: { type: 'cards_mastered', count: 50 }, xpReward: 150, rarity: 'rare' },
-  { id: 'master_100', name: 'Sage', description: 'Master 100 cards', icon: '🦉', category: 'mastery', requirement: { type: 'cards_mastered', count: 100 }, xpReward: 300, rarity: 'epic' },
+  { id: 'master_10', name: 'Apprentice', description: 'Master 10 cards', icon: 'plant', category: 'mastery', requirement: { type: 'cards_mastered', count: 10 }, xpReward: 40, rarity: 'common' },
+  { id: 'master_25', name: 'Rising Star', description: 'Master 25 cards', icon: 'star', category: 'mastery', requirement: { type: 'cards_mastered', count: 25 }, xpReward: 75, rarity: 'uncommon' },
+  { id: 'master_50', name: 'Knowledge Keeper', description: 'Master 50 cards', icon: 'thinking', category: 'mastery', requirement: { type: 'cards_mastered', count: 50 }, xpReward: 150, rarity: 'rare' },
+  { id: 'master_100', name: 'Sage', description: 'Master 100 cards', icon: 'animal', category: 'mastery', requirement: { type: 'cards_mastered', count: 100 }, xpReward: 300, rarity: 'epic' },
 
   // Perfect streaks
-  { id: 'perfect_5', name: 'Sharp Mind', description: '5 perfect answers in a row', icon: '✅', category: 'speed', requirement: { type: 'perfect_streak', count: 5 }, xpReward: 25, rarity: 'common' },
-  { id: 'perfect_10', name: 'Flawless', description: '10 perfect answers in a row', icon: '💫', category: 'speed', requirement: { type: 'perfect_streak', count: 10 }, xpReward: 50, rarity: 'uncommon' },
-  { id: 'perfect_20', name: 'Untouchable', description: '20 perfect answers in a row', icon: '🌟', category: 'speed', requirement: { type: 'perfect_streak', count: 20 }, xpReward: 100, rarity: 'rare' },
+  { id: 'perfect_5', name: 'Sharp Mind', description: '5 perfect answers in a row', icon: 'check', category: 'speed', requirement: { type: 'perfect_streak', count: 5 }, xpReward: 25, rarity: 'common' },
+  { id: 'perfect_10', name: 'Flawless', description: '10 perfect answers in a row', icon: 'sparkle', category: 'speed', requirement: { type: 'perfect_streak', count: 10 }, xpReward: 50, rarity: 'uncommon' },
+  { id: 'perfect_20', name: 'Untouchable', description: '20 perfect answers in a row', icon: 'star', category: 'speed', requirement: { type: 'perfect_streak', count: 20 }, xpReward: 100, rarity: 'rare' },
 
   // Levels
-  { id: 'level_5', name: 'Linguist', description: 'Reach level 5', icon: '📈', category: 'mastery', requirement: { type: 'level', level: 5 }, xpReward: 75, rarity: 'uncommon' },
-  { id: 'level_10', name: 'Polyglot', description: 'Reach level 10', icon: '🗣️', category: 'mastery', requirement: { type: 'level', level: 10 }, xpReward: 200, rarity: 'epic' },
+  { id: 'level_5', name: 'Linguist', description: 'Reach level 5', icon: 'economy', category: 'mastery', requirement: { type: 'level', level: 5 }, xpReward: 75, rarity: 'uncommon' },
+  { id: 'level_10', name: 'Polyglot', description: 'Reach level 10', icon: 'conversation', category: 'mastery', requirement: { type: 'level', level: 10 }, xpReward: 200, rarity: 'epic' },
 
   // Special
-  { id: 'verbs_master', name: 'Verb Virtuoso', description: 'Master all verb cards', icon: '⚡', category: 'special', requirement: { type: 'category_mastered', category: 'Verbs' }, xpReward: 150, rarity: 'rare' },
+  { id: 'verbs_master', name: 'Verb Virtuoso', description: 'Master all verb cards', icon: 'verb', category: 'special', requirement: { type: 'category_mastered', category: 'Verbs' }, xpReward: 150, rarity: 'rare' },
 ];
 
 export function AchievementsPage() {
@@ -149,7 +150,7 @@ export function AchievementsPage() {
                         isUnlocked ? 'bg-white dark:bg-gray-800 shadow-sm' : 'bg-gray-200'
                       }`}
                     >
-                      {isUnlocked ? achievement.icon : <Lock size={24} className="text-gray-400" />}
+                      {isUnlocked ? <Glyph name={achievement.icon} size="md" tone="yellow" /> : <Lock size={24} className="text-gray-400" />}
                     </div>
 
                     <div className="flex-1">

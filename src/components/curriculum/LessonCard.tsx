@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Glyph } from '../ui/Glyph';
 import { Check, Lock, Clock, Star, ChevronRight } from 'lucide-react';
 import type { CurriculumLesson } from '../../data/curriculum';
 import type { LessonProgress } from '../../stores/curriculumStore';
@@ -86,7 +87,7 @@ export function LessonCard({
         ) : isCompleted ? (
           <Check className="w-7 h-7 text-white" strokeWidth={3} />
         ) : (
-          <span className="text-2xl">{lesson.icon}</span>
+          <Glyph name={lesson.icon} size="sm" />
         )}
 
         {/* Score badge */}

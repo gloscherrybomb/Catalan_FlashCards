@@ -60,7 +60,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els articles definits',
     category: 'articles',
     difficulty: 'beginner',
-    icon: '📰',
+    icon: 'media',
     estimatedMinutes: 10,
     content: {
       introduction: 'In Catalan, definite articles (the) change based on gender and number. Unlike English, every noun has a gender!',
@@ -128,7 +128,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els articles indefinits',
     category: 'articles',
     difficulty: 'beginner',
-    icon: '📝',
+    icon: 'exercise',
     estimatedMinutes: 8,
     content: {
       introduction: 'Indefinite articles (a, an, some) also change based on gender and number in Catalan.',
@@ -176,7 +176,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els articles personals',
     category: 'articles',
     difficulty: 'beginner',
-    icon: '👤',
+    icon: 'person',
     estimatedMinutes: 6,
     content: {
       introduction: 'Catalan has a unique feature: personal articles used before proper names! This doesn\'t exist in Spanish or English.',
@@ -216,7 +216,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Ser i Estar',
     category: 'verbs',
     difficulty: 'beginner',
-    icon: '⚖️',
+    icon: 'comparison',
     estimatedMinutes: 15,
     content: {
       introduction: 'Like Spanish, Catalan has two verbs meaning "to be": SER and ESTAR. Learning when to use each is essential!',
@@ -314,7 +314,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Present: verbs en -ar',
     category: 'verbs',
     difficulty: 'beginner',
-    icon: '🔤',
+    icon: 'language',
     estimatedMinutes: 12,
     content: {
       introduction: 'Most Catalan verbs are regular and follow predictable patterns. Let\'s start with -AR verbs, the most common type!',
@@ -373,7 +373,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El gènere dels noms',
     category: 'basics',
     difficulty: 'beginner',
-    icon: '⚥',
+    icon: 'person',
     estimatedMinutes: 10,
     content: {
       introduction: 'Every Catalan noun has a gender: masculine or feminine. Here are the patterns to help you guess correctly!',
@@ -438,7 +438,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els plurals',
     category: 'basics',
     difficulty: 'beginner',
-    icon: '📚',
+    icon: 'vocabulary',
     estimatedMinutes: 10,
     content: {
       introduction: 'Learning to form plurals in Catalan is essential for speaking correctly. Most plurals follow predictable patterns based on word endings.',
@@ -540,7 +540,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'La concordança dels adjectius',
     category: 'adjectives',
     difficulty: 'beginner',
-    icon: '🎨',
+    icon: 'arts',
     estimatedMinutes: 12,
     content: {
       introduction: 'In Catalan, adjectives must agree with the noun they describe in both gender (masculine/feminine) and number (singular/plural). This is one of the most important grammar rules to master!',
@@ -648,7 +648,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Present: verbs en -er/-re',
     category: 'verbs',
     difficulty: 'intermediate',
-    icon: '📚',
+    icon: 'vocabulary',
     estimatedMinutes: 15,
     content: {
       introduction: 'Catalan has two more verb groups: -ER and -RE verbs. These are slightly different from -AR verbs.',
@@ -718,7 +718,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els pronoms personals',
     category: 'pronouns',
     difficulty: 'beginner',
-    icon: '👥',
+    icon: 'people',
     estimatedMinutes: 8,
     content: {
       introduction: 'Subject pronouns in Catalan are often optional (the verb tells us who\'s acting), but it\'s important to know them!',
@@ -781,7 +781,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: "L'ordre de les paraules",
     category: 'structure',
     difficulty: 'beginner',
-    icon: '📝',
+    icon: 'exercise',
     estimatedMinutes: 12,
     content: {
       introduction: 'Catalan follows Subject-Verb-Object (SVO) order like English, but with important differences in adjective and adverb placement.',
@@ -868,7 +868,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Formar preguntes',
     category: 'structure',
     difficulty: 'beginner',
-    icon: '❓',
+    icon: 'question',
     estimatedMinutes: 15,
     content: {
       introduction: 'Learn how to ask questions in Catalan - from simple yes/no questions to questions using question words.',
@@ -973,7 +973,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'La negació',
     category: 'structure',
     difficulty: 'beginner',
-    icon: '🚫',
+    icon: 'negation',
     estimatedMinutes: 10,
     content: {
       introduction: 'Making negative sentences in Catalan is simple - just add "no" before the verb. But there are some special patterns to learn!',
@@ -1069,7 +1069,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els adjectius possessius',
     category: 'adjectives',
     difficulty: 'beginner',
-    icon: '👤',
+    icon: 'person',
     estimatedMinutes: 12,
     content: {
       introduction: 'Possessive adjectives show ownership. In Catalan, they agree with the thing possessed, not the possessor!',
@@ -1147,7 +1147,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els demostratius',
     category: 'adjectives',
     difficulty: 'beginner',
-    icon: '👆',
+    icon: 'tap',
     estimatedMinutes: 10,
     content: {
       introduction: 'Demonstratives point to specific things. Catalan has three levels of distance: this (here), that (there), and that (over there).',
@@ -1234,7 +1234,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Present: verbs en -ir',
     category: 'verbs',
     difficulty: 'beginner',
-    icon: '🔤',
+    icon: 'language',
     estimatedMinutes: 12,
     content: {
       introduction: 'The third verb group in Catalan ends in -IR. Many of these verbs have stem changes, so pay attention to the patterns!',
@@ -1319,7 +1319,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els verbs reflexius',
     category: 'verbs',
     difficulty: 'intermediate',
-    icon: '🔄',
+    icon: 'passive',
     estimatedMinutes: 15,
     content: {
       introduction: 'Reflexive verbs express actions done to oneself. They\'re very common in Catalan for daily routines!',
@@ -1420,7 +1420,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els pronoms febles de CD',
     category: 'pronouns',
     difficulty: 'intermediate',
-    icon: '➡️',
+    icon: 'target',
     estimatedMinutes: 15,
     content: {
       introduction: 'Direct object pronouns replace the thing directly receiving the action. They\'re called "weak pronouns" (pronoms febles) in Catalan.',
@@ -1509,7 +1509,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El pretèrit perifràstic',
     category: 'tenses',
     difficulty: 'intermediate',
-    icon: '⏮️',
+    icon: 'previous',
     estimatedMinutes: 15,
     content: {
       introduction: 'The most common past tense in spoken Catalan! It\'s formed with "anar" (to go) + infinitive. Yes, "went" + verb!',
@@ -1594,7 +1594,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: "L'imperfet",
     category: 'tenses',
     difficulty: 'intermediate',
-    icon: '🔄',
+    icon: 'passive',
     estimatedMinutes: 15,
     content: {
       introduction: 'The imperfect tense describes ongoing or habitual actions in the past - things you "used to do" or "were doing".',
@@ -1692,7 +1692,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El futur',
     category: 'tenses',
     difficulty: 'intermediate',
-    icon: '⏭️',
+    icon: 'next',
     estimatedMinutes: 12,
     content: {
       introduction: 'The future tense in Catalan adds endings directly to the infinitive. It\'s simpler than you might think!',
@@ -1778,7 +1778,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El condicional',
     category: 'tenses',
     difficulty: 'intermediate',
-    icon: '🤔',
+    icon: 'thinking',
     estimatedMinutes: 12,
     content: {
       introduction: 'The conditional expresses what "would" happen. It\'s formed like the future but with different endings.',
@@ -1854,7 +1854,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Els pronoms febles de CI',
     category: 'pronouns',
     difficulty: 'intermediate',
-    icon: '↩️',
+    icon: 'undo',
     estimatedMinutes: 12,
     content: {
       introduction: 'Indirect object pronouns indicate to whom or for whom an action is done. They\'re essential for natural-sounding Catalan!',
@@ -1918,7 +1918,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El verb agradar',
     category: 'verbs',
     difficulty: 'intermediate',
-    icon: '❤️',
+    icon: 'relationships',
     estimatedMinutes: 12,
     content: {
       introduction: 'The verb "agradar" (to like/please) works differently from English. Instead of "I like coffee", you say "Coffee pleases me". This is one of the most important verbs to master!',
@@ -2031,7 +2031,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El pretèrit perfet',
     category: 'tenses',
     difficulty: 'intermediate',
-    icon: '✅',
+    icon: 'check',
     estimatedMinutes: 15,
     content: {
       introduction: 'The present perfect (pretèrit perfet) is used for actions completed in the recent past or that have relevance to the present. It\'s formed with "haver" + past participle.',
@@ -2161,7 +2161,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'Les oracions de relatiu',
     category: 'structure',
     difficulty: 'intermediate',
-    icon: '🔗',
+    icon: 'connectors',
     estimatedMinutes: 12,
     content: {
       introduction: 'Relative clauses connect ideas using words like "that," "which," "who," and "where." They\'re essential for complex sentences!',
@@ -2241,7 +2241,7 @@ const CORE_GRAMMAR_LESSONS: GrammarLesson[] = [
     titleCatalan: 'El present de subjuntiu',
     category: 'tenses',
     difficulty: 'advanced',
-    icon: '💭',
+    icon: 'attitudes',
     estimatedMinutes: 20,
     content: {
       introduction: 'The subjunctive mood expresses doubt, wishes, emotions, and hypothetical situations. It\'s essential for expressing nuance!',

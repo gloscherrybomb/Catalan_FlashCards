@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Glyph } from '../ui/Glyph';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../../services/logger';
@@ -455,7 +456,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 whileTap={{ scale: 0.98 }}
                 aria-label="I didn't remember this card - show it again soon (press 1)"
               >
-                <span className="text-2xl mb-1" aria-hidden="true">😵</span>
+                <Glyph name="again" size="sm" className="mb-1" />
                 <span className="text-xs font-semibold">Again</span>
                 <span className="text-[10px] opacity-50 mt-0.5">1</span>
               </motion.button>
@@ -467,7 +468,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 whileTap={{ scale: 0.98 }}
                 aria-label="This was hard - I struggled to remember (press 2 or 3)"
               >
-                <span className="text-2xl mb-1" aria-hidden="true">😅</span>
+                <Glyph name="hard" size="sm" className="mb-1" />
                 <span className="text-xs font-semibold">Hard</span>
                 <span className="text-[10px] opacity-50 mt-0.5">2-3</span>
               </motion.button>
@@ -479,7 +480,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 whileTap={{ scale: 0.98 }}
                 aria-label="Good - I remembered it with some effort (press 4)"
               >
-                <span className="text-2xl mb-1" aria-hidden="true">🙂</span>
+                <Glyph name="good" size="sm" className="mb-1" />
                 <span className="text-xs font-semibold">Good</span>
                 <span className="text-[10px] opacity-50 mt-0.5">4</span>
               </motion.button>
@@ -491,7 +492,7 @@ export function FlashCard({ studyCard, onRate, showHints = true }: FlashCardProp
                 whileTap={{ scale: 0.98 }}
                 aria-label="Easy - I knew it instantly (press 5)"
               >
-                <span className="text-2xl mb-1" aria-hidden="true">🤩</span>
+                <Glyph name="easy" size="sm" className="mb-1" />
                 <span className="text-xs font-semibold">Easy</span>
                 <span className="text-[10px] opacity-50 mt-0.5">5</span>
               </motion.button>

@@ -278,10 +278,10 @@ export function GrammarExercises({
   if (isComplete) {
     const percentage = Math.round((score / exercises.length) * 100);
     const getMessage = () => {
-      if (percentage >= 90) return { text: 'Perfect!', emoji: '🏆', color: 'text-miro-yellow' };
-      if (percentage >= 70) return { text: 'Great job!', emoji: '⭐', color: 'text-miro-green' };
-      if (percentage >= 50) return { text: 'Good effort!', emoji: '👏', color: 'text-miro-blue dark:text-ink-light' };
-      return { text: 'Keep practicing!', emoji: '💪', color: 'text-miro-orange' };
+      if (percentage >= 90) return { text: 'Perfect!', emoji: 'trophy', color: 'text-miro-yellow' };
+      if (percentage >= 70) return { text: 'Great job!', emoji: 'star', color: 'text-miro-green' };
+      if (percentage >= 50) return { text: 'Good effort!', emoji: 'applause', color: 'text-miro-blue dark:text-ink-light' };
+      return { text: 'Keep practicing!', emoji: 'strength', color: 'text-miro-orange' };
     };
     const message = getMessage();
 

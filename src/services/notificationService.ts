@@ -241,7 +241,7 @@ class NotificationService {
 
     const timeout = setTimeout(() => {
       this.showNotification(
-        '📚 Cards Ready for Review!',
+        'Cards ready for review',
         `You have ${dueCount} card${dueCount !== 1 ? 's' : ''} waiting. Keep your streak alive!`,
         {
           data: { action: 'open_study' },
@@ -275,7 +275,7 @@ class NotificationService {
 
     const timeout = setTimeout(() => {
       this.showNotification(
-        `🔥 Protect Your ${currentStreak}-Day Streak!`,
+        `Protect your ${currentStreak}-day streak`,
         "Don't lose your progress! A quick study session will keep your streak going.",
         {
           data: { action: 'open_study' },
@@ -309,7 +309,7 @@ class NotificationService {
 
     const timeout = setTimeout(() => {
       this.showNotification(
-        '🎯 Daily Goal Progress',
+        'Daily goal progress',
         `Just ${remaining} more card${remaining !== 1 ? 's' : ''} to reach your daily goal!`,
         {
           data: { action: 'open_study' },

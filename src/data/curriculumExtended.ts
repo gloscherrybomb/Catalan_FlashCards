@@ -28,10 +28,10 @@ const GRADIENTS = [
 
 /** One icon per unit, in order, so each is recognisable in the path. */
 const ICONS: Record<number, string> = {
-  21: '💼', 22: '🩺', 23: '🏠', 24: '👕', 25: '🎓', 26: '⚽', 27: '🙂',
-  28: '🍲', 29: '🌿', 30: '💻', 31: '💶', 32: '🧳', 33: '🏙️', 34: '❤️', 35: '📏',
-  36: '📰', 37: '🌍', 38: '🏛️', 39: '🏰', 40: '🎨', 41: '🔬', 42: '📈', 43: '🧩',
-  44: '💭', 45: '🔗', 46: '💬', 47: '🗺️', 48: '📷', 49: '🔤', 50: '✨',
+  21: 'work', 22: 'health', 23: 'home', 24: 'clothes', 25: 'study', 26: 'sport', 27: 'character',
+  28: 'cooking', 29: 'nature', 30: 'technology', 31: 'money', 32: 'travel', 33: 'city', 34: 'relationships', 35: 'measure',
+  36: 'media', 37: 'world', 38: 'society', 39: 'history', 40: 'arts', 41: 'science', 42: 'economy', 43: 'problems',
+  44: 'attitudes', 45: 'connectors', 46: 'idioms', 47: 'map', 48: 'memories', 49: 'language', 50: 'plans',
 };
 
 function levelFor(unitNumber: number): CEFRLevel {
@@ -56,7 +56,7 @@ function toCurriculumUnit(unit: UnitVocabulary, index: number): CurriculumUnit {
     titleCatalan: unit.titleCatalan,
     description: unit.description,
     level,
-    icon: ICONS[unit.unitNumber] ?? '📘',
+    icon: ICONS[unit.unitNumber] ?? 'book',
     color: GRADIENTS[index % GRADIENTS.length],
     // Filled in by curriculum.ts, which chains the whole path in level order.
     prerequisites: [],
@@ -67,7 +67,7 @@ function toCurriculumUnit(unit: UnitVocabulary, index: number): CurriculumUnit {
         id: `u${unit.unitNumber}-vocab`,
         title: `${unit.title} Vocabulary`,
         titleCatalan: `Vocabulari: ${unit.titleCatalan}`,
-        icon: '📚',
+        icon: 'vocabulary',
         estimatedMinutes: 12,
         xpReward: xp,
         content: {
@@ -80,7 +80,7 @@ function toCurriculumUnit(unit: UnitVocabulary, index: number): CurriculumUnit {
         id: `u${unit.unitNumber}-practice`,
         title: `Practise: ${unit.title}`,
         titleCatalan: `Practica: ${unit.titleCatalan}`,
-        icon: '🎯',
+        icon: 'target',
         estimatedMinutes: 10,
         xpReward: Math.round(xp * 0.8),
         content: {
