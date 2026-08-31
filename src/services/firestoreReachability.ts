@@ -75,6 +75,10 @@ export async function probeFirestoreReachability(projectId: string): Promise<voi
     await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
     return; // Reached it. Keep the direct connection.
   } catch (error) {
+    // A failed request offline says nothing about blocking, and latching on it
+    // would send someone who probed on a train through the proxy for good.
+    if (navigator.onLine === false) return;
+
     logger.warn('Firestore appears to be blocked; switching to the same-origin proxy', 'Firebase', {
       error: String(error),
     });
