@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import {
   getFirestore,
+  initializeFirestore,
   doc,
   setDoc,
   getDoc,
@@ -23,6 +24,7 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { logger } from './logger';
+import { firestoreHostOverride, probeFirestoreReachability } from './firestoreReachability';
 import type { Flashcard, CardProgress } from '../types/flashcard';
 import type { PlacementResult } from '../types/curriculum';
 import type { DailyChallenge } from '../types/challenges';
@@ -87,7 +89,31 @@ if (!isDemoMode && recaptchaSiteKey && typeof window !== 'undefined') {
   }
 }
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+/**
+ * Firestore, routed round a content blocker when one is in the way.
+ *
+ * `firestoreHostOverride` returns a path on our own origin for browsers where a
+ * previous load found firestore.googleapis.com blocked; everyone else gets the
+ * ordinary direct connection. See firestoreReachability.ts.
+ */
+const firestoreHost = firestoreHostOverride();
+
+export const db = firestoreHost
+  ? initializeFirestore(app, {
+      host: firestoreHost,
+      ssl: true,
+      // A proxied connection cannot use the streaming transport reliably, and
+      // this app has no listeners to lose - it only does one-shot reads and
+      // writes - so long polling is the safe choice.
+      experimentalForceLongPolling: true,
+    })
+  : getFirestore(app);
+
+// Runs once per session, after the app has started, and only decides what the
+// NEXT initialisation should do. It never blocks startup.
+if (!isDemoMode && typeof window !== 'undefined') {
+  void probeFirestoreReachability(firebaseConfig.projectId);
+}
 export const functions = getFunctions(app, 'europe-west2');
 
 const googleProvider = new GoogleAuthProvider();

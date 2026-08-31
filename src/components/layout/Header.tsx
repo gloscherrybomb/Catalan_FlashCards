@@ -25,6 +25,7 @@ import {
 import { useUserStore } from '../../stores/userStore';
 import { XPBar } from '../gamification/XPBar';
 import { StreakCounter } from '../gamification/StreakCounter';
+import { SyncStatus } from '../ui/SyncStatus';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { useRewardsStore } from '../../stores/rewardsStore';
 import { getRewardById } from '../../types/rewards';
@@ -281,6 +282,7 @@ export function Header() {
 
             {/* Right side - Stats & Auth */}
             <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
+              <SyncStatus />
               {isAuthenticated && (
                 <>
                   <motion.div
