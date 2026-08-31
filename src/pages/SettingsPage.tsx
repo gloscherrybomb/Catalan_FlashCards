@@ -8,6 +8,7 @@ import {
   Download,
   Bell,
   Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../stores/userStore';
@@ -17,6 +18,7 @@ import { Button } from '../components/ui/Button';
 import { exportToCSV } from '../services/csvParser';
 import { NotificationSettings } from '../components/settings/NotificationSettings';
 import { todayKey } from '../utils/dateKeys';
+import { resetAccount } from '../services/resetAccount';
 
 export function SettingsPage() {
   const navigate = useNavigate();
@@ -30,6 +32,22 @@ export function SettingsPage() {
 
   const [dedupeResult, setDedupeResult] = useState<number | null>(null);
   const [isDeduping, setIsDeduping] = useState(false);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      await resetAccount(profile?.uid ?? null);
+      // A full reload rather than resetting each store in memory: every store
+      // has already been rehydrated from the keys just deleted, so the only way
+      // to be certain nothing is left holding stale state is to start again.
+      window.location.replace('/');
+    } catch {
+      setIsResetting(false);
+      setConfirmingReset(false);
+    }
+  };
 
   const handleExport = () => {
     const csv = exportToCSV(flashcards);
@@ -249,6 +267,51 @@ export function SettingsPage() {
               <ChevronRight size={20} className="text-gray-400" />
             </button>
           </div>
+        </Card>
+      </motion.div>
+
+      {/* Start again */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <Card className="mb-6 border-2 border-miro-red/30">
+          <CardTitle>Start Again</CardTitle>
+
+          <p className="mt-2 text-sm text-gray-500 dark:text-ink-light/60">
+            Deletes your progress, cards, streak, XP and achievements from this
+            device and from your account. This cannot be undone.
+          </p>
+
+          {!confirmingReset ? (
+            <Button
+              variant="secondary"
+              className="mt-4"
+              leftIcon={<AlertTriangle className="w-4 h-4" />}
+              onClick={() => setConfirmingReset(true)}
+            >
+              Reset everything
+            </Button>
+          ) : (
+            <div className="mt-4 p-3 rounded-xl bg-miro-red/5 border border-miro-red/20">
+              <p role="alert" className="text-sm font-medium text-miro-red mb-3">
+                Delete all your progress and start from the first lesson?
+              </p>
+              <div className="flex gap-2">
+                <Button variant="primary" onClick={handleReset} isLoading={isResetting}>
+                  Yes, delete everything
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setConfirmingReset(false)}
+                  disabled={isResetting}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       </motion.div>
 
